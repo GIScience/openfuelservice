@@ -1,0 +1,1 @@
+{"intents": [{"tag": "Subaru Legacy Outback", "patterns": ["Forester AWD, From 2015 MY"]}, {"tag": "Subaru Impreza", "patterns": ["BRZ, From 2019MY", "WRX STI AWD, From 2015 MY", "XV AWD, From 2015MY", "Levorg AWD, From 2016 MY", "XV AWD, from 2018MY", "BRZ, From 2016 MY"]}, {"tag": "Subaru XV", "patterns": ["Impreza AWD, From 2015 MY", "Levorg AWD, From 2016 MY"]}]}

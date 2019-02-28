@@ -1,0 +1,10 @@
+version: '2.2'
+services:
+ gunicorn_flask_1:
+  #network_mode: "host"
+  build: .
+  volumes:
+  - ./ann_models:/deploy/app/openfuelservice/server/files/models
+  ports:
+   - "5010:5000"
+  mem_limit: 28g

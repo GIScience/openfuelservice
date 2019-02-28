@@ -1,0 +1,1 @@
+{"intents": [{"tag": "Seat Mii", "patterns": []}, {"tag": "Seat Leon", "patterns": ["Mii", "Leon X-Perience", "Alhambra"]}, {"tag": "Seat Leon Cross Sport", "patterns": ["Arona"]}, {"tag": "SEAT Toledo", "patterns": ["Ateca"]}]}

@@ -1,0 +1,451 @@
+swagger: "2.0"
+info:
+  description: |
+    Returns gas consumption and pollution data for route objects per vehicle category.
+  version: "0.1"
+  title: "Openfuelservice"
+  contact:
+    email: "support@openrouteservice.org"
+  license:
+    name: "MIT"
+    url: "https://github.com/swagger-api/swagger-ui/blob/master/LICENSE"
+consumes:
+- "application/json"
+schemes:
+- "https"
+produces:
+- "application/json"
+host: "api.openrouteservice.org"
+paths:
+  "/fuel":
+    get:
+      description: |
+        Examples:
+        ```
+        ##### Get all categories
+        curl -X GET \
+        'http://127.0.0.1:5000/fuel?request=categories' \
+        -H 'Cache-Control: no-cache' \
+        -H 'Postman-Token: dbfee88f-4e43-4f9b-9edf-728d9addfd1b'
+
+        ##### Get all brands
+        curl -X GET \
+        'http://127.0.0.1:5000/fuel?request=categories' \
+        -H 'Cache-Control: no-cache' \
+        -H 'Postman-Token: dbfee88f-4e43-4f9b-9edf-728d9addfd1b'
+
+        ##### Get all cars for a brand
+        curl -X GET \
+        'http://127.0.0.1:5000/fuel?request=cars&brand=%C5%A0koda' \
+        -H 'Cache-Control: no-cache' \
+        -H 'Postman-Token: e04442c5-e6a1-4e1d-b398-dd90d5eecb43'
+        ```
+      parameters:
+        - name: "api_key"
+          in: "query"
+          description: |
+            Insert your API Key here.
+          type: "string"
+          required: true
+          default: "your-api-key"
+
+        - name: "request"
+          in: "query"
+          description: The request type
+          type: string
+          required: true
+          enum:
+          - brands
+          - cars
+          - categories
+        - name: "brand"
+          in: "query"
+          description: Insert brand name here if using the cars request
+          type: string
+      responses:
+        200:
+          description: "Standard response for successfully processed requests."
+          schema:
+            allOf:
+            - $ref: '#/definitions/ListOfBrands'
+            - $ref: '#/definitions/ListOfCars'
+            - $ref: '#/definitions/ListOfCategories'
+        401:
+          description: "Authorization field missing."
+        403:
+          description: "Key not authorised."
+
+    post:
+      description: |
+        Examples:
+        ```
+        ##### Calculate standard route statistics for all categories
+        curl -X POST \
+        'http://127.0.0.1:5000/fuel?request=route' \
+          -H 'Cache-Control: no-cache' \
+          -H 'Content-Type: application/json' \
+          -H 'Postman-Token: 5210326c-acbb-4a84-b826-e8232c327115' \
+          -d '{
+          "request": "route",
+        "geometry": {
+          "geojson": {
+            "coordinates": [
+                          [
+                              10.502782,
+                              51.181212
+                          ],
+                          [
+                              10.50239,
+                              51.1812
+                          ],
+                          [
+                              10.501769,
+                              51.181171
+                          ],
+                          [
+                              10.501072,
+                              51.181138
+                          ]
+                      ],
+                      "type": "LineString"
+          },
+          "filters":{
+          "data_source": "cfd",
+            "fuel_type": "gasoline",
+            "vehicle_type": "car",
+            "driving_style": "moderate",
+            "vehicle_categories": ["all"],
+            "tank_sizes": {},
+            "fuel_consumptions": {},
+            "request_id": "test123"
+            }
+          }
+        }'
+        ##### Calculate route statistics with manual speed, tank_sizes, fuel_consumption and year
+        curl -X POST \
+          'http://127.0.0.1:5000/fuel?request=route' \
+          -H 'Cache-Control: no-cache' \
+          -H 'Content-Type: application/json' \
+          -H 'Postman-Token: 5210326c-acbb-4a84-b826-e8232c327115' \
+          -d '{
+          "request": "route",
+          "geometry": {
+            "geojson": {
+              "coordinates": [
+                                [
+                                  10.502782,
+                                  51.181212
+                              ],
+                              [
+                                  10.50239,
+                                  51.1812
+                              ],
+                              [
+                                  10.501769,
+                                  51.181171
+                              ],
+                              [
+                                  10.501072,
+                                  51.181138
+                              ]
+                        ],
+                        "type": "LineString"
+            },
+             "filters":{
+            "data_source": "cfd",
+              "fuel_type": "gasoline",
+              "vehicle_type": "car",
+              "driving_speed": "60",
+              "vehicle_categories": ["all"],
+              "tank_sizes": {"a":"100", "b":"60"},
+              "fuel_consumptions": {"a": "4.5"},
+              "year":"2017",
+              "request_id": "test123"
+            }
+          }
+        }'
+        ```
+      parameters:
+      - name: "api_key"
+        in: "query"
+        description: |
+          Insert your API Key here.
+        type: "string"
+        required: true
+        default: "your-api-key"
+
+      - name: "request"
+        in: "query"
+        description: The request type
+        type: string
+        required: true
+        enum:
+        - route
+
+      - in: body
+        name: "body"
+        required: true
+        description: body for a post request
+        schema:
+          $ref: '#/definitions/RouteStatisticsBody'
+      responses:
+        200:
+          description: "Standard response for successfully processed requests."
+          schema:
+            $ref: '#/definitions/RouteStatisticResponse'
+        401:
+          description: "Authorization field missing."
+        403:
+          description: "Key not authorised."
+        500:
+          description: |
+            An unexpected error was encountered and more detailed internal
+            errorcode is provided.
+            | Internal Code | Description                                        |
+            |:-------------:|----------------------------------------------------|
+            |4000: Invalid JSON object in request|
+            |4001: Filters are missing|
+            |4002: Geometry is missing|
+            |4003: Fuel type is missing|
+            |4004: Vehicle type is missing|
+            |4005: GeoJSON missing in request|
+            |4006: Wrong GeoJSON type. Only LineStrings are supported|
+            |4007: GeoJSON issue|
+            |4008: Unsupported HTTP method|
+            |4009: Data Source is missing|
+            |4099: Unknown internal error|
+            |5000: Not enough data for the desired year|
+            |5001: Invalid Request argument|
+            |5002: Invalid Request method|
+
+securityDefinitions:
+  UserSecurity:
+    name: "api_key"
+    description: |
+      Add your API Key as the value of the api_key parameter to your request.
+    type: "apiKey"
+    in: "query"
+definitions:
+  CategoriesBody:
+    example: {
+      "request": "categories"
+    }
+    type: object
+    required:
+    - request
+
+    title: "All categories in the database"
+
+  CarsBody:
+    example: {
+      "request": "cars",
+      brand": ""
+    }
+    type: object
+    required:
+    - request
+    - brand
+
+    title: "All cars for a specific brand"
+
+  BrandBody:
+    example: {
+      "request": "brands",
+    }
+    type: object
+    required:
+    - request
+
+    title: "All brands in the database"
+
+  RouteStatisticsBody:
+    example: {
+      "request": "route",
+      "geometry": {
+        "geojson": {
+          "type": "LineString",
+          "coordinates": [[10.502782,51.181212],[10.50239,51.1812],[10.501769,51.181171],[10.501072,51.181138]]
+        },
+        "filters":{
+          "data_source": "cfd",
+          "fuel_type": "gasoline",
+          "vehicle_type": "car",
+          "driving_style": "moderate",
+          "driving_speed": "60",
+          "vehicle_categories": ["all"],
+          "tank_sizes": {"a":"100"},
+          "fuel_consumptions": {"a": "4.5"},
+          "request_id": "test123"
+        }
+      }
+    }
+    type: object
+    required:
+    - request
+    - geometry
+    properties:
+      request:
+        type: string
+        example: fuel
+      geometry:
+        type: object
+        properties:
+          geojson:
+            $ref: "#/definitions/geojson"
+          filters:
+            $ref: "#/definitions/filters"
+
+    title:  "Openfuelserice route statistics request"
+
+  # SHARED PROPERTIES
+  filters:
+    description: This is a filter object
+    type: object
+    properties:
+      data_source:
+        $ref: "#/definitions/data_source"
+      vehicle_type:
+        $ref: "#/definitions/vehicle_type"
+      driving_style:
+        $ref: "#/definitions/driving_style"
+      vehicle_categories:
+        $ref: "#/definitions/vehicle_categories"
+      tank_sizes:
+        $ref: "#/definitions/tank_sizes"
+      fuel_consumption:
+        $ref: "#/definitions/fuel_consumption"
+      request_id:
+        type: string
+        example: "Individual request ID"
+    required:
+    - data_source
+    - vehicle_type
+
+  geojson:
+    description: This is a geojson object
+    type: string
+    example: '"geometry": {
+      "type": "LineString",
+      "coordinates": [[10.502782,51.181212],[10.50239,51.1812],[10.501769,51.181171],[10.501072,51.181138]]
+    }'
+
+  data_source:
+    type: string
+    enum:
+    - ec
+    - cfd
+  vehicle_type:
+    type: string
+    enum:
+    - car
+  driving_style:
+    type: string
+    enum:
+    - moderate
+    - fast
+  vehicle_categories:
+    type: array
+    enum:
+    - a
+    - b
+    - c
+    - d
+    - e
+    - f
+    - s
+    - m
+    - j
+    - pu
+    - lcv
+  tank_sizes:
+    type: object
+    additionalProperties:
+      type: object
+      properties:
+        categorry:
+          type: string
+          example: "c"
+        size:
+          type: integer
+          example: 70
+  fuel_consumption:
+    type: object
+    additionalProperties:
+      type: object
+      properties:
+        category:
+          type: string
+          example: "a"
+        speed:
+          type: number
+          example: "5.6"
+  # SHARED CUSTOM PROPERTIES
+  # Categories response object
+  CategoriesResponse:
+    type: object
+    title: "Openpoiservice category list response"
+    description: "Openpoiservice category list"
+    properties:
+      type:
+        type: "string"
+      properties:
+
+
+  # Route calculation response object
+  RouteStatisticResponse:
+    type: "object"
+    properties:
+      type:
+        type: "string"
+      features:
+        type: "array"
+        items:
+          $ref: ""
+    title: "Openfuelservice route statistic response"
+
+  ListOfBrands:
+    type: object
+    properties:
+      Brands:
+        type: "array"
+        items:
+          type: string
+
+  ListOfCars:
+    type: object
+    properties:
+      cars:
+        $ref: "#/definitions/Car"
+  Car:
+    type: object
+    properties:
+      car_name:
+        type: object
+        properties:
+          categories:
+            type: string
+
+
+  ListOfCategories:
+    type: object
+    properties:
+      categories:
+        $ref: "#/definitions/Category"
+
+  Category:
+    type: object
+    properties:
+      category:
+        type: object
+        properties:
+          de:
+            type: string
+            description: The german category name
+          en:
+            type: string
+            description: The english category name
+          short:
+            type: string
+            description: "The category short"
+    enum:
+    - "#/definitions/vehicle_categories"

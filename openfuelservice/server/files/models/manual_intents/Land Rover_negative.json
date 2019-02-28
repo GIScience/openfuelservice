@@ -1,0 +1,1 @@
+{"intents": [{"tag": "Land Rover Series I", "patterns": ["Discovery, 18MY", "Range Rover Evoque, 18MY", "Range Rover, 18MY", "Discovery Sport, 18MY"]}, {"tag": "Land Rover Discovery Sport", "patterns": ["Range Rover Evoque, 18MY"]}]}

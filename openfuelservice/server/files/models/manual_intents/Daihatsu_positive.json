@@ -1,0 +1,16 @@
+{
+  "intents": [
+    {
+      "tag": "Daihatsu Boon",
+      "patterns": [
+        "sirion"
+      ]
+    },
+     {
+      "tag": "Daihatsu Storia",
+      "patterns": [
+        "sirion"
+      ]
+    }
+  ]
+}
