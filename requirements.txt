@@ -59,7 +59,7 @@ fuzzywuzzy==0.16.0
 python-Levenshtein==0.12.0
 git+git://github.com/MichaelsJP/stringcmp.git#egg=stringcmp
 geopy==1.14.0
-nltk==3.3
+nltk==3.4.5
 pyproj==1.9.5.1
 django-scheduler==0.8.8
 tflearn==0.3.2
