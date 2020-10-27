@@ -1,5 +1,5 @@
 coverage==4.4.2
-cryptography==2.2.2
+cryptography==3.2
 cssselect==1.0.3
 deepmerge==0.0.4
 dominate==2.3.1
