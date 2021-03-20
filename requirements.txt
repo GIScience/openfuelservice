@@ -17,7 +17,7 @@ hyperlink==18.0.0
 idna==2.6
 incremental==17.5.0
 itsdangerous==0.24
-Jinja2==2.10
+Jinja2==2.11.3
 jsonschema==2.6.0
 lml==0.0.1
 lxml==4.2.1
