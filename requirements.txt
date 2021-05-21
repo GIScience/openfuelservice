@@ -66,7 +66,7 @@ tflearn==0.3.2
 h5py==2.8.0
 Scipy==1.1.0
 gunicorn==19.7.1
-tensorflow==1.12.0
+tensorflow==2.5.0
 gevent==1.3.5
 sty==1.0.0b6
 scipy==1.1.0
