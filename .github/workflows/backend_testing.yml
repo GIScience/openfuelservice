@@ -29,7 +29,7 @@ jobs:
         id: cached-poetry-dependencies
         uses: actions/cache@v2
         with:
-          path: .venv
+          path: $PWD/backend/.venv
           key: venv-lint-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
       - name: Load cached tox env
         id: cached-tox-dependencies
