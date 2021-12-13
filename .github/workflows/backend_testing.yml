@@ -117,6 +117,7 @@ jobs:
           cd "$PWD/backend/"
           echo $DEBUGGING_CONFIG
           echo $CELERY_BROKER_URL
+          echo $POSTGRES_SERVER
           echo $POSTGRES_USER
           echo $POSTGRES_PASSWORD
           echo $POSTGRES_DB
