@@ -25,10 +25,11 @@ jobs:
       pytest-database:
         image: postgres:12
         env:
-          - POSTGRES_USER=postgres
-          - POSTGRES_PASSWORD=dontchangeme
-          - POSTGRES_DB=debug_db
-          - POSTGRES_PORT=5432
+          PGDATA: "/var/lib/postgresql/data/pgdata"
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: dontchangeme
+          POSTGRES_DB: debug_db
+          POSTGRES_PORT: 5432
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
@@ -37,7 +38,8 @@ jobs:
         ports:
           - 9432:5432
     steps:
-      - uses: actions/checkout@v2
+      - name: checkout
+        uses: actions/checkout@v2
       - name: Set up testing Python ${{ matrix.config.python-version }}
         uses: actions/setup-python@v2
         with:
