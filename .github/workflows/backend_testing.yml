@@ -5,7 +5,29 @@ on:
     branches: '**'
 
 jobs:
+  lint:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+      - name: Set up testing Python ${{ matrix.config.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+      - name: Python Poetry Action
+        uses: abatilo/actions-poetry@v2.1.0
+        with:
+          poetry-version: 1.1.11
+      - name: Install dependencies and prepare environment
+        run: |
+          python -m pip install --upgrade pip tox
+      - name: Run tox lint
+        run: |
+          cd "$PWD/backend/app/"
+          tox -e lint
   linux-tests:
+    needs:
+      - lint
     strategy:
       fail-fast: true
       matrix:
@@ -69,7 +91,7 @@ jobs:
           TOX_TESTENV_PASSENV: DEBUGGING_CONFIG, CELERY_BROKER_URL, POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DB, POSTGRES_PORT
         run: |
           cd "$PWD/backend/app/"
-          tox -e lint -e py${{ matrix.config.tox }}
+          tox -e lint -e ${{ matrix.config.tox }}
 #      - name: Upload coverage to Codecov
 #        uses: codecov/codecov-action@v1
 #        with:
