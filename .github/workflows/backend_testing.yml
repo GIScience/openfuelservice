@@ -52,7 +52,7 @@ jobs:
         image: postgres:12
         env:
           POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
+          POSTGRES_PASSWORD: dontchangethis
           POSTGRES_DB: test_db
         options: >-
           --health-cmd pg_isready
@@ -83,7 +83,7 @@ jobs:
           CELERY_BROKER_URL: "amqp://guest@0.0.0.0:9672//"
           POSTGRES_SERVER: postgres
           POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
+          POSTGRES_PASSWORD: dontchangethis
           POSTGRES_DB: test_db
           POSTGRES_PORT: 5432
           TOX_TESTENV_PASSENV: DEBUGGING_CONFIG, CELERY_BROKER_URL, POSTGRES_SERVER, POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DB, POSTGRES_PORT
