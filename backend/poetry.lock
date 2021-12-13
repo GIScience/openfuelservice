@@ -1253,12 +1253,11 @@ testing = ["pytest (>=4.6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytes
 
 [extras]
 lint = []
-tox = []
 
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<4.0"
-content-hash = "001061a2b64abb5ceaba08456acc510108a871af494e7f24e1683d152140a43d"
+content-hash = "79d1b842eb06b3281c8b53a8c0c6422fb2ba719499bf3c8194bf7694405b0ba7"
 
 [metadata.files]
 alembic = [
