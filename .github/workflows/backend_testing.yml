@@ -91,7 +91,7 @@ jobs:
           TOX_TESTENV_PASSENV: DEBUGGING_CONFIG, CELERY_BROKER_URL, POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DB, POSTGRES_PORT
         run: |
           cd "$PWD/backend/app/"
-          tox -e lint -e ${{ matrix.config.tox }}
+          tox -e ${{ matrix.config.tox }}
 #      - name: Upload coverage to Codecov
 #        uses: codecov/codecov-action@v1
 #        with:
