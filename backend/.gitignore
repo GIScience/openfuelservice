@@ -1,0 +1,9 @@
+.vscode
+.mypy_cache
+docker-stack.yml
+.idea/
+.tox
+.venv
+.coverage
+.pytest_cache
+/coverage.xml

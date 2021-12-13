@@ -1,0 +1,13 @@
+.git
+.gitignore
+.coverage
+.venv
+.tox
+alembic.ini
+backend.dockerfile
+celeryworker.dockerfile
+coverage.xml
+debug.env
+debug_runner.py
+mypy.ini
+tox.ini
