@@ -42,7 +42,8 @@ build-backend = "poetry.core.masonry.api"
 
 
 [tool.poetry.extras]
-lint = ["tox", "mypy", "black", "isort", "flake8"]
+lint = ["mypy", "black", "isort", "flake8"]
+tox = ["tox"]
 
 [tool.isort]
 multi_line_output = 3

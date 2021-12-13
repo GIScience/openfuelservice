@@ -17,7 +17,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update && sudo apt-get install git
-          python -m pip install --upgrade pip tox
+          python -m pip install --upgrade pip
       - name: Install Poetry
         uses: snok/install-poetry@v1
         with:
@@ -35,7 +35,7 @@ jobs:
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
         run: |
           cd "$PWD/backend/"
-          poetry install --no-interaction --no-root --extras lint
+          poetry install --no-interaction --no-root --extras tox
       - name: Run tox lint
         run: |
           cd "$PWD/backend/"
@@ -102,7 +102,7 @@ jobs:
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
         run: |
           cd "$PWD/backend/"
-          poetry install --no-interaction --no-root
+          poetry install --no-interaction --no-root --extras tox
       - name: Run tox
         env:
           DEBUGGING_CONFIG: "$PWD/backend/app/debug.env"
