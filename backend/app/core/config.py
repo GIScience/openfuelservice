@@ -2,9 +2,7 @@ import os
 import secrets
 from typing import Any, Dict, List, Optional, Union
 
-from pydantic import AnyHttpUrl, EmailStr, HttpUrl, PostgresDsn, validator
-
-from pydantic import BaseSettings
+from pydantic import AnyHttpUrl, BaseSettings, EmailStr, HttpUrl, PostgresDsn, validator
 
 
 class Settings(BaseSettings):
@@ -88,7 +86,7 @@ class Settings(BaseSettings):
     CELERY_BROKER_URL: str = "amqp://guest@queue//"
 
     class Config:
-        DEBUGGING_CONFIG: str = os.getenv("DEBUGGING_CONFIG", None)
+        DEBUGGING_CONFIG: str = os.getenv("DEBUGGING_CONFIG", "")
         case_sensitive = True
         if DEBUGGING_CONFIG is not None and len(DEBUGGING_CONFIG):
             print()
