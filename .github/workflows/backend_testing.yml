@@ -31,11 +31,17 @@ jobs:
         with:
           path: .venv
           key: venv-lint-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
+      - name: Load cached tox env
+        id: cached-tox-dependencies
+        uses: actions/cache@v2
+        with:
+          path: $PWD/backend/.tox
+          key: tox-${{ runner.os }}-${{ hashFiles('**/tox.ini') }}
       - name: Install dependencies
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
         run: |
           cd "$PWD/backend/"
-          poetry install --no-interaction --no-root --extras tox
+          poetry install --no-interaction --no-root
       - name: Run tox lint
         run: |
           cd "$PWD/backend/"
@@ -98,11 +104,17 @@ jobs:
         with:
           path: .venv
           key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
+      - name: Load cached tox env
+        id: cached-tox-dependencies
+        uses: actions/cache@v2
+        with:
+          path: $PWD/backend/.tox
+          key: tox-${{ runner.os }}-${{ hashFiles('**/tox.ini') }}
       - name: Install dependencies
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
         run: |
           cd "$PWD/backend/"
-          poetry install --no-interaction --no-root --extras tox
+          poetry install --no-interaction --no-root
       - name: Run tox
         env:
           DEBUGGING_CONFIG: "$PWD/backend/app/debug.env"
