@@ -35,7 +35,7 @@ pyexcel==0.5.8
 pyexcel-io==0.5.7
 pyOpenSSL==18.0.0
 pyshp==1.2.12
-PyYAML==3.13
+PyYAML==5.4
 queuelib==1.5.0
 requests==2.18.4
 Scrapy==1.5.0
