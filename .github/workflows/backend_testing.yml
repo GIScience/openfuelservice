@@ -94,7 +94,7 @@ jobs:
           echo $POSTGRES_PASSWORD
           echo $POSTGRES_DB
           echo $POSTGRES_PORT
-          poetry run tox -e ${{ matrix.config.tox }}
+          poetry run tox -e pytest-github-${{ matrix.config.tox }}
 #      - name: Upload coverage to Codecov
 #        uses: codecov/codecov-action@v1
 #        with:
