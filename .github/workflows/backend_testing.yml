@@ -33,10 +33,12 @@ jobs:
           key: venv-lint-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
       - name: Install dependencies
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
-        run: poetry install --no-interaction --no-root --extras lint
+        run: |
+          cd "$PWD/backend/"
+          poetry install --no-interaction --no-root --extras lint
       - name: Run tox lint
         run: |
-          cd "$PWD/backend/app/"
+          cd "$PWD/backend/"
           tox -e lint
   linux-tests:
     needs:
@@ -109,7 +111,7 @@ jobs:
           POSTGRES_PORT: "9432"
           TOX_TESTENV_PASSENV: DEBUGGING_CONFIG, CELERY_BROKER_URL, POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DB, POSTGRES_PORT
         run: |
-          cd "$PWD/backend/app/"
+          cd "$PWD/backend/"
           tox -e ${{ matrix.config.tox }}
 #      - name: Upload coverage to Codecov
 #        uses: codecov/codecov-action@v1
