@@ -1,13 +1,10 @@
 name: Continous Integration
 
 on:
-  push:
+  pull:
     branches:
       - main
       - master
-  release:
-    types:
-      - created
 
 jobs:
   linux-tests:
@@ -16,9 +13,9 @@ jobs:
       matrix:
         config:
           - python-version: 3.8
-            tox: 38
+            tox: py38
           - python-version: 3.9
-            tox: 39
+            tox: py39
         poetry-version: [ 1.1.11 ]
         os: [ ubuntu-20.04 ]
     runs-on: ${{ matrix.os }}
@@ -54,18 +51,17 @@ jobs:
           poetry-version: ${{ matrix.poetry-version }}
       - name: Install dependencies and prepare environment
         env:
-          DEBUGGING_CONFIG: "$(basename $PWD)/backend/app/debug.env"
+          DEBUGGING_CONFIG: "$PWD/backend/app/debug.env"
           CELERY_BROKER_URL: "amqp://guest@0.0.0.0:9672//"
           POSTGRES_USER: "postgres"
           POSTGRES_PASSWORD: "dontchangeme"
           POSTGRES_DB: "debug_db"
           POSTGRES_PORT: "9432"
         run: |
-          sudo add-apt-repository -y ppa:ubuntugis/ppa && sudo apt-get update && sudo apt-get install -y build-essential gdal-bin libgdal-dev
           python -m pip install --upgrade pip tox
       - name: Run tox
         env:
-          DEBUGGING_CONFIG: "$(basename $PWD)/backend/app/debug.env"
+          DEBUGGING_CONFIG: "$PWD/backend/app/debug.env"
           CELERY_BROKER_URL: "amqp://guest@0.0.0.0:9672//"
           POSTGRES_USER: "postgres"
           POSTGRES_PASSWORD: "dontchangeme"
@@ -73,8 +69,8 @@ jobs:
           POSTGRES_PORT: "9432"
           TOX_TESTENV_PASSENV: DEBUGGING_CONFIG, CELERY_BROKER_URL, POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DB, POSTGRES_PORT
         run: |
-          cd "$(basename $PWD)/backend/app/"
-          tox -e py${{ matrix.config.tox }}
+          cd "$PWD/backend/app/"
+          tox -e lint -e py${{ matrix.config.tox }}
 #      - name: Upload coverage to Codecov
 #        uses: codecov/codecov-action@v1
 #        with:
