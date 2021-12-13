@@ -7,3 +7,6 @@ docker-stack.yml
 .coverage
 .pytest_cache
 /coverage.xml
+__pycache__
+/files/models/
+/files/backups/dump_03-12-2021_11_25_21.sql
