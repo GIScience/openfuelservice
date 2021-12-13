@@ -100,7 +100,9 @@ jobs:
           key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
       - name: Install dependencies
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
-        run: poetry install --no-interaction --no-root
+        run: |
+          cd "$PWD/backend/"
+          poetry install --no-interaction --no-root
       - name: Run tox
         env:
           DEBUGGING_CONFIG: "$PWD/backend/app/debug.env"
