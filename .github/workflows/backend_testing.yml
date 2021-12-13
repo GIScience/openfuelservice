@@ -46,8 +46,6 @@ jobs:
     services:
       queue:
         image: rabbitmq:3
-        ports:
-          - 9672:5672
       postgres:
         image: postgres:12
         env:
@@ -79,8 +77,8 @@ jobs:
           installer-parallel: true
       - name: Run tox
         env:
-          DEBUGGING_CONFIG: "$PWD/backend/app/debug.env"
-          CELERY_BROKER_URL: "amqp://guest@0.0.0.0:9672//"
+          DEBUGGING_CONFIG: "$PWD/backend/app/github.env"
+          CELERY_BROKER_URL: "amqp://guest@queue:5672//"
           POSTGRES_SERVER: postgres
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: dontchangethis
