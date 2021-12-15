@@ -89,6 +89,8 @@ jobs:
           POSTGRES_PORT: 5432
         run: |
           cd "$PWD/backend/"
+          ls -sahl "$DEBUGGING_CONFIG"
+          cat "$DEBUGGING_CONFIG"
           echo DEBUGGING_CONFIG="$DEBUGGING_CONFIG"
           echo CELERY_BROKER_URL="$CELERY_BROKER_URL"
           echo POSTGRES_SERVER="$POSTGRES_SERVER"
