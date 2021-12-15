@@ -78,7 +78,7 @@ jobs:
       - name: Set github.env
         run: echo "DEBUGGING_CONFIG=${GITHUB_WORKSPACE}/backend/github.env" >> $GITHUB_ENV
       - name: Test
-        run: echo $GITHUB_SHA_SHORT
+        run: echo $DEBUGGING_CONFIG
       - name: Run tox
         env:
           CELERY_BROKER_URL: "amqp://guest@queue:5672//"
