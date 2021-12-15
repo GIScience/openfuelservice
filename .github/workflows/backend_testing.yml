@@ -83,7 +83,7 @@ jobs:
       - name: Run tox
         env:
           CELERY_BROKER_URL: "amqp://guest@queue:5672//"
-          POSTGRES_SERVER: 0.0.0.0
+          POSTGRES_SERVER: localhost
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: dontchangethis
           POSTGRES_DB: test_db
