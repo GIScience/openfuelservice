@@ -1256,8 +1256,8 @@ lint = []
 
 [metadata]
 lock-version = "1.1"
-python-versions = ">=3.8,<=3.10"
-content-hash = "21961c03e1c5ff15d167f514c55b9ddbdf52ab7dede9202d4871608d0b24363f"
+python-versions = ">=3.8,<4"
+content-hash = "f8f40faee5cd9ebcf3820a4ec067a3998ee5b5113f7fcdc6bad1c3cd8f804404"
 
 [metadata.files]
 alembic = [

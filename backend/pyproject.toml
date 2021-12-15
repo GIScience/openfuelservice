@@ -5,7 +5,7 @@ description = ""
 authors = ["Julian Psotta <julianpsotta@gmail.com>"]
 
 [tool.poetry.dependencies]
-python = ">=3.8,<=3.10"
+python = ">=3.8,<4"
 inboard = { version = "^0.13.0", extras = ["fastapi"] }
 python-multipart = "^0.0.5"
 email-validator = "^1.0.5"
