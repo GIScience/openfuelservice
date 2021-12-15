@@ -77,7 +77,7 @@ jobs:
           installer-parallel: true
       - name: Run tox
         env:
-          DEBUGGING_CONFIG: "$GITHUB_WORKSPACE/backend/github.env"
+          DEBUGGING_CONFIG: "${{ env.GITHUB_WORKSPACE }}/backend/github.env"
           CELERY_BROKER_URL: "amqp://guest@queue:5672//"
           POSTGRES_SERVER: postgres
           POSTGRES_USER: postgres
