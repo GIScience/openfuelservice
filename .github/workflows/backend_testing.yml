@@ -96,12 +96,12 @@ jobs:
           cd "$PWD/backend/"
           ls -sahl "$DEBUGGING_CONFIG"
           cat "$DEBUGGING_CONFIG" >> $GITHUB_ENV
-          echo "CELERY_BROKER_URL=$GITHUB_CELERY_BROKER_URL" >> $GITHUB_ENV
-          echo "POSTGRES_SERVER=$GITHUB_POSTGRES_SERVER" >> $GITHUB_ENV
-          echo "POSTGRES_USER=$GITHUB_POSTGRES_USER" >> $GITHUB_ENV
-          echo "POSTGRES_PASSWORD=$GITHUB_POSTGRES_PASSWORD" >> $GITHUB_ENV
-          echo "POSTGRES_DB=$GITHUB_POSTGRES_DB" >> $GITHUB_ENV
-          echo "POSTGRES_PORT=$GITHUB_POSTGRES_PORT" >> $GITHUB_ENV
+          export CELERY_BROKER_URL="$GITHUB_CELERY_BROKER_URL"
+          export POSTGRES_SERVER="$GITHUB_POSTGRES_SERVER"
+          export POSTGRES_USER="$GITHUB_POSTGRES_USER"
+          export POSTGRES_PASSWORD="$GITHUB_POSTGRES_PASSWORD"
+          export POSTGRES_DB="$GITHUB_POSTGRES_DB"
+          export POSTGRES_PORT="$GITHUB_POSTGRES_PORT"
           export TOX_TESTENV_PASSENV=*
           poetry run tox -e pytest-github-${{ matrix.config.tox }}
 #      - name: Upload coverage to Codecov
