@@ -3,9 +3,14 @@
 .coverage
 .venv
 .tox
+.idea
+.mypy_cache
+.pytest_cache
+coverage.xml
 backend.dockerfile
 celeryworker.dockerfile
 debug.env
 debug_runner.py
 mypy.ini
 tox.ini
+files
