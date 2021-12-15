@@ -75,8 +75,8 @@ services:
       args:
         INSTALL_DEV: ${INSTALL_DEV-true}
         INSTALL_JUPYTER: ${INSTALL_JUPYTER-true}
-    volumes:
-      - ./backend:/app
+#    volumes:
+#      - ./backend:/app
     networks:
       - database
 
