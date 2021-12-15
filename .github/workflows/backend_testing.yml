@@ -47,12 +47,16 @@ jobs:
     services:
       queue:
         image: rabbitmq:3
+        ports:
+          - 5672:5672
       postgres:
         image: postgres:12
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: dontchangethis
           POSTGRES_DB: test_db
+        ports:
+          - 5432:5432
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
@@ -82,22 +86,22 @@ jobs:
         run: echo $DEBUGGING_CONFIG
       - name: Run tox
         env:
-          CELERY_BROKER_URL: "amqp://guest@queue:5672//"
-          POSTGRES_SERVER: localhost
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: dontchangethis
-          POSTGRES_DB: test_db
-          POSTGRES_PORT: 5432
+          GITHUB_CELERY_BROKER_URL: "amqp://guest@queue:5672//"
+          GITHUB_POSTGRES_SERVER: postgres
+          GITHUB_POSTGRES_USER: postgres
+          GITHUB_POSTGRES_PASSWORD: dontchangethis
+          GITHUB_POSTGRES_DB: test_db
+          GITHUB_POSTGRES_PORT: 5432
         run: |
           cd "$PWD/backend/"
           ls -sahl "$DEBUGGING_CONFIG"
           cat "$DEBUGGING_CONFIG" >> $GITHUB_ENV
-          echo "CELERY_BROKER_URL=$CELERY_BROKER_URL" >> $GITHUB_ENV
-          echo "POSTGRES_SERVER=$POSTGRES_SERVER" >> $GITHUB_ENV
-          echo "POSTGRES_USER=$POSTGRES_USER" >> $GITHUB_ENV
-          echo "POSTGRES_PASSWORD=$POSTGRES_PASSWORD" >> $GITHUB_ENV
-          echo "POSTGRES_DB=$POSTGRES_DB" >> $GITHUB_ENV
-          echo "POSTGRES_PORT=$POSTGRES_PORT" >> $GITHUB_ENV
+          echo "CELERY_BROKER_URL=$GITHUB_CELERY_BROKER_URL" >> $GITHUB_ENV
+          echo "POSTGRES_SERVER=$GITHUB_POSTGRES_SERVER" >> $GITHUB_ENV
+          echo "POSTGRES_USER=$GITHUB_POSTGRES_USER" >> $GITHUB_ENV
+          echo "POSTGRES_PASSWORD=$GITHUB_POSTGRES_PASSWORD" >> $GITHUB_ENV
+          echo "POSTGRES_DB=$GITHUB_POSTGRES_DB" >> $GITHUB_ENV
+          echo "POSTGRES_PORT=$GITHUB_POSTGRES_PORT" >> $GITHUB_ENV
           export TOX_TESTENV_PASSENV=*
           poetry run tox -e pytest-github-${{ matrix.config.tox }}
 #      - name: Upload coverage to Codecov
