@@ -13,7 +13,7 @@ requests = "^2.23.0"
 celery = "^4.4.2"
 passlib = {extras = ["bcrypt"], version = "^1.7.2"}
 tenacity = "^6.1.0"
-emails = "^0.5.15"
+emails = "^0.6"
 raven = "^6.10.0"
 jinja2 = "^2.11.2"
 alembic = "^1.4.2"
