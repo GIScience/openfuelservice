@@ -30,6 +30,6 @@ ENV PYTHONPATH=/app
 
 COPY ./worker-start.sh /worker-start.sh
 
-RUN chmod +x /worker-start.sh /app/tests-start.sh
+RUN chmod +x /worker-start.sh
 
 CMD ["bash", "/worker-start.sh"]
