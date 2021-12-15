@@ -79,7 +79,7 @@ jobs:
           installer-parallel: true
       - name: Run tox
         env:
-          DEBUGGING_CONFIG: "github.env"
+          DEBUGGING_CONFIG: "$GITHUB_WORKSPACE/backend/github.env"
           CELERY_BROKER_URL: "amqp://guest@queue:5672//"
           POSTGRES_SERVER: postgres
           POSTGRES_USER: postgres
@@ -89,13 +89,13 @@ jobs:
           TOX_TESTENV_PASSENV: DEBUGGING_CONFIG,CELERY_BROKER_URL,POSTGRES_SERVER,POSTGRES_USER,POSTGRES_PASSWORD,POSTGRES_DB,POSTGRES_PORT
         run: |
           cd "$PWD/backend/"
-          echo $DEBUGGING_CONFIG
-          echo $CELERY_BROKER_URL
-          echo $POSTGRES_SERVER
-          echo $POSTGRES_USER
-          echo $POSTGRES_PASSWORD
-          echo $POSTGRES_DB
-          echo $POSTGRES_PORT
+          echo DEBUGGING_CONFIG="$DEBUGGING_CONFIG"
+          echo CELERY_BROKER_URL="$CELERY_BROKER_URL"
+          echo POSTGRES_SERVER="$POSTGRES_SERVER"
+          echo POSTGRES_USER="$POSTGRES_USER"
+          echo POSTGRES_PASSWORD="$POSTGRES_PASSWORD"
+          echo POSTGRES_DB="$POSTGRES_DB"
+          echo POSTGRES_PORT="$POSTGRES_PORT"
           export TOX_TESTENV_PASSENV=DEBUGGING_CONFIG,CELERY_BROKER_URL,POSTGRES_SERVER,POSTGRES_USER,POSTGRES_PASSWORD,POSTGRES_DB,POSTGRES_PORT
           poetry run tox -e pytest-github-${{ matrix.config.tox }}
 #      - name: Upload coverage to Codecov
