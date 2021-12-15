@@ -65,6 +65,17 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.config.python-version }}
+      - name: echo-default-env-variables
+        run: |
+          echo "Home: ${HOME}"
+          echo "GITHUB_WORKFLOW: ${GITHUB_WORKFLOW}"
+          echo "GITHUB_ACTIONS: ${GITHUB_ACTIONS}"
+          echo "GITHUB_ACTOR: ${GITHUB_ACTOR}"
+          echo "GITHUB_REPOSITORY: ${GITHUB_REPOSITORY}"
+          echo "GITHUB_EVENT_NAME: ${GITHUB_EVENT_NAME}"
+          echo "GITHUB_WORKSPACE: ${GITHUB_WORKSPACE}"
+          echo "GITHUB_SHA: ${GITHUB_SHA}"
+          echo "GITHUB_REF: ${GITHUB_REF}"
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip tox
