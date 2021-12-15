@@ -10,6 +10,7 @@ coverage.xml
 backend.dockerfile
 celeryworker.dockerfile
 debug.env
+github.env
 debug_runner.py
 mypy.ini
 tox.ini
