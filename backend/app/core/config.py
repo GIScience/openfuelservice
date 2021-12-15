@@ -89,7 +89,6 @@ class Settings(BaseSettings):
         DEBUGGING_CONFIG: str = os.getenv("DEBUGGING_CONFIG", "")
         case_sensitive = True
         if DEBUGGING_CONFIG is not None and len(DEBUGGING_CONFIG):
-            print()
             env_file = DEBUGGING_CONFIG
 
 
