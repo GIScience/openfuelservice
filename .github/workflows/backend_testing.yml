@@ -29,6 +29,8 @@ jobs:
           cd "$PWD/backend/"
           poetry run tox -e lint
   test-docker:
+    needs:
+      - lint
     runs-on: ubuntu-20.04
     environment: docker-testing
     steps:
