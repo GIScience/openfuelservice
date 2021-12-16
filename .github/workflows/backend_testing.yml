@@ -43,18 +43,18 @@ jobs:
         id: buildx
         with:
           install: true
-      - name: Set github.env
-        run: echo "DEBUGGING_CONFIG=${GITHUB_WORKSPACE}/backend/github.env" >> $GITHUB_ENV
       - name: Clean the docker-compose environment
         run: |
           docker-compose down --volumes --rmi=all --remove-orphans
+      - name: Set github.env
+        run: |
+          echo "DEBUGGING_CONFIG=${GITHUB_WORKSPACE}/backend/github.env" >> $GITHUB_ENV
+          cat "$DEBUGGING_CONFIG" >> $GITHUB_ENV
       - name: Prepare
         id: prepare
         run: |
-          cat "$DEBUGGING_CONFIG" >> $GITHUB_ENV
-
-          DOCKER_BACKEND_IMAGE=$DOCKER_IMAGE_BACKEND
-          DOCKER_CELERY_IMAGE=$DOCKER_IMAGE_CELERYWORKER
+          DOCKER_BACKEND_IMAGE="$DOCKER_IMAGE_BACKEND"
+          DOCKER_CELERY_IMAGE="$DOCKER_IMAGE_CELERYWORKER"
           DOCKER_PLATFORMS=linux/amd64
 
           TAGS_BACKEND_TESTING="--tag ${DOCKER_BACKEND_IMAGE}:latest"
@@ -62,12 +62,12 @@ jobs:
 
           # Build normal backend
           echo ::set-output name=buildx_args_backend_testing::--platform ${DOCKER_PLATFORMS} \
-                      --build-arg BACKEND_APP_MODULE=$BACKEND_APP_MODULE \
-                      --build-arg BACKEND_PRE_START_PATH=$BACKEND_PRE_START_PATH \
-                      --build-arg BACKEND_PROCESS_MANAGER=$BACKEND_PROCESS_MANAGER \
-                      --build-arg BACKEND_WITH_RELOAD=$BACKEND_WITH_RELOAD \
-                      --build-arg INSTALL_DEV=$INSTALL_DEV \
-                      --build-arg INSTALL_JUPYTER=$INSTALL_JUPYTER \
+                      --build-arg BACKEND_APP_MODULE="$BACKEND_APP_MODULE" \
+                      --build-arg BACKEND_PRE_START_PATH="$BACKEND_PRE_START_PATH" \
+                      --build-arg BACKEND_PROCESS_MANAGER="$BACKEND_PROCESS_MANAGER" \
+                      --build-arg BACKEND_WITH_RELOAD="$BACKEND_WITH_RELOAD" \
+                      --build-arg INSTALL_DEV="$INSTALL_DEV" \
+                      --build-arg INSTALL_JUPYTER="$INSTALL_JUPYTER" \
                       ${DOCKER_BACKEND_IMAGE} ${GITHUB_WORKSPACE}/backend/Dockerfile
 
           # Build celery backend
