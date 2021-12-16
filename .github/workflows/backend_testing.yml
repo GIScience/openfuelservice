@@ -50,7 +50,9 @@ jobs:
         env:
           DOMAIN: localhost
           INSTALL_DEV: true
-        run: docker-compose up --build -d
+        run: |
+          docker-compose build --parallel
+          # docker-compose up --build -d
       - name: Sleep
         uses: jakejarvis/wait-action@master
         with:
