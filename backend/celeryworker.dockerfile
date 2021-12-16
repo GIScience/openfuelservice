@@ -32,6 +32,6 @@ COPY ./worker-start.sh /worker-start.sh
 
 RUN chmod +x /worker-start.sh
 
-RUN bash -c "if [ ! $INSTALL_DEV == 'true' ] ; then rm mypy.ini tox.ini ; fi"
+RUN bash -c "if [ ! $INSTALL_DEV == 'true' ] ; then rm -rf mypy.ini tox.ini ; fi"
 
 CMD ["bash", "/worker-start.sh"]

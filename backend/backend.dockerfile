@@ -24,4 +24,4 @@ RUN bash -c "if [ $INSTALL_JUPYTER == 'true' ] ; then pip install jupyterlab ; f
 COPY ./ /app
 ENV PYTHONPATH=/app
 
-RUN bash -c "if [ ! $INSTALL_DEV == 'true' ] ; then rm mypy.ini tox.ini ; fi"
+RUN bash -c "if [ ! $INSTALL_DEV == 'true' ] ; then rm -rf mypy.ini tox.ini ; fi"
