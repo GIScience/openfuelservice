@@ -68,15 +68,16 @@ jobs:
                       --build-arg BACKEND_WITH_RELOAD="$BACKEND_WITH_RELOAD" \
                       --build-arg INSTALL_DEV="$INSTALL_DEV" \
                       --build-arg INSTALL_JUPYTER="$INSTALL_JUPYTER" \
-                      ${DOCKER_BACKEND_IMAGE} ${GITHUB_WORKSPACE}/backend/Dockerfile
+                      ${DOCKER_BACKEND_IMAGE} .
 
           # Build celery backend
           echo ::set-output name=buildx_args_celery_testing::--platform ${DOCKER_PLATFORMS} \
                       --build-arg INSTALL_DEV=$INSTALL_DEV \
                       --build-arg INSTALL_JUPYTER=$INSTALL_JUPYTER \
-                      ${DOCKER_CELERY_IMAGE} ${GITHUB_WORKSPACE}/backend/Dockerfile
+                      ${DOCKER_CELERY_IMAGE} .
       - name: Build testing images
         run: |
+          cd ${GITHUB_WORKSPACE}/backend/
           docker buildx build --output "type=image,push=false" ${{ steps.prepare.outputs.buildx_args_backend_testing }}
           docker buildx build --output "type=image,push=false" ${{ steps.prepare.outputs.buildx_args_celery_testing }}
       - name: Build the docker-compose stack
