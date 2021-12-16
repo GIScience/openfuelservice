@@ -51,8 +51,6 @@ jobs:
       - name: Prepare
         id: prepare
         run: |
-          cd "$PWD/backend/"
-          ls -sahl "$DEBUGGING_CONFIG"
           cat "$DEBUGGING_CONFIG" >> $GITHUB_ENV
 
           DOCKER_BACKEND_IMAGE=$DOCKER_IMAGE_BACKEND
@@ -70,13 +68,13 @@ jobs:
                       --build-arg BACKEND_WITH_RELOAD=$BACKEND_WITH_RELOAD \
                       --build-arg INSTALL_DEV=$INSTALL_DEV \
                       --build-arg INSTALL_JUPYTER=$INSTALL_JUPYTER \
-                      ${DOCKER_BACKEND_IMAGE} .
+                      ${DOCKER_BACKEND_IMAGE} ${GITHUB_WORKSPACE}/backend/Dockerfile
 
           # Build celery backend
           echo ::set-output name=buildx_args_celery_testing::--platform ${DOCKER_PLATFORMS} \
                       --build-arg INSTALL_DEV=$INSTALL_DEV \
                       --build-arg INSTALL_JUPYTER=$INSTALL_JUPYTER \
-                      ${DOCKER_CELERY_IMAGE} .
+                      ${DOCKER_CELERY_IMAGE} ${GITHUB_WORKSPACE}/backend/Dockerfile
       - name: Build testing images
         run: |
           docker buildx build --output "type=image,push=false" ${{ steps.prepare.outputs.buildx_args_backend_testing }}
