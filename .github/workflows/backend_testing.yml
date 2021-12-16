@@ -48,7 +48,8 @@ jobs:
           docker-compose down --volumes --rmi=all --remove-orphans
       - name: Export github.env
         run: |
-          cat "${GITHUB_WORKSPACE}/backend/github.env" >> $GITHUB_ENV
+          # Strip empty lines and comments starting with #
+          cat "${GITHUB_WORKSPACE}/backend/debug.env" | sed '/^#/d;/^$/d' >> $GITHUB_ENV
       - name: Prepare
         id: prepare
         run: |
@@ -149,7 +150,9 @@ jobs:
           virtualenvs-in-project: true
           installer-parallel: true
       - name: Set github.env
-        run: echo "DEBUGGING_CONFIG=${GITHUB_WORKSPACE}/backend/github.env" >> $GITHUB_ENV
+        run: |
+          # Strip empty lines and comments starting with #
+          cat "${GITHUB_WORKSPACE}/backend/debug.env" | sed '/^#/d;/^$/d' >> $GITHUB_ENV
       - name: Run tox
         env:
           GITHUB_CELERY_BROKER_URL: "amqp://guest@localhost:5672//"
@@ -160,8 +163,6 @@ jobs:
           GITHUB_POSTGRES_PORT: 5432
         run: |
           cd "$PWD/backend/"
-          ls -sahl "$DEBUGGING_CONFIG"
-          cat "$DEBUGGING_CONFIG" >> $GITHUB_ENV
           export CELERY_BROKER_URL="$GITHUB_CELERY_BROKER_URL"
           export POSTGRES_SERVER="$GITHUB_POSTGRES_SERVER"
           export POSTGRES_USER="$GITHUB_POSTGRES_USER"
