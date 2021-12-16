@@ -77,13 +77,14 @@ jobs:
       - name: Build testing images
         run: |
           cd ${GITHUB_WORKSPACE}/backend/
-          docker buildx build --output "type=image,push=false" ${{ steps.prepare.outputs.buildx_args_backend_testing }}
-          docker buildx build --output "type=image,push=false" ${{ steps.prepare.outputs.buildx_args_celery_testing }}
+          docker buildx build --load --output "type=image,push=false" ${{ steps.prepare.outputs.buildx_args_backend_testing }}
+          docker buildx build --load --output "type=image,push=false" ${{ steps.prepare.outputs.buildx_args_celery_testing }}
       - name: Build the docker-compose stack
         env:
           DOMAIN: localhost
           INSTALL_DEV: true
         run: |
+          docker-compose build --pull
           docker-compose up -d
       - name: Sleep
         uses: jakejarvis/wait-action@master
