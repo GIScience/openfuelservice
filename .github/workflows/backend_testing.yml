@@ -95,7 +95,7 @@ jobs:
       - name: Run test suite natively in the docker container
         run: |
           docker ps -a
-          docker exec -it openfuelservice_backend_1  bash -c "python /app/app/backend_pre_start.py; alembic upgrade head; python /app/app/initial_data.py; pytest"
+          docker exec openfuelservice_backend_1  bash -c "python /app/app/backend_pre_start.py; alembic upgrade head; python /app/app/initial_data.py; pytest"
 
   linux-tests:
     needs:
