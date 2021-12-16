@@ -79,17 +79,17 @@ services:
         INSTALL_DEV: ${INSTALL_DEV-true}
         INSTALL_JUPYTER: ${INSTALL_JUPYTER-true}
 
-  frontend:
-#    volumes:
-#      - ./frontend:/app
-    build:
-      context: ./frontend
-      target: run-dev
-    labels:
-      - traefik.enable=true
-      - traefik.constraint-label-stack=${TRAEFIK_TAG?Variable not set}
-      - traefik.http.routers.${STACK_NAME?Variable not set}-frontend-http.rule=PathPrefix(`/`)
-      - traefik.http.services.${STACK_NAME?Variable not set}-frontend.loadbalancer.server.port=80
+#   frontend:
+# #    volumes:
+# #      - ./frontend:/app
+#     build:
+#       context: ./frontend
+#       target: run-dev
+#     labels:
+#       - traefik.enable=true
+#       - traefik.constraint-label-stack=${TRAEFIK_TAG?Variable not set}
+#       - traefik.http.routers.${STACK_NAME?Variable not set}-frontend-http.rule=PathPrefix(`/`)
+#       - traefik.http.services.${STACK_NAME?Variable not set}-frontend.loadbalancer.server.port=80
 
 networks:
   traefik-public:
