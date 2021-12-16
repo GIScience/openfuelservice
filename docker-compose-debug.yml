@@ -54,6 +54,8 @@ services:
       - database
   debug_celeryworker:
     image: "${DOCKER_IMAGE_CELERYWORKER?Variable not set}:${TAG-latest}"
+    entrypoint: /bin/bash
+    command: "/worker-start.sh"
     depends_on:
       - debug_database
       - debug_queue
@@ -71,7 +73,7 @@ services:
       - CELERY_BROKER_URL=amqp://guest@debug_queue//
     build:
       context: ./backend
-      dockerfile: celeryworker.dockerfile
+      dockerfile: Dockerfile
       args:
         INSTALL_DEV: true
         INSTALL_JUPYTER: ${INSTALL_JUPYTER-true}

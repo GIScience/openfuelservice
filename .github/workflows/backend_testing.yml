@@ -43,26 +43,59 @@ jobs:
         id: buildx
         with:
           install: true
+      - name: Set github.env
+        run: echo "DEBUGGING_CONFIG=${GITHUB_WORKSPACE}/backend/github.env" >> $GITHUB_ENV
       - name: Clean the docker-compose environment
         run: |
           docker-compose down --volumes --rmi=all --remove-orphans
+      - name: Prepare
+        id: prepare
+        run: |
+          cd "$PWD/backend/"
+          ls -sahl "$DEBUGGING_CONFIG"
+          cat "$DEBUGGING_CONFIG" >> $GITHUB_ENV
+
+          DOCKER_BACKEND_IMAGE=$DOCKER_IMAGE_BACKEND
+          DOCKER_CELERY_IMAGE=$DOCKER_IMAGE_CELERYWORKER
+          DOCKER_PLATFORMS=linux/amd64
+
+          TAGS_BACKEND_TESTING="--tag ${DOCKER_BACKEND_IMAGE}:latest"
+          TAGS_CELERY_TESTING="--tag ${DOCKER_CELERY_IMAGE}:latest"
+
+          # Build normal backend
+          echo ::set-output name=buildx_args_backend_testing::--platform ${DOCKER_PLATFORMS} \
+                      --build-arg BACKEND_APP_MODULE=$BACKEND_APP_MODULE \
+                      --build-arg BACKEND_PRE_START_PATH=$BACKEND_PRE_START_PATH \
+                      --build-arg BACKEND_PROCESS_MANAGER=$BACKEND_PROCESS_MANAGER \
+                      --build-arg BACKEND_WITH_RELOAD=$BACKEND_WITH_RELOAD \
+                      --build-arg INSTALL_DEV=$INSTALL_DEV \
+                      --build-arg INSTALL_JUPYTER=$INSTALL_JUPYTER \
+                      ${DOCKER_BACKEND_IMAGE} .
+
+          # Build celery backend
+          echo ::set-output name=buildx_args_celery_testing::--platform ${DOCKER_PLATFORMS} \
+                      --build-arg INSTALL_DEV=$INSTALL_DEV \
+                      --build-arg INSTALL_JUPYTER=$INSTALL_JUPYTER \
+                      ${DOCKER_CELERY_IMAGE} .
+      - name: Build testing images
+        run: |
+          docker buildx build --output "type=image,push=false" ${{ steps.prepare.outputs.buildx_args_backend_testing }}
+          docker buildx build --output "type=image,push=false" ${{ steps.prepare.outputs.buildx_args_celery_testing }}
       - name: Build the docker-compose stack
         env:
           DOMAIN: localhost
           INSTALL_DEV: true
         run: |
-          docker-compose build backend
-          docker-compose build celeryworker
-          # docker-compose up --build -d
+          docker-compose up -d
       - name: Sleep
         uses: jakejarvis/wait-action@master
         with:
           time: '60s'
       - name: Check running containers
         run: docker ps
-      - name: Run test suite
+      - name: Run test suite natively in the docker container
         run: |
-          docker exec -it openfuelservice-backend-1  bash -c "export TOX_TESTENV_PASSENV=* && tox -e pytest-github-py39"
+          docker exec -it openfuelservice-backend-1  bash -c "python /app/app/backend_pre_start.py; alembic upgrade head; python /app/app/initial_data.py; pytest"
 
   linux-tests:
     needs:

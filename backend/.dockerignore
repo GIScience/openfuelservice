@@ -7,8 +7,7 @@
 .mypy_cache
 .pytest_cache
 coverage.xml
-backend.dockerfile
-celeryworker.dockerfile
+Dockerfile
 debug.env
 github.env
 debug_runner.py

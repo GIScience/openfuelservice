@@ -21,5 +21,15 @@ RUN bash -c "if [ $INSTALL_DEV == 'true' ] ; then poetry install --no-root ; els
 ARG INSTALL_JUPYTER=false
 RUN bash -c "if [ $INSTALL_JUPYTER == 'true' ] ; then pip install jupyterlab ; fi"
 
+ENV C_FORCE_ROOT=0
+
 COPY ./ /app
+WORKDIR /app
+
 ENV PYTHONPATH=/app
+
+COPY ./worker-start.sh /worker-start.sh
+
+RUN chmod +x /worker-start.sh
+
+
