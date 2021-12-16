@@ -46,10 +46,9 @@ jobs:
       - name: Clean the docker-compose environment
         run: |
           docker-compose down --volumes --rmi=all --remove-orphans
-      - name: Set github.env
+      - name: Export github.env
         run: |
-          echo "DEBUGGING_CONFIG=${GITHUB_WORKSPACE}/backend/github.env" >> $GITHUB_ENV
-          cat "$DEBUGGING_CONFIG" >> $GITHUB_ENV
+          cat "${GITHUB_WORKSPACE}/backend/github.env" >> $GITHUB_ENV
       - name: Prepare
         id: prepare
         run: |
