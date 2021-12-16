@@ -149,10 +149,8 @@ jobs:
           virtualenvs-create: true
           virtualenvs-in-project: true
           installer-parallel: true
-      - name: Set .env
-        run: |
-          # Strip empty lines and comments starting with #
-          cat "${GITHUB_WORKSPACE}/backend/debug.env" | sed '/^#/d;/^$/d' >> $GITHUB_ENV
+      - name: Set DEBUGGING_CONFIG
+        run: echo "DEBUGGING_CONFIG=${GITHUB_WORKSPACE}/backend/debug.env" >> $GITHUB_ENV
       - name: Run tox
         env:
           GITHUB_CELERY_BROKER_URL: "amqp://guest@localhost:5672//"
@@ -163,6 +161,7 @@ jobs:
           GITHUB_POSTGRES_PORT: 5432
         run: |
           cd "$PWD/backend/"
+          cat "${GITHUB_WORKSPACE}/backend/debug.env" | sed '/^#/d;/^$/d' >> $GITHUB_ENV
           export CELERY_BROKER_URL="$GITHUB_CELERY_BROKER_URL"
           export POSTGRES_SERVER="$GITHUB_POSTGRES_SERVER"
           export POSTGRES_USER="$GITHUB_POSTGRES_USER"
