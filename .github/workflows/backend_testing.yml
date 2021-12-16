@@ -28,7 +28,7 @@ jobs:
         run: |
           cd "$PWD/backend/"
           poetry run tox -e lint
-  test-docker:
+  docker-testing:
     needs:
       - lint
     runs-on: ubuntu-20.04
@@ -99,7 +99,7 @@ jobs:
           docker ps -a
           docker exec openfuelservice_backend_1  bash -c "python /app/app/backend_pre_start.py; alembic upgrade head; python /app/app/initial_data.py; pytest"
 
-  linux-tests:
+  linux-testing:
     needs:
       - lint
     strategy:
