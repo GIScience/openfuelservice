@@ -89,11 +89,12 @@ jobs:
       - name: Sleep
         uses: jakejarvis/wait-action@master
         with:
-          time: '25s'
+          time: '10s'
       - name: Check running containers
         run: docker ps
       - name: Run test suite natively in the docker container
         run: |
+          docker ps -a
           docker exec -it openfuelservice-backend-1  bash -c "python /app/app/backend_pre_start.py; alembic upgrade head; python /app/app/initial_data.py; pytest"
 
   linux-tests:
