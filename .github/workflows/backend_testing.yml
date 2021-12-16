@@ -99,7 +99,7 @@ jobs:
           docker ps -a
           docker exec openfuelservice_backend_1  bash -c "python /app/app/backend_pre_start.py; alembic upgrade head; python /app/app/initial_data.py; pytest"
 
-  linux-testing:
+  backend-testing:
     needs:
       - lint
     strategy:
