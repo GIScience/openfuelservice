@@ -46,7 +46,7 @@ jobs:
       - name: Clean the docker-compose environment
         run: |
           docker-compose down --volumes --rmi=all --remove-orphans
-      - name: Export github.env
+      - name: Export .env
         run: |
           # Strip empty lines and comments starting with #
           cat "${GITHUB_WORKSPACE}/backend/debug.env" | sed '/^#/d;/^$/d' >> $GITHUB_ENV
@@ -149,7 +149,7 @@ jobs:
           virtualenvs-create: true
           virtualenvs-in-project: true
           installer-parallel: true
-      - name: Set github.env
+      - name: Set .env
         run: |
           # Strip empty lines and comments starting with #
           cat "${GITHUB_WORKSPACE}/backend/debug.env" | sed '/^#/d;/^$/d' >> $GITHUB_ENV
