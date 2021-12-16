@@ -84,6 +84,7 @@ jobs:
           DOMAIN: localhost
           INSTALL_DEV: true
         run: |
+          docker image ls
           docker-compose build --pull
           docker-compose up -d
       - name: Sleep
