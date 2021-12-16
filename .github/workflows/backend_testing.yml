@@ -89,7 +89,7 @@ jobs:
       - name: Sleep
         uses: jakejarvis/wait-action@master
         with:
-          time: '60s'
+          time: '25s'
       - name: Check running containers
         run: docker ps
       - name: Run test suite natively in the docker container
