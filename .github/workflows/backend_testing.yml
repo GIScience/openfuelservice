@@ -51,7 +51,8 @@ jobs:
           DOMAIN: localhost
           INSTALL_DEV: true
         run: |
-          docker-compose build --parallel
+          docker-compose build backend
+          docker-compose build celeryworker
           # docker-compose up --build -d
       - name: Sleep
         uses: jakejarvis/wait-action@master
