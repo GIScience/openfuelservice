@@ -1,17 +1,13 @@
-import logging
-
 from sqlalchemy import CHAR, Column, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 
 from app.db.base_class import Base
 
-logger = logging.getLogger(__package__)
-
 
 class WikiCar(Base):
     # WikiCarModel
     # wiki_car_table
-    hash_id = Column(CHAR(length=32), primary_key=True, unique=True)
+    hash_id = Column(CHAR(length=32), primary_key=True, index=True)
     wiki_name = Column(String, nullable=False, index=True)
     category_short_eu = Column(
         String,
@@ -34,9 +30,7 @@ class WikiCar(Base):
 class WikiCarCategory(Base):
     # CarCategoryModel
     # wikicarcategory
-    category_short_eu = Column(
-        String, primary_key=True, unique=True, nullable=False, index=True
-    )
+    category_short_eu = Column(String, primary_key=True, nullable=False, index=True)
     category_name_de = Column(String, unique=True, nullable=False, index=True)
     category_name_en = Column(String, unique=True, nullable=False, index=True)
 
@@ -46,10 +40,13 @@ class WikiCarCategory(Base):
     wiki_car_page_texts = relationship(
         "WikiCarPageText", backref="{}".format("wikicarcategory"), lazy="dynamic"
     )
-    # carfueldata_av_statistics = relationship('CarFuelDataAverageCategoryStatisticsModel',
-    #                                          backref='{}'.format(
-    #                                              wikicarcategory),
-    #                                          lazy='dynamic')
+
+    carfueldata_av_statistics = relationship(
+        "CarFuelDataAverageCategoryStatistics",
+        backref="{}".format("wikicarcategory"),
+        lazy="dynamic",
+    )
+
     # average_category_statistics = relationship('EnvirocarAverageCategoryStatisticsModel', backref='{}'.format(
     #     wikicarcategory),
     #                                            lazy='dynamic')
@@ -64,8 +61,7 @@ class WikiCarCategory(Base):
 class WikiCarPageText(Base):
     # WikiCarPageTextModel
     # wikicar_page_texts
-    id = Column(Integer, primary_key=True, index=True, unique=True)
-    hash_id = Column(CHAR(length=32), primary_key=True, unique=True)
+    hash_id = Column(CHAR(length=32), primary_key=True, index=True)
     wiki_name = Column(String, nullable=False, index=True)
     brand_name = Column(String, nullable=False, index=True)
     car_name = Column(String, nullable=False, index=True)
