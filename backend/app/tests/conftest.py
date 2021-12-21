@@ -4,12 +4,12 @@ from typing import Dict, Generator
 import pytest
 import pytest_alembic
 import sqlalchemy
-from alembic.config import Config
 from fastapi.testclient import TestClient
 from pytest_alembic.runner import MigrationContext
 from sqlalchemy.engine.base import Engine
 from sqlalchemy.orm import Session
 
+from alembic.config import Config
 from app import crud, schemas
 from app.core.config import settings
 from app.db.session import SessionLocal
@@ -91,7 +91,7 @@ def superuser_token_headers(client: TestClient, super_user: tuple) -> Dict[str, 
 
 @pytest.fixture(scope="function")
 def normal_user_token_headers(
-    client: TestClient, db: Session, normal_user: tuple
+        client: TestClient, db: Session, normal_user: tuple
 ) -> Dict[str, str]:
     return authentication_token_from_email(
         client=client, email=normal_user[0].email, db=db
