@@ -3,7 +3,6 @@ from sqlalchemy import VARCHAR, Column, Integer, String
 
 from app.db.base_class import Base
 
-
 # from typing import TYPE_CHECKING
 # if TYPE_CHECKING:
 #     from .item import Item  # noqa: F401
