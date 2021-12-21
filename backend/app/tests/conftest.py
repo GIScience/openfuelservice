@@ -91,7 +91,7 @@ def superuser_token_headers(client: TestClient, super_user: tuple) -> Dict[str, 
 
 @pytest.fixture(scope="function")
 def normal_user_token_headers(
-        client: TestClient, db: Session, normal_user: tuple
+    client: TestClient, db: Session, normal_user: tuple
 ) -> Dict[str, str]:
     return authentication_token_from_email(
         client=client, email=normal_user[0].email, db=db
