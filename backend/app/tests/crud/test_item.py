@@ -15,6 +15,8 @@ def test_create_item(db: Session) -> None:
     assert item.title == title
     assert item.description == description
     assert item.owner_id == user.id
+    crud.item.remove(db, id=item.id)
+    crud.user.remove(db, id=user.id)
 
 
 def test_get_item(db: Session) -> None:
@@ -29,6 +31,8 @@ def test_get_item(db: Session) -> None:
     assert item.title == stored_item.title
     assert item.description == stored_item.description
     assert item.owner_id == stored_item.owner_id
+    crud.item.remove(db, id=item.id)
+    crud.user.remove(db, id=user.id)
 
 
 def test_update_item(db: Session) -> None:
@@ -44,6 +48,8 @@ def test_update_item(db: Session) -> None:
     assert item.title == item2.title
     assert item2.description == description2
     assert item.owner_id == item2.owner_id
+    crud.item.remove(db, id=item.id)
+    crud.user.remove(db, id=user.id)
 
 
 def test_delete_item(db: Session) -> None:
