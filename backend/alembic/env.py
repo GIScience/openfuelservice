@@ -1,11 +1,11 @@
 from __future__ import with_statement
 
 import os
-from dotenv import load_dotenv
+from logging.config import fileConfig
 
 from alembic import context
+from dotenv import load_dotenv
 from sqlalchemy import engine_from_config, pool
-from logging.config import fileConfig
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -82,6 +82,7 @@ def run_migrations_online():
             connection=connection,
             target_metadata=target_metadata,
             compare_type=True,
+            compare_server_default = True
         )
 
         with context.begin_transaction():
