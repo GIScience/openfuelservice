@@ -7,6 +7,7 @@ from app.db.base_class import Base
 
 if TYPE_CHECKING:
     from .carfueldata import CarFuelDataAverageCategoryStatistics  # noqa: F401
+    from .envirocar import EnvirocarAverageCategoryStatistics  # noqa: F401
 
 
 class WikiCar(Base):
