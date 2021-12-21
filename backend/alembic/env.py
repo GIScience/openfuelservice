@@ -25,6 +25,17 @@ from app.db.base import Base  # noqa
 
 target_metadata = Base.metadata
 
+exclude_tables = config.get_section('alembic:exclude').get('tables', '').split(',')
+
+
+def include_object(object, name, type_, *args, **kwargs):
+    if type_ == "index":
+        if name.startswith('idx') and name.endswith('geom'):
+            return False
+        else:
+            return True
+    return not (type_ == 'table' and name in exclude_tables)
+
 
 def get_url():
     debugging_config: str = os.getenv("DEBUGGING_CONFIG", None)
@@ -56,6 +67,7 @@ def run_migrations_offline():
         target_metadata=target_metadata,
         literal_binds=True,
         compare_type=True,
+        include_object=include_object
     )
 
     with context.begin_transaction():
@@ -82,7 +94,8 @@ def run_migrations_online():
             connection=connection,
             target_metadata=target_metadata,
             compare_type=True,
-            compare_server_default = True
+            compare_server_default=True,
+            include_object=include_object
         )
 
         with context.begin_transaction():
