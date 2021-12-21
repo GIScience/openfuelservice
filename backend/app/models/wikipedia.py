@@ -46,11 +46,11 @@ class WikiCarCategory(Base):
         lazy="dynamic",
     )
 
-    # average_category_statistics = relationship(
-    #     "EnvirocarAverageCategoryStatisticsModel",
-    #     backref="{}".format(wikicarcategory),
-    #     lazy="dynamic",
-    # )
+    average_category_statistics = relationship(
+        "EnvirocarAverageCategoryStatistics",
+        backref="{}".format("wikicarcategory"),
+        lazy="dynamic",
+    )
 
 
 class WikiCarPageText(Base):
