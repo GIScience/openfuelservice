@@ -1,7 +1,12 @@
+from typing import TYPE_CHECKING
+
 from sqlalchemy import CHAR, Column, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 
 from app.db.base_class import Base
+
+if TYPE_CHECKING:
+    from .carfueldata import CarFuelDataAverageCategoryStatistics  # noqa: F401
 
 
 class WikiCar(Base):
@@ -19,12 +24,6 @@ class WikiCar(Base):
     car_name = Column(String, nullable=False, index=True)
     page_id = Column(Integer, nullable=True)
     page_language = Column(String, nullable=True)
-
-    def __repr__(self):
-        return "<car wiki name {}>".format(self.wiki_name)
-
-    def __hash__(self):
-        return hash(self.wiki_name)
 
 
 class WikiCarCategory(Base):
@@ -47,15 +46,11 @@ class WikiCarCategory(Base):
         lazy="dynamic",
     )
 
-    # average_category_statistics = relationship('EnvirocarAverageCategoryStatisticsModel', backref='{}'.format(
-    #     wikicarcategory),
-    #                                            lazy='dynamic')
-
-    def __repr__(self):
-        return "<category wiki {}>".format(self.category_short_eu)
-
-    def __hash__(self):
-        return hash(self.category_short_eu)
+    # average_category_statistics = relationship(
+    #     "EnvirocarAverageCategoryStatisticsModel",
+    #     backref="{}".format(wikicarcategory),
+    #     lazy="dynamic",
+    # )
 
 
 class WikiCarPageText(Base):
