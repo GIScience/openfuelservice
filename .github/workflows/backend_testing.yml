@@ -121,7 +121,7 @@ jobs:
         ports:
           - 5672:5672
       postgres:
-        image: postgres:12
+        image: postgis/postgis:12-3.1-alpine
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: dontchangethis
