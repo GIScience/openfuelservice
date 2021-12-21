@@ -1,0 +1,20 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.0.1
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+        exclude: |
+          (?x)()
+      - id: check-json
+      - id: forbid-new-submodules
+      - id: mixed-line-ending
+        args: [ '--fix=lf' ]
+        description: Forces to replace line ending by the UNIX 'lf' character.
+      - id: pretty-format-json
+        args: [ '--no-sort-keys' ]
+      - id: no-commit-to-branch
+        args: [ --branch, master ]
+      - id: no-commit-to-branch
+        args: [ --branch, master ]

@@ -31,5 +31,3 @@ ENV PYTHONPATH=/app
 COPY ./worker-start.sh /worker-start.sh
 
 RUN chmod +x /worker-start.sh
-
-
