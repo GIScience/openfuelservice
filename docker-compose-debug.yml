@@ -27,8 +27,6 @@ services:
       - "5051:5050"
   debug_flower:
     image: mher/flower:0.9.7
-    networks:
-      - default
     depends_on:
       - debug_queue
     env_file:
