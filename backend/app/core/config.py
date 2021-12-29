@@ -94,10 +94,10 @@ class Settings(BaseSettings):
     FILE_FOLDER: str = f"{script_location}/../../files"
 
     # category_list
-    CAR_CATEGORIES: Dict = None
+    CAR_CATEGORIES: Dict = {}
 
     @validator("CAR_CATEGORIES", pre=True)
-    def get_car_categories(cls, v: Optional[str], values: Dict[str, Any]):
+    def get_car_categories(cls, v: Optional[str], values: Dict[str, Any]) -> Dict:
         try:
             return yaml.safe_load(
                 open(
@@ -106,12 +106,13 @@ class Settings(BaseSettings):
             )
         except Exception:
             logger.error("Couldn't read car categories from file.")
+            return {}
 
     # car_brands
-    CAR_BRANDS: Dict = None
+    CAR_BRANDS: Dict = {}
 
     @validator("CAR_BRANDS", pre=True)
-    def get_car_brands(cls, v: Optional[str], values: Dict[str, Any]):
+    def get_car_brands(cls, v: Optional[str], values: Dict[str, Any]) -> Dict:
         try:
             return yaml.safe_load(
                 open(
@@ -120,12 +121,13 @@ class Settings(BaseSettings):
             )
         except Exception:
             logger.error("Couldn't car brands from file.")
+            return {}
 
     # fixed_matches
-    FIXED_MATCHES: Dict = None
+    FIXED_MATCHES: Dict = {}
 
     @validator("FIXED_MATCHES", pre=True)
-    def get_fixed_matches(cls, v: Optional[str], values: Dict[str, Any]):
+    def get_fixed_matches(cls, v: Optional[str], values: Dict[str, Any]) -> Dict:
         try:
             return yaml.safe_load(
                 open(
@@ -135,11 +137,12 @@ class Settings(BaseSettings):
             )
         except Exception:
             logger.error("Couldn't car brands from file.")
+            return {}
 
     # allowed_fuel_types
     ENABLED_FUEL_TYPES: List[str] = ["gasoline", "diesel"]
 
-    CARFUELDATA_URL: str = "https://carfueldata.vehicle-certification-agency.gov.uk/downloads/create_latest_data_csv.asp?id=6"
+    CARFUELDATA_URL: str = "https://carfueldata.vehicle-certification-agency.gov.uk/downloads/create_latest_data_csv.asp?id=6"  # noqa: E501
 
     class Config:
         DEBUGGING_CONFIG: str = os.getenv("DEBUGGING_CONFIG", "")

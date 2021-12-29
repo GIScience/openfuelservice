@@ -71,11 +71,11 @@ class CarFuelDataCar(Base):
     year = Column(Integer, nullable=True)
 
     @classmethod
-    def get_all_by_filter(cls, db: Session, filter_ids: []):
+    def get_all_by_filter(cls, db: Session, filter_ids: list) -> list:
         return db.query(cls.id).filter(cls.id.in_(filter_ids)).all()
 
-    def translate_import(self, cfd_import_car: CFDImportCar):
-        value: str
+    def translate_import(self, cfd_import_car: CFDImportCar) -> None:
+        value: float | bool | str | None
         key: str
         unwanted_chars = "!#$%^&*()"
         hash_string: str = ""
@@ -83,17 +83,17 @@ class CarFuelDataCar(Base):
             for unwantedChar in unwanted_chars:
                 key = key.strip().replace(unwantedChar, "_").replace(" ", "_")
             if type(value) == str and value.isdigit():
-                value: float = float(value)
+                value = float(value)
             elif type(value) == str and value.lower() in ["true", "yes", "no", "false"]:
-                value: bool = bool(value)
+                value = bool(value)
             elif type(value) == str and not len(value):
                 value = None
             self.__dict__[key] = value
-            hash_string = (
-                f"{hash_string}{str(key)}={str(value).strip()}"
-                if not isinstance(value, datetime.date)
-                else f"{hash_string}{str(key)}={value.strftime('%Y%m%d')}"
-            )
+            if isinstance(value, datetime.date):
+                hash_string = f"{hash_string}{str(key)}={value.strftime('%Y%m%d')}"
+            else:
+                hash_string = f"{hash_string}{str(key)}={str(value).strip()}"
+
         self.id = hashlib.md5(
             hash_string.casefold().strip(" ").encode("utf-8")
         ).hexdigest()

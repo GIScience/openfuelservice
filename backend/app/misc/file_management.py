@@ -8,8 +8,8 @@ import requests
 logger = logging.getLogger(__name__)
 
 
-def unzip_download(zip_file_path: Path, destination_folder: Path) -> []:
-    files = []
+def unzip_download(zip_file_path: Path, destination_folder: Path) -> list:
+    files: list = []
     try:
         if not zipfile.is_zipfile(zip_file_path):
             return []
@@ -146,12 +146,15 @@ def download_file_with_name(url: str, file_name: str, output_folder: Path) -> Pa
         :rtype: str
         """
     response = get_response(url)
+    if not response:
+        return Path("")
     try:
         with open(f"{output_folder}/{file_name}", "wb") as output:
             output.write(response.content)
         return Path(f"{output_folder}/{file_name}")
     except requests.ConnectionError as err:
         logger.error(f"Error downloading url: {url}.\nError: {err}")
+        return Path("")
 
 
 #
@@ -176,7 +179,7 @@ def download_file_with_name(url: str, file_name: str, output_folder: Path) -> Pa
 #         print(err)
 
 
-def get_response(url: str, timeout: int = 10) -> requests.Response:
+def get_response(url: str, timeout: int = 10) -> requests.Response | None:
     """
     Function to get content from an url.
     It's purpose is to control a global timeout value and to make sure threaded crawling isn't getting out of hand!
@@ -197,6 +200,7 @@ def get_response(url: str, timeout: int = 10) -> requests.Response:
             get_response(url=url)
         elif err == Exception:
             print(err)
+        return None
 
 
 # def get_header_link(response: requests.Response, first_url=False, next_url=False, last_url=False):

@@ -54,7 +54,7 @@ class CFDHeaderMapping(Enum):
     def from_value(cls, value: str) -> Enum | None:
         check_to_lower = value.casefold().strip()
         for header_value in CFDHeaderMapping:
-            value: str = header_value.value
+            value = header_value.value
             if check_to_lower == value.casefold().strip():
                 return header_value
         return None

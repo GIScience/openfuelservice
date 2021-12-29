@@ -1,4 +1,30 @@
 import logging
+from typing import Dict
+
+from app.core.config import settings
+
+logger = logging.getLogger(__name__)
+
+
+def check_manufacturer(manufacturer_to_check: str) -> str | None:
+    cleaned_manufacturer_to_check: str = manufacturer_to_check.casefold().strip()
+    aliases: Dict = settings.CAR_BRANDS.get("aliases", {})
+    brands: Dict = settings.CAR_BRANDS.get("brands", {})
+    manufacturer: str
+    for manufacturer in aliases:
+        if cleaned_manufacturer_to_check == manufacturer.casefold().strip():
+            return manufacturer
+        for sub_alias in aliases[manufacturer]:
+            if cleaned_manufacturer_to_check in sub_alias.casefold().strip():
+                return manufacturer
+    for manufacturer in brands:
+        if cleaned_manufacturer_to_check == manufacturer.casefold().strip():
+            return manufacturer
+        if manufacturer_to_check == manufacturer:
+            return manufacturer
+    logger.debug(f"Manufacturer: {manufacturer_to_check} not in known list.")
+    return None
+
 
 # def get_negative_brand_intents(brand_name_or_path: str or PosixPath) -> dict() or None:
 #     if type(brand_name_or_path) == PosixPath:
@@ -111,10 +137,6 @@ import logging
 #                 sentence_caps += ' ' + word
 #             return_list.append(sentence_caps.strip())
 #     return sorted(set(return_list))
-from app.core.config import settings
-
-logger = logging.getLogger(__name__)
-
 #
 # def save_fixed_brand_matches(manufacturer: str, wikiCarNames: [], uniqueCarName: str):
 #     originalFixedMatchesPath = basedir.joinpath('categories').joinpath('fixed_matches.yml')
@@ -212,28 +234,6 @@ logger = logging.getLogger(__name__)
 #     except Exception as err:
 #         print("Couldn't write json intent file:", intent_path.absolute())
 #         print(err)
-
-
-def check_manufacturer(manufacturer_to_check: str) -> str | None:
-    cleaned_manufacturer_to_check: str = manufacturer_to_check.casefold().strip()
-    aliases: {} = settings.CAR_BRANDS.get("aliases")
-    brands: {} = settings.CAR_BRANDS.get("brands")
-    manufacturer: str
-    for manufacturer in aliases:
-        if cleaned_manufacturer_to_check == manufacturer.casefold().strip():
-            return manufacturer
-        for sub_alias in aliases[manufacturer]:
-            if cleaned_manufacturer_to_check in sub_alias.casefold().strip():
-                return manufacturer
-    for manufacturer in brands:
-        if cleaned_manufacturer_to_check == manufacturer.casefold().strip():
-            return manufacturer
-        if manufacturer_to_check == manufacturer:
-            return manufacturer
-    logger.debug(f"Manufacturer: {manufacturer_to_check} not in known list.")
-    return None
-
-
 #
 # def clean_manufacturer_list(manufacturers_to_check: []) -> []:
 #     cleaned_list = []

@@ -23,6 +23,8 @@ python-dotenv = "^0.19.2"
 kombu = "^5.2.2"
 GeoAlchemy2 = "^0.9.4"
 tqdm = "^4.62.3"
+types-requests = "^2.26.3"
+types-PyYAML = "^6.0.1"
 
 [tool.poetry.dev-dependencies]
 mypy = "^0.910"

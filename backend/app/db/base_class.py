@@ -17,5 +17,5 @@ class Base:
         return cls.__name__.lower()
 
     @classmethod
-    def get_all_by_filter(cls, db: Session, filter_ids: []):
-        return cls.query().filter(cls.id.in_(filter_ids)).all()
+    def get_all_by_filter(cls, db: Session, filter_ids: list) -> list:
+        return cls.query().filter(cls.id.in_(filter_ids)).all()  # type: ignore

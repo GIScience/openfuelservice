@@ -1,5 +1,3 @@
-from enum import Enum
-
 import pytest
 
 from app.db.importer.mappings import FuelMappings
@@ -25,5 +23,4 @@ from app.db.importer.mappings import FuelMappings
 def test_from_fuel_type(
     fuel_type_to_check: str, fuel_type_to_get: FuelMappings
 ) -> None:
-    fuel_type: Enum = FuelMappings.from_fuel_type(fuel_type_to_check)
-    assert fuel_type == fuel_type_to_get
+    assert FuelMappings.from_fuel_type(fuel_type_to_check) == fuel_type_to_get

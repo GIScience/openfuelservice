@@ -5,7 +5,7 @@ from app.db.importer.mappings import CFDHeaderMapping
 
 
 class CFDImportCar:
-    def __init__(self):
+    def __init__(self) -> None:
         self.manufacturer = None
         self.model = None
         self.description = None
@@ -50,20 +50,19 @@ class CFDImportCar:
         self.rde_nox_combined = None
         self.noise_level_dba = None
         self.date_of_change = None
-        self._year = None
+        self._year: int = 0
         self.wiki_hashes = None
 
     @property
-    def year(self):
+    def year(self) -> int:
         return self._year
 
     @year.setter
-    def year(self, value: int):
+    def year(self, value: int) -> None:
         self._year = value
 
     @staticmethod
-    def _check_name_for_year(car_name: str) -> int or None:
-        # Only with latest cars. The data before have no date object and seldom a year in its name
+    def _check_name_for_year(car_name: str) -> int | None:
         import datetime
 
         now = datetime.datetime.now()
@@ -78,17 +77,17 @@ class CFDImportCar:
             else:
                 search_year -= 1
 
-    def __setattr__(self, key: str, value: Any):
+    def __setattr__(self, key: str, value: Any) -> None:
         if value is None or str(value).lower().strip() == "n/a":
             return
         elif key.lower().strip() == CFDHeaderMapping.DATE_OF_CHANGE.value.lower():
-            value: datetime = (datetime.strptime(value, "%d %B %Y"))
+            value: datetime = (datetime.strptime(value, "%d %B %Y"))  # type: ignore
             if "year" not in self.__dict__ or (
                 "year" in self.__dict__ and self.year is None
             ):
                 self.year = value.year
         elif key.lower().strip() == "year" and type(value) == str:
-            value: int = self._check_name_for_year(car_name=value)
+            value: int = self._check_name_for_year(car_name=value)  # type: ignore
         elif key in self.__dict__ and self.__dict__[key] is not None:
             return
         self.__dict__[key] = value

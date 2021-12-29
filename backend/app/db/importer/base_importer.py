@@ -1,4 +1,5 @@
 import logging
+from typing import Dict
 
 from sqlalchemy import exc
 from sqlalchemy.orm import Session
@@ -11,15 +12,15 @@ logger = logging.getLogger(__name__)
 
 class BaseImporter:
     def __init__(self, db: Session):
-        self.db = db
-        self._int_hashes = {}
+        self.db: Session = db
+        self._int_hashes: Dict = {}
 
     def fallback_importer(
         self, object_collection: list, merge_on_duplicate: bool = True
     ) -> None:
         """
-        Working as the general importer with a duplicate key check build in. If a duplicate exists it is removed from the
-        collection. If a key exists in the database the entry is merged, if set to true.
+        Working as the general importer with a duplicate key check build in. If a duplicate exists it is removed from
+        the collection. If a key exists in the database the entry is merged, if set to true.
 
         :param object_collection: collection of Database Models
         :param merge_on_duplicate: Set to ture to merge existing database objects.

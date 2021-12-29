@@ -2,24 +2,25 @@ import csv
 import logging
 import time
 from enum import Enum
+from pathlib import Path
+from typing import List
 
 from app.db.importer.base_reader import BaseReader
 from app.db.importer.carfueldata.cfd_objects import CFDImportCar
 from app.db.importer.mappings import CFDHeaderMapping
 from app.misc import file_management
-# LatestCars
 from app.misc.data_handling import check_manufacturer
 
 logger = logging.getLogger(__name__)
 
 
 class CarFuelDataReader(BaseReader):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
-        self.cfd_objects_list = list()
+        self.cfd_objects_list: List = []
 
-    def _process_data(self, zip_file):
-        files: [] = file_management.unzip_download(
+    def _process_data(self, zip_file: Path) -> None:
+        files: list = file_management.unzip_download(
             zip_file_path=zip_file, destination_folder=self.tempfolder
         )
         for cs_file in files:
@@ -53,21 +54,23 @@ class CarFuelDataReader(BaseReader):
                             setattr(cfd_object, key.value.casefold(), row[value])
                         self.cfd_objects_list.append(cfd_object)
 
-    def _fetch_data(self):
+    def _fetch_data(self) -> None:
         # Todo reanable after development
         # data_file = file_management.download_file_with_name(
         #     url=settings.CARFUELDATA_URL,
         #     file_name="latest_cfd_data.zip",
         #     output_folder=self.tempfolder,
         # )
-        data_file = "/home/jules/workspace/HeiGIT/openfuelservice/backend/files/Euro_6_latest_22-12-2021.zip"
+        data_file = Path(
+            "/home/jules/workspace/HeiGIT/openfuelservice/backend/files/Euro_6_latest_22-12-2021.zip"
+        )
         self._process_data(zip_file=data_file)
 
-    def fetch_data(self) -> []:
-        start_time = time.time()
+    def fetch_data(self) -> None:
+        start_time: float = time.time()
         print("Crawl Latest Car Fuel Data Objects")
         self._fetch_data()
-        end_time = time.time()
+        end_time: float = time.time()
         logger.info(
             f"Crawl-Result: {self.cfd_objects_list.__sizeof__()} Car Fuel Data Objects | {end_time - start_time} Seconds"
         )
