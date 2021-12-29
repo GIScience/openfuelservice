@@ -323,9 +323,6 @@ def downgrade():
         ),
     )
     op.alter_column(
-        "carfueldatacar", "engine_capacity", existing_type=sa.Integer(), nullable=False
-    )
-    op.alter_column(
         "carfueldatacar", "transmission", existing_type=sa.VARCHAR(), nullable=False
     )
     op.alter_column(
