@@ -1,4 +1,4 @@
-from .carfueldata import CarFuelDataAverageCategoryStatistics, CarfuelDataCar
+from .carfueldata import CarFuelDataAverageCategoryStatistics, CarFuelDataCar
 from .countrydata import CountryData
 from .envirocar import (
     EnvirocarAverageCategoryStatistics,

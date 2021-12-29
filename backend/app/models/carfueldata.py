@@ -1,46 +1,87 @@
-from sqlalchemy import ARRAY, CHAR, Column, Date, Float, ForeignKey, Integer, String
+import datetime
+import hashlib
+from sqlalchemy.orm import Session
+
+from sqlalchemy import ARRAY, CHAR, Column, Date, Float, ForeignKey, Integer, String, Boolean
 
 from app.db.base_class import Base
+from app.db.importer.carfueldata.cfd_objects import CFDImportCar
 
 
-class CarfuelDataCar(Base):
+class CarFuelDataCar(Base):
     # carfueldata_cars
     # CarfuelDataCarModel
     # id = hash_id
     id = Column(CHAR(length=32), primary_key=True)
     manufacturer = Column(String, nullable=False, index=True)
     model = Column(String, nullable=False)
-    description = Column(String, nullable=False)
-    transmission = Column(String, nullable=False)
-    engine_capacity = Column(String, nullable=False)
+    description = Column(String, nullable=True)
+    transmission = Column(String, nullable=True)
+    engine_capacity = Column(Integer, nullable=True)
     fuel_type = Column(String, nullable=False)
-    e_consumption_miles_per_kWh = Column(Float, nullable=True)
-    e_consumption_wh_per_km = Column(Float, nullable=True)
+    electric_energy_consumption_miles_kwh = Column(Float, nullable=True)
+    manual_or_automatic = Column(String, nullable=True)
+    powertrain = Column(String, nullable=True)
+    engine_power_ps = Column(Float, nullable=True)
+    engine_power_kw = Column(Float, nullable=True)
+    wh_km = Column(Float, nullable=True)
     maximum_range_km = Column(Float, nullable=True)
     maximum_range_miles = Column(Float, nullable=True)
-    metric_urban_cold = Column(Float, nullable=True)
-    metric_extra_urban = Column(Float, nullable=True)
-    metric_combined = Column(Float, nullable=True)
-    imperial_urban_cold = Column(Float, nullable=True)
-    imperial_extra_urban = Column(Float, nullable=True)
-    imperial_combined = Column(Float, nullable=True)
-    co2_g_per_km = Column(Float, nullable=True)
-    fuel_cost_6000_miles = Column(Float, nullable=True)
-    fuel_cost_12000_miles = Column(Float, nullable=True)
-    electricity_cost = Column(Float, nullable=True)
-    total_cost_per_12000_miles = Column(Float, nullable=True)
     euro_standard = Column(String, nullable=True)
-    noise_level_dB_a_ = Column(Float, nullable=True)
-    emissions_co_mg_per_km = Column(Float, nullable=True)
-    thc_emissions_mg_per_km = Column(Float, nullable=True)
-    emissions_nox_mg_per_km = Column(Float, nullable=True)
-    thc_plus_nox_emissions_mg_per_km = Column(Float, nullable=True)
-    particulates_no_mg_per_km = Column(Float, nullable=True)
-    rde_nox_urban = Column(Float, nullable=True)
-    rde_nox_combined = Column(Float, nullable=True)
-    date_of_change = Column(Date, nullable=False)
+    diesel_ved_supplement = Column(Boolean, nullable=True)
+    testing_scheme = Column(String, nullable=True)
+    wltp_imperial_low = Column(Float, nullable=True)
+    wltp_imperial_medium = Column(Float, nullable=True)
+    wltp_imperial_high = Column(Float, nullable=True)
+    wltp_imperial_extra_high = Column(Float, nullable=True)
+    wltp_imperial_combined = Column(Float, nullable=True)
+    wltp_imperial_combined_weighted = Column(Float, nullable=True)
+    wltp_metric_low = Column(Float, nullable=True)
+    wltp_metric_medium = Column(Float, nullable=True)
+    wltp_metric_high = Column(Float, nullable=True)
+    wltp_metric_extra_high = Column(Float, nullable=True)
+    wltp_metric_combined = Column(Float, nullable=True)
+    wltp_metric_combined_weighted = Column(Float, nullable=True)
+    wltp_co2 = Column(Integer, nullable=True)
+    wltp_co2_weighted = Column(Integer, nullable=True)
+    equivalent_all_electric_range_miles = Column(Integer, nullable=True)
+    equivalent_all_electric_range_km = Column(Integer, nullable=True)
+    electric_range_city_miles = Column(Integer, nullable=True)
+    electric_range_city_km = Column(Integer, nullable=True)
+    emissions_co_mg_km = Column(Float, nullable=True)
+    thc_emissions_mg_km = Column(Float, nullable=True)
+    emissions_nox_mg_km = Column(Float, nullable=True)
+    thc_nox_emissions_mg_km = Column(Float, nullable=True)
+    particulates_no_mg_km = Column(Float, nullable=True)
+    rde_nox_urban = Column(Integer, nullable=True)
+    rde_nox_combined = Column(Integer, nullable=True)
+    noise_level_dba = Column(Float, nullable=True)
     wiki_hashes = Column(ARRAY(CHAR(length=32)), nullable=True)
+    date_of_change = Column(Date, nullable=False)
     year = Column(Integer, nullable=True)
+
+    @classmethod
+    def get_all_by_filter(cls, db: Session, filter_ids: []):
+        return db.query(cls.id).filter(cls.id.in_(filter_ids)).all()
+
+    def translate_import(self, cfd_import_car: CFDImportCar):
+        value: str
+        key: str
+        unwanted_chars = "!#$%^&*()"
+        hash_string: str = ""
+        for key, value in cfd_import_car.__dict__.items():
+            for unwantedChar in unwanted_chars:
+                key = key.strip().replace(unwantedChar, '_').replace(" ", "_")
+            if type(value) == str and value.isdigit():
+                value: float = float(value)
+            elif type(value) == str and value.lower() in ['true', 'yes', 'no', 'false']:
+                value: bool = bool(value)
+            elif type(value) == str and not len(value):
+                value = None
+            self.__dict__[key] = value
+            hash_string = f"{hash_string}{str(key)}={str(value).strip()}" if not isinstance(value,
+                                                                                            datetime.date) else f"{hash_string}{str(key)}={value.strftime('%Y%m%d')}"
+        self.id = hashlib.md5(hash_string.casefold().strip(" ").encode('utf-8')).hexdigest()
 
 
 class CarFuelDataAverageCategoryStatistics(Base):

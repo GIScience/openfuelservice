@@ -25,7 +25,7 @@ def upgrade():
         sa.Column("model", sa.String(), nullable=False),
         sa.Column("description", sa.String(), nullable=False),
         sa.Column("transmission", sa.String(), nullable=False),
-        sa.Column("engine_capacity", sa.String(), nullable=False),
+        sa.Column("engine_capacity", sa.Integer(), nullable=False),
         sa.Column("fuel_type", sa.String(), nullable=False),
         sa.Column("e_consumption_miles_per_kWh", sa.Float(), nullable=True),
         sa.Column("e_consumption_wh_per_km", sa.Float(), nullable=True),
