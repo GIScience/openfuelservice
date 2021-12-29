@@ -3,10 +3,11 @@ from sqlalchemy.orm import Session
 from app import crud, schemas
 from app.core.config import settings
 from app.db import base  # noqa: F401
-
 # make sure all SQL Alchemy models are imported (app.db.base) before initializing DB
 # otherwise, SQL Alchemy might fail to initialize relationships properly
 # for more details: https://github.com/tiangolo/full-stack-fastapi-postgresql/issues/28
+from app.db.importer.carfueldata.cfd_importer import CarFuelDataImporter
+from app.db.importer.carfueldata.cfd_reader import CarFuelDataReader
 
 
 def init_db(db: Session) -> None:
@@ -23,3 +24,8 @@ def init_db(db: Session) -> None:
             is_superuser=True,
         )
         user = crud.user.create(db, obj_in=user_in)  # noqa: F841
+
+    # Get CFD data
+    cfd_reader = CarFuelDataReader()
+    cfd_reader.fetch_data()
+    CarFuelDataImporter(db=db).import_cfd_reader(cfd_reader=cfd_reader)
