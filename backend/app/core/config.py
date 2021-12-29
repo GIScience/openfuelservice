@@ -99,7 +99,11 @@ class Settings(BaseSettings):
     @validator("CAR_CATEGORIES", pre=True)
     def get_car_categories(cls, v: Optional[str], values: Dict[str, Any]):
         try:
-            return yaml.safe_load(open(f"{script_location}/../categories/categories.yml", encoding='utf-8'))
+            return yaml.safe_load(
+                open(
+                    f"{script_location}/../categories/categories.yml", encoding="utf-8"
+                )
+            )
         except Exception:
             logger.error("Couldn't read car categories from file.")
 
@@ -109,7 +113,11 @@ class Settings(BaseSettings):
     @validator("CAR_BRANDS", pre=True)
     def get_car_brands(cls, v: Optional[str], values: Dict[str, Any]):
         try:
-            return yaml.safe_load(open(f"{script_location}/../categories/car_brands.yml", encoding='utf-8'))
+            return yaml.safe_load(
+                open(
+                    f"{script_location}/../categories/car_brands.yml", encoding="utf-8"
+                )
+            )
         except Exception:
             logger.error("Couldn't car brands from file.")
 
@@ -119,7 +127,12 @@ class Settings(BaseSettings):
     @validator("FIXED_MATCHES", pre=True)
     def get_fixed_matches(cls, v: Optional[str], values: Dict[str, Any]):
         try:
-            return yaml.safe_load(open(f"{script_location}/../categories/fixed_matches.yml", encoding='utf-8'))
+            return yaml.safe_load(
+                open(
+                    f"{script_location}/../categories/fixed_matches.yml",
+                    encoding="utf-8",
+                )
+            )
         except Exception:
             logger.error("Couldn't car brands from file.")
 

@@ -1,8 +1,18 @@
 import datetime
 import hashlib
-from sqlalchemy.orm import Session
 
-from sqlalchemy import ARRAY, CHAR, Column, Date, Float, ForeignKey, Integer, String, Boolean
+from sqlalchemy import (
+    ARRAY,
+    CHAR,
+    Boolean,
+    Column,
+    Date,
+    Float,
+    ForeignKey,
+    Integer,
+    String,
+)
+from sqlalchemy.orm import Session
 
 from app.db.base_class import Base
 from app.db.importer.carfueldata.cfd_objects import CFDImportCar
@@ -71,17 +81,22 @@ class CarFuelDataCar(Base):
         hash_string: str = ""
         for key, value in cfd_import_car.__dict__.items():
             for unwantedChar in unwanted_chars:
-                key = key.strip().replace(unwantedChar, '_').replace(" ", "_")
+                key = key.strip().replace(unwantedChar, "_").replace(" ", "_")
             if type(value) == str and value.isdigit():
                 value: float = float(value)
-            elif type(value) == str and value.lower() in ['true', 'yes', 'no', 'false']:
+            elif type(value) == str and value.lower() in ["true", "yes", "no", "false"]:
                 value: bool = bool(value)
             elif type(value) == str and not len(value):
                 value = None
             self.__dict__[key] = value
-            hash_string = f"{hash_string}{str(key)}={str(value).strip()}" if not isinstance(value,
-                                                                                            datetime.date) else f"{hash_string}{str(key)}={value.strftime('%Y%m%d')}"
-        self.id = hashlib.md5(hash_string.casefold().strip(" ").encode('utf-8')).hexdigest()
+            hash_string = (
+                f"{hash_string}{str(key)}={str(value).strip()}"
+                if not isinstance(value, datetime.date)
+                else f"{hash_string}{str(key)}={value.strftime('%Y%m%d')}"
+            )
+        self.id = hashlib.md5(
+            hash_string.casefold().strip(" ").encode("utf-8")
+        ).hexdigest()
 
 
 class CarFuelDataAverageCategoryStatistics(Base):
