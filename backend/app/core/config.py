@@ -1,8 +1,14 @@
+import logging
 import os
+import pathlib
 import secrets
 from typing import Any, Dict, List, Optional, Union
 
+import yaml
 from pydantic import AnyHttpUrl, BaseSettings, EmailStr, HttpUrl, PostgresDsn, validator
+
+script_location = pathlib.Path(__file__).parent.resolve()
+logger = logging.getLogger(__name__)
 
 
 class Settings(BaseSettings):
@@ -84,6 +90,43 @@ class Settings(BaseSettings):
     USERS_OPEN_REGISTRATION: bool = False
 
     CELERY_BROKER_URL: str = "amqp://guest@queue//"
+
+    FILE_FOLDER: str = f"{script_location}/../../files"
+
+    # category_list
+    CAR_CATEGORIES: Dict = None
+
+    @validator("CAR_CATEGORIES", pre=True)
+    def get_car_categories(cls, v: Optional[str], values: Dict[str, Any]):
+        try:
+            return yaml.safe_load(open(f"{script_location}/../categories/categories.yml", encoding='utf-8'))
+        except Exception:
+            logger.error("Couldn't read car categories from file.")
+
+    # car_brands
+    CAR_BRANDS: Dict = None
+
+    @validator("CAR_BRANDS", pre=True)
+    def get_car_brands(cls, v: Optional[str], values: Dict[str, Any]):
+        try:
+            return yaml.safe_load(open(f"{script_location}/../categories/car_brands.yml", encoding='utf-8'))
+        except Exception:
+            logger.error("Couldn't car brands from file.")
+
+    # fixed_matches
+    FIXED_MATCHES: Dict = None
+
+    @validator("FIXED_MATCHES", pre=True)
+    def get_fixed_matches(cls, v: Optional[str], values: Dict[str, Any]):
+        try:
+            return yaml.safe_load(open(f"{script_location}/../categories/fixed_matches.yml", encoding='utf-8'))
+        except Exception:
+            logger.error("Couldn't car brands from file.")
+
+    # allowed_fuel_types
+    ENABLED_FUEL_TYPES: List[str] = ["gasoline", "diesel"]
+
+    CARFUELDATA_URL: str = "https://carfueldata.vehicle-certification-agency.gov.uk/downloads/create_latest_data_csv.asp?id=6"
 
     class Config:
         DEBUGGING_CONFIG: str = os.getenv("DEBUGGING_CONFIG", "")
