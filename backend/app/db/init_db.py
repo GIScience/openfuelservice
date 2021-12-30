@@ -3,8 +3,6 @@ from sqlalchemy.orm import Session
 from app import crud, schemas
 from app.core.config import settings
 from app.db import base  # noqa: F401
-from app.db.importer.carfueldata.cfd_importer import CarFuelDataImporter
-from app.db.importer.carfueldata.cfd_reader import CarFuelDataReader
 
 
 def init_db(db: Session) -> None:
