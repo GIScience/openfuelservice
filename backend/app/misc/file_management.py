@@ -1,4 +1,5 @@
 import logging
+import shutil
 import time
 import zipfile
 from pathlib import Path
@@ -20,10 +21,49 @@ def unzip_download(zip_file_path: Path, destination_folder: Path) -> list:
             zipObj.extractall(destination_folder)
     except FileNotFoundError:
         logger.warning(f"Couldn't open or unzip {zip_file_path.__str__()}")
-    except Exception as err:
+    except Exception as err:  # noqa
         logger.warning(f"Error while unzipping file {zip_file_path}\nError: {err}")
     finally:
         return files
+
+
+def download_file_with_name(
+    url_or_path: str, file_name: str, output_folder: Path
+) -> Path | FileNotFoundError:
+    """Downloads and stores a file. It will always be stored in the temp folder!!!
+        If the path is not an url but local path it will copy the file to the temp destination.
+
+        :param url_or_path: Url or Path in String format.
+        :param file_name: Name of the file to store the downloaded file to.
+        :param output_folder: Folder to download the file to.
+        :return: Absolute system path to the downloaded file or None
+        :rtype: str
+        """
+    try:
+        if "https://" in url_or_path:
+            response = get_response(url_or_path)
+            if not response:
+                return Path("")
+            with open(f"{output_folder}/{file_name}", "wb") as output:
+                output.write(response.content)
+            return Path(f"{output_folder}/{file_name}")
+        else:
+            path = Path(url_or_path)
+            path.open()
+            return Path(
+                shutil.copy(path, f"{output_folder}/{file_name}", follow_symlinks=True)
+            )
+    except requests.ConnectionError as err:  # noqa
+        logger.error(f"Error downloading url: {url_or_path}.\nError: {err}")
+        return Path("")
+    except FileNotFoundError as err:
+        logger.error(f"Error opening file: {url_or_path},\nError: {err}")
+        return err
+    except Exception as err:  # noqa
+        logger.error(
+            f'Unknown error while processing file or url {url_or_path},"Error: {err}'
+        )
+        return Path("")
 
 
 #
@@ -136,27 +176,6 @@ def unzip_download(zip_file_path: Path, destination_folder: Path) -> list:
 #         return Path('')
 
 
-def download_file_with_name(url: str, file_name: str, output_folder: Path) -> Path:
-    """Downloads and stores a file. It will always be stored in the temp folder!!!
-
-        :param url: Url in String format.
-        :param file_name: Name of the file to store the downloaded file to.
-        :param output_folder: Folder to download the file to.
-        :return: Absolute system path to the downloaded file or None
-        :rtype: str
-        """
-    response = get_response(url)
-    if not response:
-        return Path("")
-    try:
-        with open(f"{output_folder}/{file_name}", "wb") as output:
-            output.write(response.content)
-        return Path(f"{output_folder}/{file_name}")
-    except requests.ConnectionError as err:
-        logger.error(f"Error downloading url: {url}.\nError: {err}")
-        return Path("")
-
-
 #
 # def download_file(url: str) -> Path:
 #     """Downloads and stores a file. It will always be stored in the temp folder!!!
@@ -202,98 +221,97 @@ def get_response(url: str, timeout: int = 10) -> requests.Response | None:
             print(err)
         return None
 
-
-# def get_header_link(response: requests.Response, first_url=False, next_url=False, last_url=False):
-#     link = ""
-#     try:
-#         if next_url:
-#             link = response.links.get('next')['url']
-#             return link
-#         elif first_url:
-#             link = response.links.get('first')['url']
-#             return link
-#         elif last_url:
-#             link = response.links.get('last')['url']
-#             return link
-#     except Exception:
-#         pass
-#     return None
-#
-#
-# def delete_file(file: Path):
-#     if file.is_file():
-#         try:
-#             file.unlink()
-#         except FileNotFoundError as err:
-#             print(err)
-#
-#
-# def find_values_in_json(id: str, json_repr: str):
-#     def val(node):
-#         # Searches for the next Element Node containing Value
-#         e = node.nextSibling
-#         while e and e.nodeType != e.ELEMENT_NODE:
-#             e = e.nextSibling
-#         return (e.getElementsByTagName('string')[0].firstChild.nodeValue if e
-#                 else None)
-#         # parse the JSON as XML
-#
-#     foo_dom = parseString(client.dumps((json.loads(json_repr),)))
-#     # and then search all the name tags which are P1's
-#     # and use the val user function to get the value
-#     return [val(node) for node in foo_dom.getElementsByTagName('name')
-#             if node.firstChild.nodeValue in id]
-#
-#
-# def get_linked_json_content(url: str) -> dict:
-#     """
-#     The function will read the header rel links returned by the response and crawl until it reaches the end.
-#     The responses are extracted as json and after crawling returned --> combined of course!
-#     This is not designed for huge crawling --> Because it will only run on a single thread!
-#     The function is designed to work with json responses -> Measurements download.
-#
-#     :param url:
-#     :return:
-#     """
-#     # TODO finish here. Take the html header links in account!
-#     complete_content = dict()
-#     response = get_response(url=url)
-#     always_merger.merge(complete_content, response.json())
-#     complete_content.update(response.json())
-#     next_url = get_header_link(response=response, next_url=True)
-#     last_url = get_header_link(response=response, last_url=True)
-#     if next_url and last_url:
-#         while next_url:
-#             response = get_response(url=next_url)
-#             always_merger.merge(complete_content, response.json())
-#             next_url = get_header_link(response=response, next_url=True)
-#         response = get_response(last_url)
-#         always_merger.merge(complete_content, response.json())
-#     return complete_content
-#
-#
-# def test_xls(file: object) -> bool:
-#     """Tests whether the file is from format xls or not
-#
-#     :param file: xls File
-#     :return: Returns True or False
-#     :rtype: bool
-#     """
-#     try:
-#         book = open_workbook(file)
-#         return True
-#     except XLRDError as e:
-#         print(e)
-#         return False
-#
-#
-# def get_basename(filepath: object) -> str:
-#     """
-#     If a file was provided with a full path this function returns only the basename (filename).
-#     The reason for this function is it's os independency!
-#
-#     :param filepath: File path
-#     :return: Only the filename
-#     """
-#     head, tail = ntpath.split(filepath)
-#     return tail or ntpath.basename(head)
+    # def get_header_link(response: requests.Response, first_url=False, next_url=False, last_url=False):
+    #     link = ""
+    #     try:
+    #         if next_url:
+    #             link = response.links.get('next')['url']
+    #             return link
+    #         elif first_url:
+    #             link = response.links.get('first')['url']
+    #             return link
+    #         elif last_url:
+    #             link = response.links.get('last')['url']
+    #             return link
+    #     except Exception:
+    #         pass
+    #     return None
+    #
+    #
+    # def delete_file(file: Path):
+    #     if file.is_file():
+    #         try:
+    #             file.unlink()
+    #         except FileNotFoundError as err:
+    #             print(err)
+    #
+    #
+    # def find_values_in_json(id: str, json_repr: str):
+    #     def val(node):
+    #         # Searches for the next Element Node containing Value
+    #         e = node.nextSibling
+    #         while e and e.nodeType != e.ELEMENT_NODE:
+    #             e = e.nextSibling
+    #         return (e.getElementsByTagName('string')[0].firstChild.nodeValue if e
+    #                 else None)
+    #         # parse the JSON as XML
+    #
+    #     foo_dom = parseString(client.dumps((json.loads(json_repr),)))
+    #     # and then search all the name tags which are P1's
+    #     # and use the val user function to get the value
+    #     return [val(node) for node in foo_dom.getElementsByTagName('name')
+    #             if node.firstChild.nodeValue in id]
+    #
+    #
+    # def get_linked_json_content(url: str) -> dict:
+    #     """
+    #     The function will read the header rel links returned by the response and crawl until it reaches the end.
+    #     The responses are extracted as json and after crawling returned --> combined of course!
+    #     This is not designed for huge crawling --> Because it will only run on a single thread!
+    #     The function is designed to work with json responses -> Measurements download.
+    #
+    #     :param url:
+    #     :return:
+    #     """
+    #     # TODO finish here. Take the html header links in account!
+    #     complete_content = dict()
+    #     response = get_response(url=url)
+    #     always_merger.merge(complete_content, response.json())
+    #     complete_content.update(response.json())
+    #     next_url = get_header_link(response=response, next_url=True)
+    #     last_url = get_header_link(response=response, last_url=True)
+    #     if next_url and last_url:
+    #         while next_url:
+    #             response = get_response(url=next_url)
+    #             always_merger.merge(complete_content, response.json())
+    #             next_url = get_header_link(response=response, next_url=True)
+    #         response = get_response(last_url)
+    #         always_merger.merge(complete_content, response.json())
+    #     return complete_content
+    #
+    #
+    # def test_xls(file: object) -> bool:
+    #     """Tests whether the file is from format xls or not
+    #
+    #     :param file: xls File
+    #     :return: Returns True or False
+    #     :rtype: bool
+    #     """
+    #     try:
+    #         book = open_workbook(file)
+    #         return True
+    #     except XLRDError as e:
+    #         print(e)
+    #         return False
+    #
+    #
+    # def get_basename(filepath: object) -> str:
+    #     """
+    #     If a file was provided with a full path this function returns only the basename (filename).
+    #     The reason for this function is it's os independency!
+    #
+    #     :param filepath: File path
+    #     :return: Only the filename
+    #     """
+    #     head, tail = ntpath.split(filepath)
+    #     return tail or ntpath.basename(head)
