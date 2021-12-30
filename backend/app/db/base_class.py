@@ -7,7 +7,6 @@ from sqlalchemy.orm import Session
 @as_declarative()
 class Base:
     id: Any
-    #  hash_id = Column(CHAR(length=32), primary_key=True)
 
     __name__: str
 
