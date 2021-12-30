@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Any
+from typing import Any, Union
 
 from app.db.importer.mappings import CFDHeaderMapping
 
@@ -62,7 +62,7 @@ class CFDImportCar:
         self._year = value
 
     @staticmethod
-    def _check_name_for_year(car_name: str) -> int | None:
+    def _check_name_for_year(car_name: str) -> Union[int, None]:
         import datetime
 
         now = datetime.datetime.now()

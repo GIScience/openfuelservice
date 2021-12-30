@@ -1,5 +1,6 @@
 import logging
 from enum import Enum
+from typing import Union
 
 logger = logging.getLogger(__name__)
 
@@ -51,7 +52,7 @@ class CFDHeaderMapping(Enum):
     DATE_OF_CHANGE = "Date of change"
 
     @classmethod
-    def from_value(cls, value: str) -> Enum | None:
+    def from_value(cls, value: str) -> Union[Enum, None]:
         check_to_lower = value.casefold().strip()
         for header_value in CFDHeaderMapping:
             value = header_value.value
@@ -73,10 +74,10 @@ class FuelMappings(Enum):
     ELECTRIC: str = "Electricity"
 
     @classmethod
-    def from_fuel_type(cls, type_to_check: str) -> Enum | None:
+    def from_fuel_type(cls, type_to_check: str) -> Union[Enum, None]:
         check_to_lower = type_to_check.casefold().strip()
         for fuel_type in FuelMappings:
-            value: str | tuple = fuel_type.value
+            value: Union[str, tuple] = fuel_type.value
             if type(value) == str and check_to_lower == value.casefold().strip():
                 return fuel_type
             elif type(value) == tuple:

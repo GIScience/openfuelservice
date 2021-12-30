@@ -1,12 +1,12 @@
 import logging
-from typing import Dict
+from typing import Dict, Union
 
 from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
 
-def check_manufacturer(manufacturer_to_check: str) -> str | None:
+def check_manufacturer(manufacturer_to_check: str) -> Union[str, None]:
     cleaned_manufacturer_to_check: str = manufacturer_to_check.casefold().strip()
     aliases: Dict = settings.CAR_BRANDS.get("aliases", {})
     brands: Dict = settings.CAR_BRANDS.get("brands", {})

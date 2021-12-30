@@ -1,5 +1,6 @@
 import datetime
 import hashlib
+from typing import Union
 
 from sqlalchemy import (
     ARRAY,
@@ -75,7 +76,7 @@ class CarFuelDataCar(Base):
         return db.query(cls.id).filter(cls.id.in_(filter_ids)).all()
 
     def translate_import(self, cfd_import_car: CFDImportCar) -> None:
-        value: float | bool | str | None
+        value: Union[float, bool, str, None]
         key: str
         unwanted_chars = "!#$%^&*()"
         hash_string: str = ""

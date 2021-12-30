@@ -3,33 +3,36 @@ import shutil
 import time
 import zipfile
 from pathlib import Path
+from typing import List, Union
 
 import requests
 
 logger = logging.getLogger(__name__)
 
 
-def unzip_download(zip_file_path: Path, destination_folder: Path) -> list:
-    files: list = []
+def unzip_download(zip_file_path: Path, destination_folder: Path) -> List:
     try:
         if not zipfile.is_zipfile(zip_file_path):
-            return []
+            raise zipfile.BadZipFile
         with zipfile.ZipFile(zip_file_path, "r") as zipObj:
             files = zipObj.namelist()
             files = [f"{destination_folder}/{file}" for file in files]
             # Extract all the contents of zip file in current directory
             zipObj.extractall(destination_folder)
-    except FileNotFoundError:
+            return files
+    except zipfile.BadZipFile as err:
         logger.warning(f"Couldn't open or unzip {zip_file_path.__str__()}")
+        raise err
     except Exception as err:  # noqa
-        logger.warning(f"Error while unzipping file {zip_file_path}\nError: {err}")
-    finally:
-        return files
+        logger.warning(
+            f"Unknown error while unzipping file {zip_file_path}\nError: {err}"
+        )
+        raise err
 
 
 def download_file_with_name(
     url_or_path: str, file_name: str, output_folder: Path
-) -> Path | FileNotFoundError:
+) -> Path:
     """Downloads and stores a file. It will always be stored in the temp folder!!!
         If the path is not an url but local path it will copy the file to the temp destination.
 
@@ -55,15 +58,15 @@ def download_file_with_name(
             )
     except requests.ConnectionError as err:  # noqa
         logger.error(f"Error downloading url: {url_or_path}.\nError: {err}")
-        return Path("")
+        raise err
     except FileNotFoundError as err:
         logger.error(f"Error opening file: {url_or_path},\nError: {err}")
-        return err
+        raise err
     except Exception as err:  # noqa
         logger.error(
             f'Unknown error while processing file or url {url_or_path},"Error: {err}'
         )
-        return Path("")
+        raise err
 
 
 #
@@ -198,7 +201,7 @@ def download_file_with_name(
 #         print(err)
 
 
-def get_response(url: str, timeout: int = 10) -> requests.Response | None:
+def get_response(url: str, timeout: int = 10) -> Union[requests.Response, None]:
     """
     Function to get content from an url.
     It's purpose is to control a global timeout value and to make sure threaded crawling isn't getting out of hand!
