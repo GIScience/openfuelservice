@@ -91,7 +91,7 @@ class Settings(BaseSettings):
 
     CELERY_BROKER_URL: str = "amqp://guest@queue//"
 
-    FILE_FOLDER: str = f"{script_location}/../../files"
+    FILE_FOLDER: str = f"{script_location}/../files/"
 
     # category_list
     CAR_CATEGORIES: Dict = {}
@@ -101,7 +101,7 @@ class Settings(BaseSettings):
         try:
             return yaml.safe_load(
                 open(
-                    f"{script_location}/../categories/categories.yml", encoding="utf-8"
+                    f"{values['FILE_FOLDER']}/categories.yml", encoding="utf-8"
                 )
             )
         except Exception:
@@ -116,7 +116,7 @@ class Settings(BaseSettings):
         try:
             return yaml.safe_load(
                 open(
-                    f"{script_location}/../categories/car_brands.yml", encoding="utf-8"
+                    f"{values['FILE_FOLDER']}/car_brands.yml", encoding="utf-8"
                 )
             )
         except Exception:
@@ -131,7 +131,7 @@ class Settings(BaseSettings):
         try:
             return yaml.safe_load(
                 open(
-                    f"{script_location}/../categories/fixed_matches.yml",
+                    f"{values['FILE_FOLDER']}/fixed_matches.yml",
                     encoding="utf-8",
                 )
             )
@@ -142,7 +142,9 @@ class Settings(BaseSettings):
     # allowed_fuel_types
     ENABLED_FUEL_TYPES: List[str] = ["gasoline", "diesel"]
 
-    CARFUELDATA_URL: str = "https://carfueldata.vehicle-certification-agency.gov.uk/downloads/create_latest_data_csv.asp?id=6"  # noqa: E501
+    # CARFUELDATA_PATH_OR_URL: str = "https://carfueldata.vehicle-certification-agency.gov.uk/downloads/create_latest_data_csv.asp?id=6"  # noqa: E501
+    CARFUELDATA_PATH_OR_URL: str = f"{FILE_FOLDER}/Euro_6_latest_22-12-2021.zip"
+    CARFUELDATA_TEST_PATH_OR_URL: str = f"{FILE_FOLDER}/test_file.zip"
 
     class Config:
         DEBUGGING_CONFIG: str = os.getenv("DEBUGGING_CONFIG", "")
