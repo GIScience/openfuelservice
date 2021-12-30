@@ -21,8 +21,3 @@ def init_db(db: Session) -> None:
             is_superuser=True,
         )
         user = crud.user.create(db, obj_in=user_in)  # noqa: F841
-
-    # Get CFD data
-    cfd_reader = CarFuelDataReader()
-    cfd_reader.fetch_data()
-    CarFuelDataImporter(db=db).import_cfd_reader(cfd_reader=cfd_reader)
