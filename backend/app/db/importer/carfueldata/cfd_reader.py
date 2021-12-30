@@ -5,6 +5,7 @@ from enum import Enum
 from pathlib import Path
 from typing import List
 
+from app.core.config import settings
 from app.db.importer.base_reader import BaseReader
 from app.db.importer.carfueldata.cfd_objects import CFDImportCar
 from app.db.importer.mappings import CFDHeaderMapping
@@ -56,13 +57,10 @@ class CarFuelDataReader(BaseReader):
 
     def _fetch_data(self) -> None:
         # Todo reanable after development
-        # data_file = file_management.download_file_with_name(
-        #     url=settings.CARFUELDATA_URL,
-        #     file_name="latest_cfd_data.zip",
-        #     output_folder=self.tempfolder,
-        # )
-        data_file = Path(
-            "/home/jules/workspace/HeiGIT/openfuelservice/backend/files/Euro_6_latest_22-12-2021.zip"
+        data_file = file_management.download_file_with_name(
+            url_or_path=settings.CARFUELDATA_PATH_OR_URL,
+            file_name="latest_cfd_data.zip",
+            output_folder=self.tempfolder,
         )
         self._process_data(zip_file=data_file)
 
