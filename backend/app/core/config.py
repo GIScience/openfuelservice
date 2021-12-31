@@ -100,7 +100,9 @@ class Settings(BaseSettings):
     def get_car_categories(cls, v: Optional[str], values: Dict[str, Any]) -> Dict:
         try:
             return yaml.safe_load(
-                open(f"{values['FILE_FOLDER']}/internal/categories.yml", encoding="utf-8")
+                open(
+                    f"{values['FILE_FOLDER']}/internal/categories.yml", encoding="utf-8"
+                )
             )
         except Exception:
             logger.error("Couldn't read car categories from file.")
@@ -113,7 +115,9 @@ class Settings(BaseSettings):
     def get_car_brands(cls, v: Optional[str], values: Dict[str, Any]) -> Dict:
         try:
             return yaml.safe_load(
-                open(f"{values['FILE_FOLDER']}/internal/car_brands.yml", encoding="utf-8")
+                open(
+                    f"{values['FILE_FOLDER']}/internal/car_brands.yml", encoding="utf-8"
+                )
             )
         except Exception:
             logger.error("Couldn't car brands from file.")
@@ -126,7 +130,10 @@ class Settings(BaseSettings):
     def get_fixed_matches(cls, v: Optional[str], values: Dict[str, Any]) -> Dict:
         try:
             return yaml.safe_load(
-                open(f"{values['FILE_FOLDER']}/internal/fixed_matches.yml", encoding="utf-8",)
+                open(
+                    f"{values['FILE_FOLDER']}/internal/fixed_matches.yml",
+                    encoding="utf-8",
+                )
             )
         except Exception:
             logger.error("Couldn't car brands from file.")
