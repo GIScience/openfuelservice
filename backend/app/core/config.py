@@ -100,7 +100,7 @@ class Settings(BaseSettings):
     def get_car_categories(cls, v: Optional[str], values: Dict[str, Any]) -> Dict:
         try:
             return yaml.safe_load(
-                open(f"{values['FILE_FOLDER']}/categories.yml", encoding="utf-8")
+                open(f"{values['FILE_FOLDER']}/internal/categories.yml", encoding="utf-8")
             )
         except Exception:
             logger.error("Couldn't read car categories from file.")
@@ -113,7 +113,7 @@ class Settings(BaseSettings):
     def get_car_brands(cls, v: Optional[str], values: Dict[str, Any]) -> Dict:
         try:
             return yaml.safe_load(
-                open(f"{values['FILE_FOLDER']}/car_brands.yml", encoding="utf-8")
+                open(f"{values['FILE_FOLDER']}/internal/car_brands.yml", encoding="utf-8")
             )
         except Exception:
             logger.error("Couldn't car brands from file.")
@@ -126,7 +126,7 @@ class Settings(BaseSettings):
     def get_fixed_matches(cls, v: Optional[str], values: Dict[str, Any]) -> Dict:
         try:
             return yaml.safe_load(
-                open(f"{values['FILE_FOLDER']}/fixed_matches.yml", encoding="utf-8",)
+                open(f"{values['FILE_FOLDER']}/internal/fixed_matches.yml", encoding="utf-8",)
             )
         except Exception:
             logger.error("Couldn't car brands from file.")
@@ -136,8 +136,8 @@ class Settings(BaseSettings):
     ENABLED_FUEL_TYPES: List[str] = ["gasoline", "diesel"]
 
     # CARFUELDATA_PATH_OR_URL: str = "https://carfueldata.vehicle-certification-agency.gov.uk/downloads/create_latest_data_csv.asp?id=6"  # noqa: E501
-    CARFUELDATA_PATH_OR_URL: str = f"{FILE_FOLDER}/Euro_6_latest_22-12-2021.zip"
-    CARFUELDATA_TEST_PATH_OR_URL: str = f"{FILE_FOLDER}/test_file.zip"
+    CARFUELDATA_PATH_OR_URL: str = f"{FILE_FOLDER}/carfueldata/Euro_6_latest_22-12-2021.zip"
+    CARFUELDATA_TEST_PATH_OR_URL: str = f"{FILE_FOLDER}/test_data/test_file.zip"
 
     class Config:
         DEBUGGING_CONFIG: str = os.getenv("DEBUGGING_CONFIG", "")
