@@ -144,13 +144,19 @@ class Settings(BaseSettings):
 
     # CARFUELDATA_PATH_OR_URL: str = "https://carfueldata.vehicle-certification-agency.gov.uk/downloads/create_latest_data_csv.asp?id=6"  # noqa: E501
     CARFUELDATA_PATH_OR_URL: str = f"{FILE_FOLDER}/carfueldata/Euro_6_latest_22-12-2021.zip"
-    CARFUELDATA_TEST_PATH_OR_URL: str = f"{FILE_FOLDER}/test_data/test_file.zip"
+    CARFUELDATA_TEST_PATH_OR_URL: str = f"{FILE_FOLDER}/test_data/cfd_test_file.zip"
 
     class Config:
         DEBUGGING_CONFIG: str = os.getenv("DEBUGGING_CONFIG", "")
         case_sensitive = True
         if DEBUGGING_CONFIG is not None and len(DEBUGGING_CONFIG):
             env_file = DEBUGGING_CONFIG
+
+    # Country Data
+    COUNTRY_CODES_PATH: str = f"{FILE_FOLDER}/country/country_codes.csv"
+    COUNTRY_CODES_ATTRIBUTION: str = "Made with Natural Earth. Free vector and raster map data @ naturalearthdata.com"
+    COUNTRY_BOUNDARIES_PATH: str = f"{FILE_FOLDER}/country/TM_WORLD_BORDERS-0.3.zip"
+    COUNTRY_BOUNDARIES_ATTRIBUTION: str = "https://thematicmapping.org/downloads/world_borders.php"
 
 
 settings = Settings()
