@@ -31,7 +31,7 @@ def unzip_download(zip_file_path: Path, destination_folder: Path) -> List:
 
 
 def download_file_with_name(
-    url_or_path: str, file_name: str, output_folder: Path
+    url_or_path: Union[str, Path], file_name: str, output_folder: Path
 ) -> Path:
     """Downloads and stores a file. It will always be stored in the temp folder!!!
         If the path is not an url but local path it will copy the file to the temp destination.
@@ -43,7 +43,7 @@ def download_file_with_name(
         :rtype: str
         """
     try:
-        if "https://" in url_or_path:
+        if type(url_or_path) == str and "https://" in url_or_path:  # noqa
             response = get_response(url_or_path)
             if not response:
                 return Path("")

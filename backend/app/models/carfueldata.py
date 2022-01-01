@@ -1,6 +1,6 @@
 import hashlib
 from datetime import datetime
-from typing import Dict, List, Union
+from typing import Any, Dict, List, Union
 
 from sqlalchemy import (
     ARRAY,
@@ -96,7 +96,7 @@ class CarFuelDataCar(Base):
                 max_year -= 1
 
     def set_data(self, data: List, headers: Dict) -> None:
-        value: Union[float, bool, str, datetime.date, None]
+        value: Any
         key: CFDHeaderMapping
         unwanted_chars = "!#$%^&*()"
         hash_string: str = ""

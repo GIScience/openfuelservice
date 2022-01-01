@@ -3,7 +3,7 @@ from app.db.importer.carfueldata.cfd_reader import CarFuelDataReader
 from app.models import CarFuelDataCar
 
 
-def test_cfd_reader():
+def test_cfd_reader() -> None:
     cfd_test: CarFuelDataReader = CarFuelDataReader(
         settings.CARFUELDATA_TEST_PATH_OR_URL
     )

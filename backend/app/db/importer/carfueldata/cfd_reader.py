@@ -39,7 +39,7 @@ class CarFuelDataReader(BaseReader):
                     row: List[str]
                     for row in reader:
                         manufacturer: str = row[headers[CFDHeaderMapping.MANUFACTURER]]
-                        real_manufacturer: str = check_manufacturer(
+                        real_manufacturer: Union[str, None] = check_manufacturer(
                             manufacturer_to_check=manufacturer
                         )
                         if not real_manufacturer or not len(real_manufacturer):

@@ -15,16 +15,16 @@ class BaseReader:
     def __init__(self, file_to_read: Union[str, Path]) -> None:
         self._tempfolder: Path = Path(tempfile.mkdtemp())
         self.objects_list: List = []
-        self._file_to_read = file_to_read
+        self._file_to_read: Union[str, Path] = file_to_read
 
-    def _download_data(self, file_to_read: str):
+    def _download_data(self, file_to_read: Union[Path, str]) -> Path:
         return file_management.download_file_with_name(
             url_or_path=file_to_read,
             file_name=basename(file_to_read),
             output_folder=self._tempfolder,
         )
 
-    def _process_data(self, data_file: Path):  # noqa
+    def _process_data(self, data_file: Path) -> None:  # noqa
         logger.error("Base Reader process_data not defined. Override with a subclass.")
 
     def fetch_and_process_data(self) -> None:
