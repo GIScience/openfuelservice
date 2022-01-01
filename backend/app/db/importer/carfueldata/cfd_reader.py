@@ -1,7 +1,7 @@
 import csv
 import logging
 from pathlib import Path
-from typing import List, Union
+from typing import Dict, List, Union
 
 from app.db.importer.base_reader import BaseReader
 from app.db.importer.mappings import CFDHeaderMapping
@@ -25,8 +25,8 @@ class CarFuelDataReader(BaseReader):
                 with open(cs_file, encoding="cp1252") as f:
                     reader = csv.reader(f, dialect="excel")
                     header_row = reader.__next__()
-                    headers: dict = {}
-                    counter = 0
+                    headers: Dict = {}
+                    counter: int = 0
                     for h in header_row:
                         mapping = CFDHeaderMapping.from_value(h)
                         if mapping is not None:
