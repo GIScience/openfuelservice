@@ -98,7 +98,6 @@ class CarFuelDataCar(Base):
     def set_data(self, data: List, headers: Dict) -> None:
         value: Any
         key: CFDHeaderMapping
-        unwanted_chars = "!#$%^&*()"
         hash_string: str = ""
         for key, header_index in headers.items():
             value = data[header_index]
