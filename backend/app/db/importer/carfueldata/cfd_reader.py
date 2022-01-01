@@ -1,28 +1,24 @@
 import csv
 import logging
-import time
-from enum import Enum
 from pathlib import Path
-from typing import List
+from typing import List, Union
 
-from app.core.config import settings
 from app.db.importer.base_reader import BaseReader
-from app.db.importer.carfueldata.cfd_objects import CFDImportCar
 from app.db.importer.mappings import CFDHeaderMapping
 from app.misc import file_management
 from app.misc.data_handling import check_manufacturer
+from app.models import CarFuelDataCar
 
 logger = logging.getLogger(__name__)
 
 
 class CarFuelDataReader(BaseReader):
-    def __init__(self) -> None:
-        super().__init__()
-        self.cfd_objects_list: List = []
+    def __init__(self, file_to_read: Union[str, Path]) -> None:
+        super().__init__(file_to_read)
 
-    def _process_data(self, zip_file: Path) -> None:
+    def _process_data(self, data_file: Path) -> None:
         files: list = file_management.unzip_download(
-            zip_file_path=zip_file, destination_folder=self.tempfolder
+            zip_file_path=data_file, destination_folder=self._tempfolder
         )
         for cs_file in files:
             if cs_file.rsplit(".", 1)[-1] == "csv":
@@ -35,40 +31,20 @@ class CarFuelDataReader(BaseReader):
                         mapping = CFDHeaderMapping.from_value(h)
                         if mapping is not None:
                             headers[mapping] = counter
+                        else:
+                            logger.warning(
+                                f"Found Column name in CarFuelData dataset not known: {h}"
+                            )
                         counter += 1
+                    row: List[str]
                     for row in reader:
-                        manufacturer = row[headers[CFDHeaderMapping.MANUFACTURER]]
-                        real_manufacturer = check_manufacturer(
+                        manufacturer: str = row[headers[CFDHeaderMapping.MANUFACTURER]]
+                        real_manufacturer: str = check_manufacturer(
                             manufacturer_to_check=manufacturer
                         )
                         if not real_manufacturer or not len(real_manufacturer):
                             continue
-                        cfd_object = CFDImportCar()
-                        setattr(
-                            cfd_object,
-                            CFDHeaderMapping.MANUFACTURER.name.lower(),
-                            real_manufacturer,
-                        )
-                        key: Enum
-                        value: int
-                        for key, value in headers.items():
-                            setattr(cfd_object, key.value.casefold(), row[value])
-                        self.cfd_objects_list.append(cfd_object)
-
-    def _fetch_data(self) -> None:
-        # Todo reanable after development
-        data_file = file_management.download_file_with_name(
-            url_or_path=settings.CARFUELDATA_PATH_OR_URL,
-            file_name="latest_cfd_data.zip",
-            output_folder=self.tempfolder,
-        )
-        self._process_data(zip_file=data_file)
-
-    def fetch_data(self) -> None:
-        start_time: float = time.time()
-        print("Crawl Latest Car Fuel Data Objects")
-        self._fetch_data()
-        end_time: float = time.time()
-        logger.info(
-            f"Crawl-Result: {self.cfd_objects_list.__sizeof__()} Car Fuel Data Objects | {end_time - start_time} Seconds"
-        )
+                        row[headers[CFDHeaderMapping.MANUFACTURER]] = real_manufacturer
+                        cfd_object = CarFuelDataCar()
+                        cfd_object.set_data(data=row, headers=headers)
+                        self.objects_list.append(cfd_object)

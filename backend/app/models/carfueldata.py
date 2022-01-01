@@ -1,6 +1,6 @@
-import datetime
 import hashlib
-from typing import Union
+from datetime import datetime
+from typing import Dict, List, Union
 
 from sqlalchemy import (
     ARRAY,
@@ -16,7 +16,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import Session
 
 from app.db.base_class import Base
-from app.db.importer.carfueldata.cfd_objects import CFDImportCar
+from app.db.importer.mappings import CFDHeaderMapping
 
 
 class CarFuelDataCar(Base):
@@ -72,28 +72,65 @@ class CarFuelDataCar(Base):
     year = Column(Integer, nullable=True)
 
     @classmethod
-    def get_all_by_filter(cls, db: Session, filter_ids: list) -> list:
-        return db.query(cls.id).filter(cls.id.in_(filter_ids)).all()
+    def get_all_by_filter(
+        cls, db: Session, filter_ids: list, id_only: bool = False
+    ) -> list:
+        if id_only:
+            return db.query(cls.id).filter(cls.id.in_(filter_ids)).all()
+        else:
+            return db.query(cls).filter(cls.id.in_(filter_ids)).all()
 
-    def translate_import(self, cfd_import_car: CFDImportCar) -> None:
-        value: Union[float, bool, str, None]
-        key: str
+    @staticmethod
+    def _check_name_for_year(car_name: str) -> Union[int, None]:
+        import datetime
+
+        now = datetime.datetime.now()
+        max_year = int(now.year)
+        min_year = 1980
+        while True:
+            if max_year < min_year:
+                return None
+            elif str(max_year) in car_name:
+                return max_year
+            else:
+                max_year -= 1
+
+    def set_data(self, data: List, headers: Dict) -> None:
+        value: Union[float, bool, str, datetime.date, None]
+        key: CFDHeaderMapping
         unwanted_chars = "!#$%^&*()"
         hash_string: str = ""
-        for key, value in cfd_import_car.__dict__.items():
-            for unwantedChar in unwanted_chars:
-                key = key.strip().replace(unwantedChar, "_").replace(" ", "_")
-            if type(value) == str and value.isdigit():
+        for key, header_index in headers.items():
+            value = data[header_index]
+            if value is None or str(value).lower().strip() == "n/a" or key is None:
+                value = None
+            elif key == CFDHeaderMapping.DATE_OF_CHANGE:
+                value: datetime = (datetime.strptime(value, "%d %B %Y"))  # type: ignore
+                if "year" not in self.__dict__.keys() or (
+                    "year" in self.__dict__.keys() and self.__dict__.get("year") is None
+                ):
+                    self.__setattr__("year", value.year)
+            elif key == CFDHeaderMapping.MODEL and type(value) == str:
+                if value == "Model X":
+                    print()
+                year: int = self._check_name_for_year(car_name=value)  # type: ignore
+                if year:
+                    self.__setattr__("year", year)
+            elif type(value) == str and not len(value):
+                value = None
+            elif type(value) == str and value.isdigit():
                 value = float(value)
             elif type(value) == str and value.lower() in ["true", "yes", "no", "false"]:
                 value = bool(value)
-            elif type(value) == str and not len(value):
-                value = None
-            self.__dict__[key] = value
-            if isinstance(value, datetime.date):
-                hash_string = f"{hash_string}{str(key)}={value.strftime('%Y%m%d')}"
+            self.__setattr__(key.name.lower(), value)
+            if isinstance(value, datetime):
+                hash_string = (
+                    f"{hash_string}{str(key.name.lower())}={value.strftime('%Y%m%d')}"
+                )
             else:
-                hash_string = f"{hash_string}{str(key)}={str(value).strip()}"
+                hash_string = (
+                    f"{hash_string}{str(key.name.lower())}={str(value).strip()}"
+                )
 
         self.id = hashlib.md5(
             hash_string.casefold().strip(" ").encode("utf-8")
