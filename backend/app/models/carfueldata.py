@@ -71,15 +71,6 @@ class CarFuelDataCar(Base):
     date_of_change = Column(Date, nullable=False)
     year = Column(Integer, nullable=True)
 
-    @classmethod
-    def get_all_by_filter(
-        cls, db: Session, filter_ids: list, id_only: bool = False
-    ) -> list:
-        if id_only:
-            return db.query(cls.id).filter(cls.id.in_(filter_ids)).all()
-        else:
-            return db.query(cls).filter(cls.id.in_(filter_ids)).all()
-
     @staticmethod
     def _check_name_for_year(car_name: str) -> Union[int, None]:
         import datetime
@@ -106,7 +97,7 @@ class CarFuelDataCar(Base):
             elif key == CFDHeaderMapping.DATE_OF_CHANGE:
                 value: datetime = (datetime.strptime(value, "%d %B %Y"))  # type: ignore
                 if "year" not in self.__dict__.keys() or (
-                    "year" in self.__dict__.keys() and self.__dict__.get("year") is None
+                        "year" in self.__dict__.keys() and self.__dict__.get("year") is None
                 ):
                     self.__setattr__("year", value.year)
             elif key == CFDHeaderMapping.MODEL and type(value) == str:

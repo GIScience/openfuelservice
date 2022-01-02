@@ -18,8 +18,11 @@ class Base:
         return cls.__name__.lower()
 
     @classmethod
-    def get_all_by_filter(cls, db: Session, filter_ids: list) -> list:
-        return cls.query().filter(cls.id.in_(filter_ids)).all()  # type: ignore
+    def get_all_by_filter(cls, db: Session, filter_ids: list, id_only: bool = False) -> list:
+        if id_only:
+            return db.query(cls.id).filter(cls.id.in_(filter_ids)).all()
+        else:
+            return db.query(cls).filter(cls.id.in_(filter_ids)).all()
 
     def set_data(self, data: List, headers: Dict) -> None:
         value: Any
