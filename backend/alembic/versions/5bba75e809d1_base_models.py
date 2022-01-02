@@ -1,8 +1,8 @@
 """Base Models
 
-Revision ID: 7bc5a1bb4a28
+Revision ID: 5bba75e809d1
 Revises:
-Create Date: 2021-12-29 15:00:25.258161
+Create Date: 2022-01-02 21:40:10.408238
 
 """
 import sqlalchemy as sa
@@ -11,7 +11,7 @@ from geoalchemy2 import Geometry
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision = "7bc5a1bb4a28"
+revision = "5bba75e809d1"
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -78,6 +78,7 @@ def upgrade():
     )
     op.create_table(
         "countrydata",
+        sa.Column("id", sa.String(), nullable=False),
         sa.Column("country_name", sa.String(), nullable=False),
         sa.Column("country_alpha_2", sa.String(), nullable=True),
         sa.Column("country_alpha_3", sa.VARCHAR(), nullable=True),
@@ -94,7 +95,7 @@ def upgrade():
             ),
             nullable=True,
         ),
-        sa.PrimaryKeyConstraint("country_name"),
+        sa.PrimaryKeyConstraint("id", "country_name"),
     )
     op.create_index(
         op.f("ix_countrydata_country_alpha_2"),
@@ -132,6 +133,7 @@ def upgrade():
         ["country_numeric"],
         unique=False,
     )
+    op.create_index(op.f("ix_countrydata_id"), "countrydata", ["id"], unique=False)
     op.create_table(
         "envirocarphenomenon",
         sa.Column("name", sa.String(), nullable=False),
@@ -926,6 +928,7 @@ def downgrade():
     op.drop_table("envirocarsensor")
     op.drop_index(op.f("ix_envirocarphenomenon_name"), table_name="envirocarphenomenon")
     op.drop_table("envirocarphenomenon")
+    op.drop_index(op.f("ix_countrydata_id"), table_name="countrydata")
     op.drop_index(op.f("ix_countrydata_country_numeric"), table_name="countrydata")
     op.drop_index(op.f("ix_countrydata_country_name"), table_name="countrydata")
     op.drop_index(
