@@ -13,7 +13,6 @@ from sqlalchemy import (
     Integer,
     String,
 )
-from sqlalchemy.orm import Session
 
 from app.db.base_class import Base
 from app.db.importer.mappings import CFDHeaderMapping
@@ -97,7 +96,7 @@ class CarFuelDataCar(Base):
             elif key == CFDHeaderMapping.DATE_OF_CHANGE:
                 value: datetime = (datetime.strptime(value, "%d %B %Y"))  # type: ignore
                 if "year" not in self.__dict__.keys() or (
-                        "year" in self.__dict__.keys() and self.__dict__.get("year") is None
+                    "year" in self.__dict__.keys() and self.__dict__.get("year") is None
                 ):
                     self.__setattr__("year", value.year)
             elif key == CFDHeaderMapping.MODEL and type(value) == str:
