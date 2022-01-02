@@ -13,6 +13,7 @@ if TYPE_CHECKING:
 class CountryData(Base):
     # CountryDataModel
     # countries_table
+    id = Column(String, primary_key=True, index=True)
     country_name = Column(String, primary_key=True, index=True)
     country_alpha_2 = Column(String, unique=True, nullable=True, index=True)
     country_alpha_3 = Column(VARCHAR, unique=True, index=True, nullable=True)

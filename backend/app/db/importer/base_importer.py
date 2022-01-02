@@ -7,7 +7,8 @@ from sqlalchemy.orm.exc import FlushError
 from tqdm import tqdm
 
 from app.db.importer.carfueldata.cfd_reader import CarFuelDataReader
-from app.models import CarFuelDataCar
+from app.db.importer.countries.countries_reader import CountryCodesReader
+from app.models import CarFuelDataCar, CountryData
 
 logger = logging.getLogger(__name__)
 
@@ -18,14 +19,18 @@ class BaseImporter:
         self._int_hashes: Dict = {}
         self._object_collection: List = []
 
-    def import_data(self, reader_object: Union[CarFuelDataReader]) -> None:
-        for cfd_car_object in tqdm(
+    def import_data(
+        self, reader_object: Union[CarFuelDataReader, CountryCodesReader]
+    ) -> None:
+        for database_object in tqdm(
             reader_object.objects_list,
             total=len(reader_object.objects_list),
             unit=f"Importing Database Objects for class {self.__class__}",
         ):
-            if type(cfd_car_object) == CarFuelDataCar:
-                self._object_collection.append(cfd_car_object)
+            if type(database_object) == CarFuelDataCar:
+                self._object_collection.append(database_object)
+            elif type(database_object) == CountryData:
+                self._object_collection.append(database_object)
         self._fallback_importer()
 
     def _fallback_importer(self, merge_on_duplicate: bool = True) -> None:
@@ -39,7 +44,9 @@ class BaseImporter:
         db_object_hashes: set = set()
         for i in range(len(self._object_collection) - 1, -1, -1):
             db_object: CarFuelDataCar = self._object_collection[i]
-            if db_object.id not in db_object_hashes:
+            if not db_object.__dict__.__contains__("id"):
+                continue
+            elif db_object.id not in db_object_hashes:
                 db_object_hashes.add(db_object.id)
             else:
                 self._object_collection.pop(i)
