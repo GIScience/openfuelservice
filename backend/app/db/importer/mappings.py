@@ -5,7 +5,31 @@ from typing import Union
 logger = logging.getLogger(__name__)
 
 
-class CFDHeaderMapping(Enum):
+class BaseMapping(Enum):
+    @classmethod
+    def from_value(cls, value: str) -> Union[Enum, None]:
+        check_to_lower = value.casefold().strip()
+        for header_value in cls:
+            value = header_value.value
+            if type(value) == tuple:
+                for sub_value in value:
+                    if check_to_lower == sub_value.casefold().strip():
+                        return header_value
+            elif check_to_lower == value.casefold().strip():
+                return header_value
+        return None
+
+
+class CountriesMapping(BaseMapping):
+    COUNTRY_NAME = "CLDR display name"
+    COUNTRY_ALPHA_2 = "ISO3166-1-Alpha-2", "ISO2"
+    COUNTRY_ALPHA_3 = "ISO3166-1-Alpha-3", "ISO3"
+    COUNTRY_NUMERIC = "ISO3166-1-numeric"
+    COUNTRY_CURRENCY_CODE = "ISO4217-currency_alphabetic_code"
+    COUNTRY_CURRENCY_NAME = "ISO4217-currency_name"
+
+
+class CFDHeaderMapping(BaseMapping):
     MANUFACTURER = "Manufacturer"
     MODEL = "Model"
     DESCRIPTION = "Description"
@@ -50,15 +74,6 @@ class CFDHeaderMapping(Enum):
     RDE_NOX_COMBINED = "RDE NOx Combined"
     NOISE_LEVEL_DBA = "Noise Level dB(A)"
     DATE_OF_CHANGE = "Date of change"
-
-    @classmethod
-    def from_value(cls, value: str) -> Union[Enum, None]:
-        check_to_lower = value.casefold().strip()
-        for header_value in CFDHeaderMapping:
-            value = header_value.value
-            if check_to_lower == value.casefold().strip():
-                return header_value
-        return None
 
 
 class FuelMappings(Enum):
