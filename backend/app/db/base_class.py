@@ -18,7 +18,9 @@ class Base:
         return cls.__name__.lower()
 
     @classmethod
-    def get_all_by_filter(cls, db: Session, filter_ids: list, id_only: bool = False) -> list:
+    def get_all_by_filter(
+        cls, db: Session, filter_ids: list, id_only: bool = False
+    ) -> list:
         if id_only:
             return db.query(cls.id).filter(cls.id.in_(filter_ids)).all()
         else:
@@ -37,6 +39,6 @@ class Base:
                 value = float(value)
             elif type(value) == str and value.isdigit():
                 value = int(value)
-            elif type(value) == str and value.lower() in ["true", "yes", "no", "false"]:
+            elif type(value) == str and value.lower() in ["true", "false"]:
                 value = bool(value)
             self.__setattr__(key.name.lower(), value)
