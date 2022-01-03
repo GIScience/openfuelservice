@@ -10,18 +10,31 @@ import requests
 logger = logging.getLogger(__name__)
 
 
-def unzip_download(zip_file_path: Path, destination_folder: Path) -> List:
+def unzip_download(zip_file_path: Path, destination_folder: Path) -> List[Path]:
     try:
-        if not zipfile.is_zipfile(zip_file_path):
+        if not zip_file_path.exists():
+            raise FileNotFoundError
+        elif zip_file_path.name.rsplit(".", 1)[-1] != "zip":
+            logger.debug(
+                f"File {zip_file_path} is valid but not a zip file. Returning it."
+            )
+            return [zip_file_path]
+        elif not zipfile.is_zipfile(zip_file_path):  # noqa
+            logger.error(f"zip file {zip_file_path} seems corrupt. Can't unzip.")
             raise zipfile.BadZipFile
         with zipfile.ZipFile(zip_file_path, "r") as zipObj:
-            files = zipObj.namelist()
-            files = [f"{destination_folder}/{file}" for file in files]
+            files: List[str] = zipObj.namelist()
+            file_paths: List[Path] = [
+                Path(f"{destination_folder}/{file}") for file in files
+            ]
             # Extract all the contents of zip file in current directory
             zipObj.extractall(destination_folder)
-            return files
-    except zipfile.BadZipFile as err:
-        logger.warning(f"Couldn't open or unzip {zip_file_path.__str__()}")
+            return file_paths
+    except zipfile.BadZipFile as err:  # noqa
+        logger.error(f"Couldn't open or unzip {zip_file_path.__str__()}")
+        raise err
+    except FileNotFoundError as err:
+        logger.error(f"Zip file {zip_file_path.__str__()} doesn't exist.")
         raise err
     except Exception as err:  # noqa
         logger.warning(

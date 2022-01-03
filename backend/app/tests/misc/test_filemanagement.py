@@ -1,7 +1,6 @@
 from os.path import basename
 from pathlib import Path
 from typing import Any, List
-from zipfile import BadZipFile
 
 import pytest
 
@@ -42,14 +41,23 @@ def test_download_file_with_name_must_fail(
 )
 def test_unzip_download(source_file: str, return_values: List, tmpdir: Path) -> None:
     test: List = unzip_download(Path(source_file), Path(tmpdir))
+    file: Path
     for file in test:
         assert basename(file) in return_values
+        assert file.exists()
     for return_value in return_values:
         assert Path(f"{tmpdir}/{return_value}").exists()
+    # Test unzipping non-zip file returns just the file.
+    for i in range(len(test)):
+        test_non_zip: List = unzip_download(test[i], Path(""))
+        assert len(test_non_zip) == 1
+        assert test_non_zip[0].exists()
+        assert test_non_zip[0] == test[i]
 
 
 @pytest.mark.parametrize(
-    "source_file, exception", (("Foobar.zip", BadZipFile), ("Foobar", BadZipFile)),
+    "source_file, exception",
+    (("Foobar.zip", FileNotFoundError), ("Foobar", FileNotFoundError)),
 )
 def test_unzip_download_must_fail(
     source_file: str, exception: Any, tmpdir: Path
