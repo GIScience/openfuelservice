@@ -16,6 +16,10 @@ logger = logging.getLogger(__name__)
 
 
 class CountryCodesReader(BaseReader):
+    def __init__(self, file_to_read: Union[str, Path]):
+        super().__init__(file_to_read)
+        self.name = "CountryCodesReader"
+
     def enrich_with_geometries(self, country_geometry_file: Union[Path, str]) -> None:
         geometry_file = self._download_data(country_geometry_file)
         files: List = file_management.unzip_download(
@@ -25,14 +29,15 @@ class CountryCodesReader(BaseReader):
         shpname: Path = Path("")
         shxname: Path = Path("")
         # Search for the specific extensions in the names
+        file: Path
         for file in files:
-            file_descriptor = file.rsplit(".", 1)[-1]
+            file_descriptor = file.name.rsplit(".", 1)[-1]
             if file_descriptor == "dbf":
-                dbfname = Path(file)
+                dbfname = file
             if file_descriptor == "shp":
-                shpname = Path(file)
+                shpname = file
             elif file_descriptor == "shx":
-                shxname = Path(file)
+                shxname = file
         shape_file = shapefile.Reader(
             shp=io.BytesIO(shpname.read_bytes()),
             dbf=io.BytesIO(dbfname.read_bytes()),
@@ -89,6 +94,9 @@ class CountryCodesReader(BaseReader):
                 country_object = CountryData()
                 country_object.set_data(data=row, headers=headers)
                 country_object.id = row[headers[CountriesMapping.COUNTRY_ALPHA_2]]
+                if country_object.id == "GB":
+                    country_object.id = "UK"
+                    country_object.country_alpha_2 = "UK"
                 if (
                     not country_object.country_name
                     and not country_object.country_alpha_2

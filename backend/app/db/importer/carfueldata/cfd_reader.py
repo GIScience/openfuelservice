@@ -15,13 +15,15 @@ logger = logging.getLogger(__name__)
 class CarFuelDataReader(BaseReader):
     def __init__(self, file_to_read: Union[str, Path]) -> None:
         super().__init__(file_to_read)
+        self.name = "CarFuelDataReader"
 
     def _process_data(self, data_file: Path) -> None:
         files: list = file_management.unzip_download(
             zip_file_path=data_file, destination_folder=self._tempfolder
         )
+        cs_file: Path
         for cs_file in files:
-            if cs_file.rsplit(".", 1)[-1] == "csv":
+            if cs_file.name.rsplit(".", 1)[-1] == "csv":
                 with open(cs_file, encoding="cp1252") as f:
                     reader = csv.reader(f, dialect="excel")
                     header_row = reader.__next__()

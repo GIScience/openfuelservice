@@ -16,6 +16,7 @@ class BaseReader:
         self._tempfolder: Path = Path(tempfile.mkdtemp())
         self.objects_list: List = []
         self._file_to_read: Union[str, Path] = file_to_read
+        self.name = "BaseReader"
 
     def _download_data(self, file_to_read: Union[Path, str]) -> Path:
         return file_management.download_file_with_name(
