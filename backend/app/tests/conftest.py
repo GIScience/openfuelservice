@@ -25,7 +25,20 @@ script_location = pathlib.Path(__file__).parent.resolve()
 
 
 @pytest.fixture(scope="session")
-def db() -> Generator:
+def db(alembic_runner: MigrationContext) -> Generator:
+    # try:
+    #     alembic_runner.migrate_up_to("head")
+    # except exc.ProgrammingError:
+    #     Base.metadata.drop_all(bind=engine)
+    # finally:
+    #     alembic_runner.migrate_up_to("head")
+    # try:
+    #     alembic_runner.migrate_down_to("base")
+    # except exc.ProgrammingError:
+    #     Base.metadata.create_all(bind=engine)
+    # finally:
+    #     Base.metadata.drop_all(bind=engine)
+    #     alembic_runner.migrate_up_to("head")
     yield SessionLocal()
 
 
@@ -98,7 +111,7 @@ def normal_user_token_headers(
     )
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def alembic_config() -> Config:
     alembic_config = Config(f"{script_location}/../../alembic.ini")
     alembic_config.set_main_option(
@@ -107,7 +120,7 @@ def alembic_config() -> Config:
     return alembic_config
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def alembic_engine() -> Engine:
     """Override this fixture to provide pytest-alembic
     powered tests with a database handle."""
@@ -117,7 +130,7 @@ def alembic_engine() -> Engine:
     )
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def alembic_runner(alembic_config: Config, alembic_engine: Engine) -> MigrationContext:
     """Produce the primary alembic migration context in which to execute alembic tests.
 
