@@ -43,7 +43,7 @@ def test_from_fuel_type(
         ("Foobar", None),
     ),
 )
-def test_eurostatsheetmapping(
+def test_eurostat_sheet_mapping(
     fuel_type_to_check: str, fuel_type_to_get: EurostatSheetMapping
 ) -> None:
     assert EurostatSheetMapping.from_value(fuel_type_to_check) == fuel_type_to_get
@@ -63,7 +63,7 @@ def test_eurostatsheetmapping(
         ("Foobar", None),
     ),
 )
-def test_countriesmapping(
+def test_countries_mapping(
     fuel_type_to_check: str, fuel_type_to_get: CountriesMapping
 ) -> None:
     assert CountriesMapping.from_value(fuel_type_to_check) == fuel_type_to_get
