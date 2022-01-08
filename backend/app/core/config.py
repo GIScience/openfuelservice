@@ -154,8 +154,10 @@ class Settings(BaseSettings):
 
     # Country Data
     COUNTRY_CODES_PATH: str = f"{FILE_FOLDER}/countrydata/country_codes.csv"
+    COUNTRY_CODES_TEST_PATH: str = f"{FILE_FOLDER}/countrydata/test_country_codes.csv"
     COUNTRY_CODES_ATTRIBUTION: str = "Made with Natural Earth. Free vector and raster map data @ naturalearthdata.com"
     COUNTRY_BOUNDARIES_PATH: str = f"{FILE_FOLDER}/countrydata/TM_WORLD_BORDERS-0.3.zip"
+    COUNTRY_BOUNDARIES_TEST_PATH: str = f"{FILE_FOLDER}/countrydata/TM_WORLD_BORDERS-0.3.zip"
     COUNTRY_BOUNDARIES_ATTRIBUTION: str = "https://thematicmapping.org/downloads/world_borders.php"
 
 

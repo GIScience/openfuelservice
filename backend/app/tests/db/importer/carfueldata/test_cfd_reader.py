@@ -12,4 +12,5 @@ def test_cfd_reader() -> None:
     cfd_object: CarFuelDataCar
     for cfd_object in cfd_test.objects_list:
         assert issubclass(type(cfd_object), CarFuelDataCar)
-        assert len(cfd_object.__dict__) == 47
+        assert len(cfd_object.__dict__) == 46
+        assert not cfd_object.id

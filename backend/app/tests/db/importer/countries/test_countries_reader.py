@@ -5,7 +5,7 @@ from app.models import CountryData
 
 def test_country_codes_reader() -> None:
     country_codes_reader: CountryCodesReader = CountryCodesReader(
-        settings.COUNTRY_CODES_PATH
+        settings.COUNTRY_CODES_TEST_PATH
     )
     country_codes_reader.fetch_and_process_data()
     # Actually 250 but Channel Islands get removed since lacking Alpha 2 and 3.
@@ -17,7 +17,7 @@ def test_country_codes_reader() -> None:
         assert not country_object.geom
         assert country_object.id == country_object.country_alpha_2
 
-    country_codes_reader.enrich_with_geometries(settings.COUNTRY_BOUNDARIES_PATH)
+    country_codes_reader.enrich_with_geometries(settings.COUNTRY_BOUNDARIES_TEST_PATH)
     for country_object in country_codes_reader.objects_list:
         assert issubclass(type(country_object), CountryData)
         if len(country_object.__dict__) < 9:
@@ -26,3 +26,6 @@ def test_country_codes_reader() -> None:
         else:
             assert len(country_object.__dict__) == 9
             assert country_object.geom
+        if country_object.id == "UK":
+            assert country_object.country_alpha_2 == "UK"
+            assert country_object.country_alpha_3 == "GBR"

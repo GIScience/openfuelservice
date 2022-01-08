@@ -1,42 +1,35 @@
-from typing import List
+import datetime
 
 from sqlalchemy.orm import Session
 
-from app.core.config import settings
 from app.db.importer.base_importer import BaseImporter
-from app.db.importer.carfueldata.cfd_reader import CarFuelDataReader
-from app.db.importer.countries.countries_reader import CountryCodesReader
-from app.models import CarFuelDataCar, CountryData
+from app.models import EurostatGeneralPrice
 
 
-def test_base_cfd_importer(db: Session) -> None:
-    cfd_reader_test: CarFuelDataReader = CarFuelDataReader(
-        settings.CARFUELDATA_TEST_PATH_OR_URL
+def test_base_importer(db: Session) -> None:
+    current_datetime: datetime.datetime = datetime.datetime.now()
+    eurostat_general_price = EurostatGeneralPrice()
+    eurostat_general_price.price_in_euro = 0
+    eurostat_general_price.date = current_datetime
+    eurostat_general_price.euro_ht = 1
+    eurostat_general_price.euro_unit = "liter"
+    eurostat_general_price.euro_ttc = 3
+    eurostat_general_price.euro_quantity = 4
+    eurostat_general_price.diesel_ht = 5
+    eurostat_general_price.diesel_unit = "liter"
+    eurostat_general_price.diesel_ttc = 7
+    eurostat_general_price.diesel_quantity = 8
+    BaseImporter(db=db).import_data([eurostat_general_price])
+    db_objects = (
+        db.query(EurostatGeneralPrice)
+        .filter(EurostatGeneralPrice.id == current_datetime)
+        .all()
     )
-    cfd_reader_test.fetch_and_process_data()
-    BaseImporter(db=db).import_data(reader_object=cfd_reader_test)
-    car: CarFuelDataCar
-    unique_ids: List = list(set([car.id for car in cfd_reader_test.objects_list]))
-    assert len(
-        CarFuelDataCar.get_all_by_filter(db=db, filter_ids=unique_ids, id_only=True)
-    ) == len(unique_ids)
-
-
-def test_base_countries_importer(db: Session) -> None:
-    country_codes_reader: CountryCodesReader = CountryCodesReader(
-        settings.COUNTRY_CODES_PATH
-    )
-    country_codes_reader.fetch_and_process_data()
-    country_codes_reader.enrich_with_geometries(settings.COUNTRY_BOUNDARIES_PATH)
-    BaseImporter(db=db).import_data(reader_object=country_codes_reader)
-    country: CountryData
-    unique_ids: List = list(
-        set([country.country_alpha_2 for country in country_codes_reader.objects_list])
-    )
-    assert len(
-        CountryData.get_all_by_filter(db=db, filter_ids=unique_ids, id_only=True)
-    ) == len(unique_ids)
-    source_country: CountryData
-    for source_country in country_codes_reader.objects_list:
-        assert source_country.id in unique_ids
-        assert source_country.country_alpha_2 in unique_ids
+    assert len(db_objects) == 1
+    key: str
+    for key, value in db_objects[0].__dict__.items():
+        if key.startswith("_"):
+            continue
+        assert key in eurostat_general_price.__dict__.keys()
+        assert value == eurostat_general_price.__dict__.get(key)
+    db.delete(eurostat_general_price)
