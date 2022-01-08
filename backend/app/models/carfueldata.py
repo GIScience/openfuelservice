@@ -1,5 +1,5 @@
+import datetime
 import hashlib
-from datetime import datetime
 from typing import Any, Dict, List, Union
 
 from sqlalchemy import (
@@ -12,7 +12,10 @@ from sqlalchemy import (
     ForeignKey,
     Integer,
     String,
+    event,
+    orm,
 )
+from sqlalchemy.engine import base
 
 from app.db.base_class import Base
 from app.db.importer.mappings import CFDHeaderMapping
@@ -72,8 +75,6 @@ class CarFuelDataCar(Base):
 
     @staticmethod
     def _check_name_for_year(car_name: str) -> Union[int, None]:
-        import datetime
-
         now = datetime.datetime.now()
         max_year = int(now.year)
         min_year = 1980
@@ -88,13 +89,12 @@ class CarFuelDataCar(Base):
     def set_data(self, data: List, headers: Dict) -> None:
         value: Any
         key: CFDHeaderMapping
-        hash_string: str = ""
         for key, header_index in headers.items():
             value = data[header_index]
             if value is None or str(value).lower().strip() == "n/a" or key is None:
                 value = None
             elif key == CFDHeaderMapping.DATE_OF_CHANGE:
-                value: datetime = (datetime.strptime(value, "%d %B %Y"))  # type: ignore
+                value: datetime = (datetime.datetime.strptime(value, "%d %B %Y"))  # type: ignore
                 if "year" not in self.__dict__.keys() or (
                     "year" in self.__dict__.keys() and self.__dict__.get("year") is None
                 ):
@@ -112,18 +112,29 @@ class CarFuelDataCar(Base):
             elif type(value) == str and value.lower() in ["true", "yes", "no", "false"]:
                 value = bool(value)
             self.__setattr__(key.name.lower(), value)
-            if isinstance(value, datetime):
-                hash_string = (
-                    f"{hash_string}{str(key.name.lower())}={value.strftime('%Y%m%d')}"
-                )
-            else:
-                hash_string = (
-                    f"{hash_string}{str(key.name.lower())}={str(value).strip()}"
-                )
 
-        self.id = hashlib.md5(
-            hash_string.casefold().strip(" ").encode("utf-8")
-        ).hexdigest()
+    def hash_object(self) -> str:
+        hash_string: str = ""
+        key: str
+        value: Any
+        for key, value in self.__dict__.items():
+            if key.startswith("_") or (key == "id"):
+                continue
+            elif isinstance(value, datetime.datetime) or isinstance(
+                value, datetime.date
+            ):
+                value = value.strftime("%Y%m%d")
+            hash_string = f"{hash_string}{str(key.lower())}={str(value).strip()}"
+        return hashlib.md5(hash_string.strip(" ").encode("utf-8")).hexdigest()
+
+
+@event.listens_for(CarFuelDataCar, "before_insert")
+def generate_carfueldatacar_id(
+    _: orm.Mapper, __: base.Connection, target: CarFuelDataCar
+) -> None:
+    key: str
+    value: Any
+    target.id = target.hash_object()
 
 
 class CarFuelDataAverageCategoryStatistics(Base):
