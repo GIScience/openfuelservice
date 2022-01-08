@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Dict, List, Union
 
 from app.db.importer.base_reader import BaseReader
-from app.db.importer.mappings import CFDHeaderMapping
+from app.db.importer.mappings import CarFuelDataHeaderMapping
 from app.misc import file_management
 from app.misc.data_handling import check_manufacturer
 from app.models import CarFuelDataCar
@@ -30,7 +30,7 @@ class CarFuelDataReader(BaseReader):
                     headers: Dict = {}
                     counter: int = 0
                     for h in header_row:
-                        mapping = CFDHeaderMapping.from_value(h)
+                        mapping = CarFuelDataHeaderMapping.from_value(h)
                         if mapping is not None:
                             headers[mapping] = counter
                         else:
@@ -40,13 +40,13 @@ class CarFuelDataReader(BaseReader):
                         counter += 1
                     row: List[str]
                     for row in reader:
-                        manufacturer: str = row[headers[CFDHeaderMapping.MANUFACTURER]]
+                        manufacturer: str = row[headers[CarFuelDataHeaderMapping.MANUFACTURER]]
                         real_manufacturer: Union[str, None] = check_manufacturer(
                             manufacturer_to_check=manufacturer
                         )
                         if not real_manufacturer or not len(real_manufacturer):
                             continue
-                        row[headers[CFDHeaderMapping.MANUFACTURER]] = real_manufacturer
+                        row[headers[CarFuelDataHeaderMapping.MANUFACTURER]] = real_manufacturer
                         cfd_object = CarFuelDataCar()
                         cfd_object.set_data(data=row, headers=headers)
                         self.objects_list.append(cfd_object)

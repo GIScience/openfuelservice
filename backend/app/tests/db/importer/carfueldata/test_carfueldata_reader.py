@@ -1,9 +1,9 @@
 from app.core.config import settings
-from app.db.importer.carfueldata.cfd_reader import CarFuelDataReader
+from app.db.importer.carfueldata.carfueldata_reader import CarFuelDataReader
 from app.models import CarFuelDataCar
 
 
-def test_cfd_reader() -> None:
+def test_carfueldata_reader() -> None:
     cfd_test: CarFuelDataReader = CarFuelDataReader(
         settings.CARFUELDATA_TEST_PATH_OR_URL
     )

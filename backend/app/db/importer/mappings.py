@@ -38,7 +38,7 @@ class CountriesMapping(BaseMapping):
     COUNTRY_CURRENCY_NAME = "ISO4217-currency_name"
 
 
-class CFDHeaderMapping(BaseMapping):
+class CarFuelDataHeaderMapping(BaseMapping):
     MANUFACTURER = "Manufacturer"
     MODEL = "Model"
     DESCRIPTION = "Description"

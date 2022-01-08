@@ -18,7 +18,7 @@ from sqlalchemy import (
 from sqlalchemy.engine import base
 
 from app.db.base_class import Base
-from app.db.importer.mappings import CFDHeaderMapping
+from app.db.importer.mappings import CarFuelDataHeaderMapping
 
 
 class CarFuelDataCar(Base):
@@ -88,18 +88,18 @@ class CarFuelDataCar(Base):
 
     def set_data(self, data: List, headers: Dict) -> None:
         value: Any
-        key: CFDHeaderMapping
+        key: CarFuelDataHeaderMapping
         for key, header_index in headers.items():
             value = data[header_index]
             if value is None or str(value).lower().strip() == "n/a" or key is None:
                 value = None
-            elif key == CFDHeaderMapping.DATE_OF_CHANGE:
+            elif key == CarFuelDataHeaderMapping.DATE_OF_CHANGE:
                 value: datetime = (datetime.datetime.strptime(value, "%d %B %Y"))  # type: ignore
                 if "year" not in self.__dict__.keys() or (
                     "year" in self.__dict__.keys() and self.__dict__.get("year") is None
                 ):
                     self.__setattr__("year", value.year)
-            elif key == CFDHeaderMapping.MODEL and type(value) == str:
+            elif key == CarFuelDataHeaderMapping.MODEL and type(value) == str:
                 if value == "Model X":
                     print()
                 year: int = self._check_name_for_year(car_name=value)  # type: ignore

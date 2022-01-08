@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.db.importer.base_importer import BaseImporter
-from app.db.importer.carfueldata.cfd_reader import CarFuelDataReader
+from app.db.importer.carfueldata.carfueldata_reader import CarFuelDataReader
 from app.models import CarFuelDataCar
 
 
