@@ -100,8 +100,6 @@ class CarFuelDataCar(Base):
                 ):
                     self.__setattr__("year", value.year)
             elif key == CarFuelDataHeaderMapping.MODEL and type(value) == str:
-                if value == "Model X":
-                    print()
                 year: int = self._check_name_for_year(car_name=value)  # type: ignore
                 if year:
                     self.__setattr__("year", year)
