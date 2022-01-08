@@ -14,4 +14,4 @@ def import_data(db: Session) -> None:
 
     cfd_reader = CarFuelDataReader(settings.CARFUELDATA_PATH_OR_URL)
     cfd_reader.fetch_and_process_data()
-    BaseImporter(db=db).import_data(reader_object=cfd_reader)
+    BaseImporter(db=db).import_data(db_objects=cfd_reader.objects_list)
