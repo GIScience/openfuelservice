@@ -7,17 +7,26 @@ logger = logging.getLogger(__name__)
 
 class BaseMapping(Enum):
     @classmethod
-    def from_value(cls, value: str) -> Union[Enum, None]:
-        check_to_lower = value.casefold().strip()
-        for header_value in cls:
-            value = header_value.value
-            if type(value) == tuple:
-                for sub_value in value:
-                    if check_to_lower == sub_value.casefold().strip():
-                        return header_value
-            elif check_to_lower == value.casefold().strip():
-                return header_value
+    def from_value(cls, type_to_check: str) -> Union[Enum, None]:
+        check_to_lower = type_to_check.casefold().strip()
+        for fuel_type in cls:
+            value: Union[str, tuple] = fuel_type.value
+            if type(value) == str and check_to_lower == value.casefold().strip():
+                return fuel_type
+            elif type(value) == tuple:
+                for sub_mapping in value:
+                    if check_to_lower == sub_mapping.casefold().strip():
+                        return fuel_type
         return None
+
+
+class EurostatSheetMapping(BaseMapping):
+    PRICES_WITH_TAXES_PER_CTR = "Prices with taxes, per CTR"
+    PRICES_WO_TAXES_PER_CTR = "Prices wo taxes, per CTR"
+    PRICES_WITH_TAXES_EU = "Prices with taxes, EU"
+    PRICES_WO_TAXES_EU = "Prices wo taxes, EU"
+    PRICES_WITH_TAXES_UK = "Prices with taxes, UK"
+    PRICES_WO_TAXES_UK = "Prices wo taxes, UK"
 
 
 class CountriesMapping(BaseMapping):
@@ -76,7 +85,7 @@ class CFDHeaderMapping(BaseMapping):
     DATE_OF_CHANGE = "Date of change"
 
 
-class FuelMappings(Enum):
+class FuelMappings(BaseMapping):
     DIESEL: str = "diesel"
     DIESEL_ELECTRIC: tuple = ("diesel electric", "electricity / diesel")
     GASOLINE: tuple = ("gasoline", "Petrol", "gas")
@@ -87,16 +96,3 @@ class FuelMappings(Enum):
         "petrol hybrid",
     )
     ELECTRIC: str = "Electricity"
-
-    @classmethod
-    def from_fuel_type(cls, type_to_check: str) -> Union[Enum, None]:
-        check_to_lower = type_to_check.casefold().strip()
-        for fuel_type in FuelMappings:
-            value: Union[str, tuple] = fuel_type.value
-            if type(value) == str and check_to_lower == value.casefold().strip():
-                return fuel_type
-            elif type(value) == tuple:
-                for sub_mapping in value:
-                    if check_to_lower == sub_mapping.casefold().strip():
-                        return fuel_type
-        return None
