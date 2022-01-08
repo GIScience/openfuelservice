@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Tuple, Union
 
 import openpyxl as xl
-import xlrd
+
 from openpyxl.cell.read_only import EmptyCell
 from openpyxl.worksheet.worksheet import Worksheet
 from sqlalchemy.orm import Session
@@ -36,27 +36,6 @@ class EurostatFuelReader(BaseReader):
             return float(float_string.replace(",", ""))
         except Exception:
             return None
-
-    def _convert_datetuple_to_date(
-        self, date_tuple: float, datemode: int
-    ) -> Union[datetime.date, None]:
-        if date_tuple is None or type(date_tuple) is not float:
-            return None
-        try:
-            date_as_datetime = datetime.datetime(
-                *xlrd.xldate_as_tuple(date_tuple, datemode)
-            ).date()
-            return date_as_datetime
-        except TypeError as err:
-            logger.error(
-                f"TypeError converting value: {date_tuple} with datemode: {datemode} to datetime."
-            )
-            raise err
-        except Exception as err:
-            logger.error(
-                f"Unknown error converting value: {date_tuple} with datemode: {datemode} to datetime."
-            )
-            raise err
 
     def _convert_value_to_country_code(
         self, country_code: str
