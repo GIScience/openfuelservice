@@ -1,17 +1,17 @@
 """Base Models
 
-Revision ID: 5bba75e809d1
+Revision ID: 2d452d848bbd
 Revises:
-Create Date: 2022-01-02 21:40:10.408238
+Create Date: 2022-01-08 18:56:38.627663
 
 """
+import geoalchemy2
 import sqlalchemy as sa
-from geoalchemy2 import Geometry
 
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision = "5bba75e809d1"
+revision = "2d452d848bbd"
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -87,7 +87,7 @@ def upgrade():
         sa.Column("country_currency_name", sa.String(), nullable=True),
         sa.Column(
             "geom",
-            Geometry(
+            geoalchemy2.types.Geometry(
                 geometry_type="MULTIPOLYGON",
                 srid=4326,
                 from_text="ST_GeomFromEWKT",
@@ -164,10 +164,9 @@ def upgrade():
         unique=True,
     )
     op.create_table(
-        "eurostatgeneralpricemodel",
-        sa.Column("hash_id", sa.CHAR(length=32), nullable=False),
-        sa.Column("date", sa.DateTime(), nullable=False),
-        sa.Column("euro_price", sa.Integer(), nullable=True),
+        "eurostatgeneralprice",
+        sa.Column("id", sa.DateTime(), nullable=False),
+        sa.Column("price_in_euro", sa.Integer(), nullable=False),
         sa.Column("euro_ht", sa.Numeric(), nullable=True),
         sa.Column("euro_ttc", sa.Numeric(), nullable=True),
         sa.Column("euro_unit", sa.String(), nullable=False),
@@ -176,9 +175,10 @@ def upgrade():
         sa.Column("diesel_ttc", sa.Numeric(), nullable=True),
         sa.Column("diesel_unit", sa.String(), nullable=False),
         sa.Column("diesel_quantity", sa.Integer(), nullable=False),
-        sa.PrimaryKeyConstraint("hash_id", "date"),
-        sa.UniqueConstraint("date"),
-        sa.UniqueConstraint("hash_id"),
+        sa.PrimaryKeyConstraint("id"),
+    )
+    op.create_index(
+        op.f("ix_eurostatgeneralprice_id"), "eurostatgeneralprice", ["id"], unique=True
     )
     op.create_table(
         "matchedwikienvirocar",
@@ -454,7 +454,7 @@ def upgrade():
         sa.Column("track_length", sa.Float(asdecimal=True), nullable=True),
         sa.Column(
             "geom",
-            Geometry(
+            geoalchemy2.types.Geometry(
                 geometry_type="LINESTRING",
                 srid=4326,
                 from_text="ST_GeomFromEWKT",
@@ -476,11 +476,10 @@ def upgrade():
     )
     op.create_table(
         "eurostatcountryprice",
-        sa.Column("hash_id", sa.CHAR(length=32), nullable=False),
-        sa.Column("date", sa.DateTime(), nullable=False),
+        sa.Column("id", sa.DateTime(), nullable=False),
         sa.Column("country_alpha_2", sa.String(), nullable=False),
         sa.Column("taux", sa.Float(), nullable=True),
-        sa.Column("euro_price", sa.Integer(), nullable=True),
+        sa.Column("price_in_euro", sa.Integer(), nullable=False),
         sa.Column("euro_ht", sa.Numeric(), nullable=True),
         sa.Column("euro_ttc", sa.Numeric(), nullable=True),
         sa.Column("euro_unit", sa.String(), nullable=False),
@@ -490,7 +489,7 @@ def upgrade():
         sa.Column("diesel_unit", sa.String(), nullable=False),
         sa.Column("diesel_quantity", sa.Integer(), nullable=False),
         sa.ForeignKeyConstraint(["country_alpha_2"], ["countrydata.country_alpha_2"],),
-        sa.PrimaryKeyConstraint("hash_id"),
+        sa.PrimaryKeyConstraint("id", "country_alpha_2"),
     )
     op.create_index(
         op.f("ix_eurostatcountryprice_country_alpha_2"),
@@ -499,16 +498,7 @@ def upgrade():
         unique=False,
     )
     op.create_index(
-        op.f("ix_eurostatcountryprice_date"),
-        "eurostatcountryprice",
-        ["date"],
-        unique=False,
-    )
-    op.create_index(
-        op.f("ix_eurostatcountryprice_hash_id"),
-        "eurostatcountryprice",
-        ["hash_id"],
-        unique=False,
+        op.f("ix_eurostatcountryprice_id"), "eurostatcountryprice", ["id"], unique=False
     )
     op.create_table(
         "item",
@@ -604,7 +594,7 @@ def upgrade():
         sa.Column("track_id", sa.String(), nullable=False),
         sa.Column(
             "geom",
-            Geometry(
+            geoalchemy2.types.Geometry(
                 geometry_type="POINT",
                 srid=4326,
                 from_text="ST_GeomFromEWKT",
@@ -795,12 +785,7 @@ def downgrade():
     op.drop_index(op.f("ix_item_id"), table_name="item")
     op.drop_index(op.f("ix_item_description"), table_name="item")
     op.drop_table("item")
-    op.drop_index(
-        op.f("ix_eurostatcountryprice_hash_id"), table_name="eurostatcountryprice"
-    )
-    op.drop_index(
-        op.f("ix_eurostatcountryprice_date"), table_name="eurostatcountryprice"
-    )
+    op.drop_index(op.f("ix_eurostatcountryprice_id"), table_name="eurostatcountryprice")
     op.drop_index(
         op.f("ix_eurostatcountryprice_country_alpha_2"),
         table_name="eurostatcountryprice",
@@ -923,7 +908,8 @@ def downgrade():
         op.f("ix_matchedwikienvirocar_car_hash_id"), table_name="matchedwikienvirocar"
     )
     op.drop_table("matchedwikienvirocar")
-    op.drop_table("eurostatgeneralpricemodel")
+    op.drop_index(op.f("ix_eurostatgeneralprice_id"), table_name="eurostatgeneralprice")
+    op.drop_table("eurostatgeneralprice")
     op.drop_index(op.f("ix_envirocarsensor_sensor_id"), table_name="envirocarsensor")
     op.drop_table("envirocarsensor")
     op.drop_index(op.f("ix_envirocarphenomenon_name"), table_name="envirocarphenomenon")
