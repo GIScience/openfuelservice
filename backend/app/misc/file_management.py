@@ -44,7 +44,7 @@ def unzip_download(zip_file_path: Path, destination_folder: Path) -> List[Path]:
 
 
 def download_file_with_name(
-    url_or_path: Union[str, Path], file_name: str, output_folder: Path
+        url_or_path: Union[str, Path], file_name: str, output_folder: Path
 ) -> Path:
     """Downloads and stores a file. It will always be stored in the temp folder!!!
         If the path is not an url but local path it will copy the file to the temp destination.
@@ -231,10 +231,10 @@ def get_response(url: str, timeout: int = 10) -> Union[requests.Response, None]:
     except (TimeoutError, Exception) as err:
         if err == TimeoutError:
             time.sleep(10)
-            print(err)
+            logger.warning(f"Timeout Error while parsing url: {url}")
             get_response(url=url)
         elif err == Exception:
-            print(err)
+            logger.error(f"Unknown Error: {err} while parsing url: {url}")
         return None
 
     # def get_header_link(response: requests.Response, first_url=False, next_url=False, last_url=False):
