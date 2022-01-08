@@ -13,7 +13,7 @@ from .envirocar import (
     EnvirocarTrackStatistic,
     MatchedWikiEnvirocar,
 )
-from .eurostat import EurostatCountryPrice, EurostatGeneralPriceModel
+from .eurostat import EurostatCountryPrice, EurostatGeneralPrice
 from .item import Item
 from .user import User
 from .wikipedia import WikiCar, WikiCarCategory, WikiCarPageText

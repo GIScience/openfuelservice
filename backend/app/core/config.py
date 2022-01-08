@@ -160,5 +160,11 @@ class Settings(BaseSettings):
     COUNTRY_BOUNDARIES_TEST_PATH: str = f"{FILE_FOLDER}/countrydata/TM_WORLD_BORDERS-0.3.zip"
     COUNTRY_BOUNDARIES_ATTRIBUTION: str = "https://thematicmapping.org/downloads/world_borders.php"
 
+    # Fueldata
+    # EUROSTAT_FUEL_HISTORY_1994_2005: str = f"{FILE_FOLDER}/fuelprices/eurostat_time_series_years_1994_2005.zip"
+    EUROSTAT_FUEL_HISTORY_2005_ONWARDS: str = "https://ec.europa.eu/energy/observatory/reports/Oil_Bulletin_Prices_History.xlsx"  # noqa: E501
+    EUROSTAT_TEST_FUEL_HISTORY_2005_ONWARDS: str = f"{FILE_FOLDER}/fuelprices/eurostat_time_series_years_2005_2021.zip"  # noqa: E501
+    EUROSTAT_FUEL_ATTRIBUTION: str = "European Union, 1995 - today"
+
 
 settings = Settings()
