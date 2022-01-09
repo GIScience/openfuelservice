@@ -4,7 +4,6 @@ from pathlib import Path
 from typing import Any, Dict, List, Tuple, Union
 
 import openpyxl as xl
-
 from openpyxl.cell.read_only import EmptyCell
 from openpyxl.worksheet.worksheet import Worksheet
 from sqlalchemy.orm import Session

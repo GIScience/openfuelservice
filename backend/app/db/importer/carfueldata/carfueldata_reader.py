@@ -40,13 +40,17 @@ class CarFuelDataReader(BaseReader):
                         counter += 1
                     row: List[str]
                     for row in reader:
-                        manufacturer: str = row[headers[CarFuelDataHeaderMapping.MANUFACTURER]]
+                        manufacturer: str = row[
+                            headers[CarFuelDataHeaderMapping.MANUFACTURER]
+                        ]
                         real_manufacturer: Union[str, None] = check_manufacturer(
                             manufacturer_to_check=manufacturer
                         )
                         if not real_manufacturer or not len(real_manufacturer):
                             continue
-                        row[headers[CarFuelDataHeaderMapping.MANUFACTURER]] = real_manufacturer
+                        row[
+                            headers[CarFuelDataHeaderMapping.MANUFACTURER]
+                        ] = real_manufacturer
                         cfd_object = CarFuelDataCar()
                         cfd_object.set_data(data=row, headers=headers)
                         self.objects_list.append(cfd_object)

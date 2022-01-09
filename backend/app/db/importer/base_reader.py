@@ -12,10 +12,10 @@ logger = logging.getLogger(__name__)
 
 
 class BaseReader:
-    def __init__(self, file_to_read: Union[str, Path]) -> None:
+    def __init__(self, file_or_url: Union[str, Path]) -> None:
         self._tempfolder: Path = Path(tempfile.mkdtemp())
         self.objects_list: List = []
-        self._file_to_read: Union[str, Path] = file_to_read
+        self._file_or_url: Union[str, Path] = file_or_url
         self.name = "BaseReader"
 
     def _download_data(self, file_to_read: Union[Path, str]) -> Path:
@@ -31,7 +31,7 @@ class BaseReader:
     def fetch_and_process_data(self) -> None:
         start_time: float = time.time()
         logger.info(f"Crawl Latest {self.__class__} Data Objects")
-        data_file: Path = self._download_data(self._file_to_read)
+        data_file: Path = self._download_data(self._file_or_url)
         self._process_data(data_file=data_file)
         end_time: float = time.time()
         logger.info(
