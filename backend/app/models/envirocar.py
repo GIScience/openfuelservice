@@ -1,3 +1,4 @@
+import logging
 from typing import TYPE_CHECKING
 
 from geoalchemy2 import Geometry
@@ -9,13 +10,19 @@ from app.db.base_class import Base
 if TYPE_CHECKING:
     from .wikipedia import WikiCarCategory  # noqa: F401
 
+    hybrid_property = property
+else:
+    pass
+logger = logging.getLogger(__name__)
+
 
 class EnvirocarPhenomenon(Base):
     # EnvirocarPhenomenonModel
     # phenomenons
 
-    name = Column(String, primary_key=True, index=True)
-    unit = Column(String, nullable=False)
+    unit = Column(String, primary_key=True, index=True)
+    value = Column(String, nullable=False)
+
     sensors_statistics = relationship(
         "EnvirocarSensorStatistic",
         backref="{}".format("envirocarphenomenon"),
@@ -98,9 +105,9 @@ class EnvirocarSensorStatistic(Base):
         nullable=False,
         index=True,
     )
-    phenomenon_name = Column(
+    phenomenon_unit = Column(
         String,
-        ForeignKey("{}.name".format("envirocarphenomenon")),
+        ForeignKey("{}.unit".format("envirocarphenomenon")),
         nullable=False,
         index=True,
     )
@@ -156,9 +163,9 @@ class EnvirocarTrackStatistic(Base):
         nullable=False,
         index=True,
     )
-    phenomenon_name = Column(
+    phenomenon_unit = Column(
         String,
-        ForeignKey("{}.name".format("envirocarphenomenon")),
+        ForeignKey("{}.unit".format("envirocarphenomenon")),
         nullable=False,
         index=True,
     )
@@ -226,9 +233,9 @@ class EnvirocarTrackMeasurement(Base):
         nullable=False,
         index=True,
     )
-    phenomenon_name = Column(
+    phenomenon_unit = Column(
         String,
-        ForeignKey("{}.name".format("envirocarphenomenon")),
+        ForeignKey("{}.unit".format("envirocarphenomenon")),
         nullable=False,
         index=True,
     )
@@ -242,9 +249,9 @@ class EnvirocarAverageCategoryStatistics(Base):
     hash_id = Column(CHAR(length=32), primary_key=True, index=True)
     vehicle_type = Column(String, nullable=False, index=True)
     fuel_type = Column(String, nullable=False, index=True)
-    phenomenon_name = Column(
+    phenomenon_unit = Column(
         String,
-        ForeignKey("{}.name".format("envirocarphenomenon")),
+        ForeignKey("{}.unit".format("envirocarphenomenon")),
         nullable=False,
         index=True,
     )
@@ -264,9 +271,9 @@ class EnvirocarAverageVehicleTypeStatistic(Base):
     hash_id = Column(CHAR(length=32), primary_key=True, index=True)
     vehicle_type = Column(String, nullable=False, index=True)
     fuel_type = Column(String, nullable=False, index=True)
-    phenomenon_name = Column(
+    phenomenon_unit = Column(
         String,
-        ForeignKey("{}.name".format("envirocarphenomenon")),
+        ForeignKey("{}.unit".format("envirocarphenomenon")),
         nullable=False,
         index=True,
     )
@@ -284,9 +291,9 @@ class EnvirocarAverageManufacturerStatistic(Base):
     manufacturer = Column(String, nullable=False, index=True)
     vehicle_type = Column(String, nullable=False, index=True)
     fuel_type = Column(String, nullable=False, index=True)
-    phenomenon_name = Column(
+    phenomenon_unit = Column(
         String,
-        ForeignKey("{}.name".format("envirocarphenomenon")),
+        ForeignKey("{}.unit".format("envirocarphenomenon")),
         nullable=False,
         index=True,
     )

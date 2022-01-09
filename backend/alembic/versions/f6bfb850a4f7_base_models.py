@@ -1,8 +1,8 @@
 """Base Models
 
-Revision ID: 2d452d848bbd
+Revision ID: f6bfb850a4f7
 Revises:
-Create Date: 2022-01-08 18:56:38.627663
+Create Date: 2022-01-09 17:01:11.278913
 
 """
 import geoalchemy2
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision = "2d452d848bbd"
+revision = "f6bfb850a4f7"
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -136,14 +136,14 @@ def upgrade():
     op.create_index(op.f("ix_countrydata_id"), "countrydata", ["id"], unique=False)
     op.create_table(
         "envirocarphenomenon",
-        sa.Column("name", sa.String(), nullable=False),
         sa.Column("unit", sa.String(), nullable=False),
-        sa.PrimaryKeyConstraint("name"),
+        sa.Column("value", sa.String(), nullable=False),
+        sa.PrimaryKeyConstraint("unit"),
     )
     op.create_index(
-        op.f("ix_envirocarphenomenon_name"),
+        op.f("ix_envirocarphenomenon_unit"),
         "envirocarphenomenon",
-        ["name"],
+        ["unit"],
         unique=False,
     )
     op.create_table(
@@ -293,7 +293,7 @@ def upgrade():
         sa.Column("hash_id", sa.CHAR(length=32), nullable=False),
         sa.Column("vehicle_type", sa.String(), nullable=False),
         sa.Column("fuel_type", sa.String(), nullable=False),
-        sa.Column("phenomenon_name", sa.String(), nullable=False),
+        sa.Column("phenomenon_unit", sa.String(), nullable=False),
         sa.Column("max", sa.Float(asdecimal=True), nullable=True),
         sa.Column("average", sa.Float(asdecimal=True), nullable=True),
         sa.Column("min", sa.Float(asdecimal=True), nullable=True),
@@ -303,7 +303,7 @@ def upgrade():
         sa.ForeignKeyConstraint(
             ["category_short_eu"], ["wikicarcategory.category_short_eu"],
         ),
-        sa.ForeignKeyConstraint(["phenomenon_name"], ["envirocarphenomenon.name"],),
+        sa.ForeignKeyConstraint(["phenomenon_unit"], ["envirocarphenomenon.unit"],),
         sa.PrimaryKeyConstraint("hash_id"),
     )
     op.create_index(
@@ -319,9 +319,9 @@ def upgrade():
         unique=False,
     )
     op.create_index(
-        op.f("ix_envirocaraveragecategorystatistics_phenomenon_name"),
+        op.f("ix_envirocaraveragecategorystatistics_phenomenon_unit"),
         "envirocaraveragecategorystatistics",
-        ["phenomenon_name"],
+        ["phenomenon_unit"],
         unique=False,
     )
     op.create_index(
@@ -336,13 +336,13 @@ def upgrade():
         sa.Column("manufacturer", sa.String(), nullable=False),
         sa.Column("vehicle_type", sa.String(), nullable=False),
         sa.Column("fuel_type", sa.String(), nullable=False),
-        sa.Column("phenomenon_name", sa.String(), nullable=False),
+        sa.Column("phenomenon_unit", sa.String(), nullable=False),
         sa.Column("max", sa.Float(asdecimal=True), nullable=True),
         sa.Column("average", sa.Float(asdecimal=True), nullable=True),
         sa.Column("min", sa.Float(asdecimal=True), nullable=True),
         sa.Column("measurements", sa.Integer(), nullable=False),
         sa.Column("numb_sensors", sa.Integer(), nullable=False),
-        sa.ForeignKeyConstraint(["phenomenon_name"], ["envirocarphenomenon.name"],),
+        sa.ForeignKeyConstraint(["phenomenon_unit"], ["envirocarphenomenon.unit"],),
         sa.PrimaryKeyConstraint("hash_id"),
     )
     op.create_index(
@@ -364,9 +364,9 @@ def upgrade():
         unique=False,
     )
     op.create_index(
-        op.f("ix_envirocaraveragemanufacturerstatistic_phenomenon_name"),
+        op.f("ix_envirocaraveragemanufacturerstatistic_phenomenon_unit"),
         "envirocaraveragemanufacturerstatistic",
-        ["phenomenon_name"],
+        ["phenomenon_unit"],
         unique=False,
     )
     op.create_index(
@@ -380,13 +380,13 @@ def upgrade():
         sa.Column("hash_id", sa.CHAR(length=32), nullable=False),
         sa.Column("vehicle_type", sa.String(), nullable=False),
         sa.Column("fuel_type", sa.String(), nullable=False),
-        sa.Column("phenomenon_name", sa.String(), nullable=False),
+        sa.Column("phenomenon_unit", sa.String(), nullable=False),
         sa.Column("max", sa.Float(asdecimal=True), nullable=True),
         sa.Column("average", sa.Float(asdecimal=True), nullable=True),
         sa.Column("min", sa.Float(asdecimal=True), nullable=True),
         sa.Column("measurements", sa.Integer(), nullable=False),
         sa.Column("numb_sensors", sa.Integer(), nullable=False),
-        sa.ForeignKeyConstraint(["phenomenon_name"], ["envirocarphenomenon.name"],),
+        sa.ForeignKeyConstraint(["phenomenon_unit"], ["envirocarphenomenon.unit"],),
         sa.PrimaryKeyConstraint("hash_id"),
     )
     op.create_index(
@@ -402,9 +402,9 @@ def upgrade():
         unique=False,
     )
     op.create_index(
-        op.f("ix_envirocaraveragevehicletypestatistic_phenomenon_name"),
+        op.f("ix_envirocaraveragevehicletypestatistic_phenomenon_unit"),
         "envirocaraveragevehicletypestatistic",
-        ["phenomenon_name"],
+        ["phenomenon_unit"],
         unique=False,
     )
     op.create_index(
@@ -417,7 +417,7 @@ def upgrade():
         "envirocarsensorstatistic",
         sa.Column("hash_id", sa.CHAR(length=32), nullable=False),
         sa.Column("sensor_id", sa.String(), nullable=False),
-        sa.Column("phenomenon_name", sa.String(), nullable=False),
+        sa.Column("phenomenon_unit", sa.String(), nullable=False),
         sa.Column("max", sa.Float(asdecimal=True), nullable=True),
         sa.Column("avg", sa.Float(asdecimal=True), nullable=True),
         sa.Column("min", sa.Float(asdecimal=True), nullable=True),
@@ -425,7 +425,7 @@ def upgrade():
         sa.Column("numb_tracks", sa.Integer(), nullable=True),
         sa.Column("numb_users", sa.Integer(), nullable=True),
         sa.Column("numb_sensors", sa.Integer(), nullable=True),
-        sa.ForeignKeyConstraint(["phenomenon_name"], ["envirocarphenomenon.name"],),
+        sa.ForeignKeyConstraint(["phenomenon_unit"], ["envirocarphenomenon.unit"],),
         sa.ForeignKeyConstraint(["sensor_id"], ["envirocarsensor.sensor_id"],),
         sa.PrimaryKeyConstraint("hash_id"),
     )
@@ -436,9 +436,9 @@ def upgrade():
         unique=False,
     )
     op.create_index(
-        op.f("ix_envirocarsensorstatistic_phenomenon_name"),
+        op.f("ix_envirocarsensorstatistic_phenomenon_unit"),
         "envirocarsensorstatistic",
-        ["phenomenon_name"],
+        ["phenomenon_unit"],
         unique=False,
     )
     op.create_index(
@@ -628,7 +628,7 @@ def upgrade():
         "envirocartrackstatistic",
         sa.Column("hash_id", sa.CHAR(length=32), nullable=False),
         sa.Column("track_id", sa.String(), nullable=False),
-        sa.Column("phenomenon_name", sa.String(), nullable=False),
+        sa.Column("phenomenon_unit", sa.String(), nullable=False),
         sa.Column("max", sa.Float(asdecimal=True), nullable=True),
         sa.Column("avg", sa.Float(asdecimal=True), nullable=True),
         sa.Column("min", sa.Float(asdecimal=True), nullable=True),
@@ -636,7 +636,7 @@ def upgrade():
         sa.Column("numb_tracks", sa.Float(asdecimal=True), nullable=True),
         sa.Column("numb_users", sa.Float(asdecimal=True), nullable=True),
         sa.Column("numb_sensors", sa.Float(asdecimal=True), nullable=True),
-        sa.ForeignKeyConstraint(["phenomenon_name"], ["envirocarphenomenon.name"],),
+        sa.ForeignKeyConstraint(["phenomenon_unit"], ["envirocarphenomenon.unit"],),
         sa.ForeignKeyConstraint(["track_id"], ["envirocartrack.track_id"],),
         sa.PrimaryKeyConstraint("hash_id"),
     )
@@ -647,9 +647,9 @@ def upgrade():
         unique=False,
     )
     op.create_index(
-        op.f("ix_envirocartrackstatistic_phenomenon_name"),
+        op.f("ix_envirocartrackstatistic_phenomenon_unit"),
         "envirocartrackstatistic",
-        ["phenomenon_name"],
+        ["phenomenon_unit"],
         unique=False,
     )
     op.create_index(
@@ -664,10 +664,10 @@ def upgrade():
         sa.Column("track_measurement_id", sa.String(), nullable=False),
         sa.Column("track_id", sa.String(), nullable=False),
         sa.Column("sensor_id", sa.String(), nullable=False),
-        sa.Column("phenomenon_name", sa.String(), nullable=False),
+        sa.Column("phenomenon_unit", sa.String(), nullable=False),
         sa.Column("phenomenon_value", sa.Float(asdecimal=True), nullable=True),
         sa.Column("date", sa.DateTime(), nullable=False),
-        sa.ForeignKeyConstraint(["phenomenon_name"], ["envirocarphenomenon.name"],),
+        sa.ForeignKeyConstraint(["phenomenon_unit"], ["envirocarphenomenon.unit"],),
         sa.ForeignKeyConstraint(["sensor_id"], ["envirocarsensor.sensor_id"],),
         sa.ForeignKeyConstraint(["track_id"], ["envirocartrack.track_id"],),
         sa.ForeignKeyConstraint(
@@ -688,9 +688,9 @@ def upgrade():
         unique=False,
     )
     op.create_index(
-        op.f("ix_envirocartrackmeasurement_phenomenon_name"),
+        op.f("ix_envirocartrackmeasurement_phenomenon_unit"),
         "envirocartrackmeasurement",
-        ["phenomenon_name"],
+        ["phenomenon_unit"],
         unique=False,
     )
     op.create_index(
@@ -729,7 +729,7 @@ def downgrade():
         table_name="envirocartrackmeasurement",
     )
     op.drop_index(
-        op.f("ix_envirocartrackmeasurement_phenomenon_name"),
+        op.f("ix_envirocartrackmeasurement_phenomenon_unit"),
         table_name="envirocartrackmeasurement",
     )
     op.drop_index(
@@ -746,7 +746,7 @@ def downgrade():
         table_name="envirocartrackstatistic",
     )
     op.drop_index(
-        op.f("ix_envirocartrackstatistic_phenomenon_name"),
+        op.f("ix_envirocartrackstatistic_phenomenon_unit"),
         table_name="envirocartrackstatistic",
     )
     op.drop_index(
@@ -799,7 +799,7 @@ def downgrade():
         table_name="envirocarsensorstatistic",
     )
     op.drop_index(
-        op.f("ix_envirocarsensorstatistic_phenomenon_name"),
+        op.f("ix_envirocarsensorstatistic_phenomenon_unit"),
         table_name="envirocarsensorstatistic",
     )
     op.drop_index(
@@ -812,7 +812,7 @@ def downgrade():
         table_name="envirocaraveragevehicletypestatistic",
     )
     op.drop_index(
-        op.f("ix_envirocaraveragevehicletypestatistic_phenomenon_name"),
+        op.f("ix_envirocaraveragevehicletypestatistic_phenomenon_unit"),
         table_name="envirocaraveragevehicletypestatistic",
     )
     op.drop_index(
@@ -829,7 +829,7 @@ def downgrade():
         table_name="envirocaraveragemanufacturerstatistic",
     )
     op.drop_index(
-        op.f("ix_envirocaraveragemanufacturerstatistic_phenomenon_name"),
+        op.f("ix_envirocaraveragemanufacturerstatistic_phenomenon_unit"),
         table_name="envirocaraveragemanufacturerstatistic",
     )
     op.drop_index(
@@ -850,7 +850,7 @@ def downgrade():
         table_name="envirocaraveragecategorystatistics",
     )
     op.drop_index(
-        op.f("ix_envirocaraveragecategorystatistics_phenomenon_name"),
+        op.f("ix_envirocaraveragecategorystatistics_phenomenon_unit"),
         table_name="envirocaraveragecategorystatistics",
     )
     op.drop_index(
@@ -912,7 +912,7 @@ def downgrade():
     op.drop_table("eurostatgeneralprice")
     op.drop_index(op.f("ix_envirocarsensor_sensor_id"), table_name="envirocarsensor")
     op.drop_table("envirocarsensor")
-    op.drop_index(op.f("ix_envirocarphenomenon_name"), table_name="envirocarphenomenon")
+    op.drop_index(op.f("ix_envirocarphenomenon_unit"), table_name="envirocarphenomenon")
     op.drop_table("envirocarphenomenon")
     op.drop_index(op.f("ix_countrydata_id"), table_name="countrydata")
     op.drop_index(op.f("ix_countrydata_country_numeric"), table_name="countrydata")
