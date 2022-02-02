@@ -1,6 +1,8 @@
 import csv
+import errno
 import io
 import logging
+import os
 from pathlib import Path
 from typing import Dict, List, Union
 
@@ -21,7 +23,14 @@ class CountryCodesReader(BaseReader):
         self.name = "CountryCodesReader"
 
     def enrich_with_geometries(self, country_geometry_file: Union[Path, str]) -> None:
-        geometry_file = self._download_data(country_geometry_file)
+        geometry_file: Union[Path, None] = self._download_data(country_geometry_file)
+        if not geometry_file:
+            logger.warning(
+                f"Enrich geometries called with no valid geometry file Path: {country_geometry_file}"
+            )
+            raise FileNotFoundError(
+                errno.ENOENT, os.strerror(errno.ENOENT), country_geometry_file
+            )
         files: List = file_management.unzip_download(
             zip_file_path=geometry_file, destination_folder=self._tempfolder
         )
@@ -73,13 +82,17 @@ class CountryCodesReader(BaseReader):
                         MultiPolygon, Dict
                     ] = shape_record.shape.__geo_interface__
                     if geom["type"] == "Polygon":
-                        geom = shape(MultiPolygon([shape(geom)]))
+                        country.geom = shape(MultiPolygon([shape(geom)]))
 
                     else:
-                        geom = shape(geom)
-                    country.geom = "SRID=4326;" + geom.__str__()
+                        country.geom = shape(geom)
 
-    def _process_data(self, data_file: Path) -> None:
+    def _process_data(self, data_file: Union[Path, None]) -> None:
+        if not data_file:
+            logger.warning(
+                "Countries data _process_data function called with invalid data_file."
+            )
+            return
         with open(data_file, newline="", encoding="utf-8") as f:
             reader = csv.reader(f, delimiter=",", quotechar='"')
             header_row = next(reader)

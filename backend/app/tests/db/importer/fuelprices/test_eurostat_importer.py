@@ -10,6 +10,10 @@ from app.models import EurostatCountryPrice, EurostatGeneralPrice
 
 
 def test_eurostat_importer(db: Session) -> None:
+    # Clean the database
+    db.query(EurostatCountryPrice).delete()
+    db.query(EurostatGeneralPrice).delete()
+    db.commit()
 
     country_codes_reader: CountryCodesReader = CountryCodesReader(
         settings.COUNTRY_CODES_TEST_PATH

@@ -9,6 +9,9 @@ from app.models import CarFuelDataCar
 
 
 def test_cfd_importer(db: Session) -> None:
+    # Clean the database
+    db.query(CarFuelDataCar).delete()
+    db.commit()
     cfd_reader_test: CarFuelDataReader = CarFuelDataReader(
         settings.CARFUELDATA_TEST_PATH_OR_URL
     )

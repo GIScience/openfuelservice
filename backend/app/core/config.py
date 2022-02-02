@@ -6,6 +6,7 @@ from typing import Any, Dict, List, Optional, Union
 
 import yaml
 from pydantic import AnyHttpUrl, BaseSettings, EmailStr, HttpUrl, PostgresDsn, validator
+from requests_toolbelt import user_agent
 
 script_location = pathlib.Path(__file__).parent.resolve()
 logger = logging.getLogger(__name__)
@@ -92,54 +93,37 @@ class Settings(BaseSettings):
     CELERY_BROKER_URL: str = "amqp://guest@queue//"
 
     FILE_FOLDER: str = f"{script_location}/../files/"
+    TEST_FILE_FOLDER: str = f"{script_location}/../files/"
 
     # category_list
     CAR_CATEGORIES: Dict = {}
 
     @validator("CAR_CATEGORIES", pre=True)
     def get_car_categories(cls, v: Optional[str], values: Dict[str, Any]) -> Dict:
-        try:
-            return yaml.safe_load(
-                open(
-                    f"{values['FILE_FOLDER']}/internal/categories.yml", encoding="utf-8"
-                )
-            )
-        except Exception:
-            logger.error("Couldn't read car categories from file.")
-            return {}
+        return yaml.safe_load(
+            open(f"{values['FILE_FOLDER']}/internal/categories.yml", encoding="utf-8")
+        )
 
     # car_brands
     CAR_BRANDS: Dict = {}
 
     @validator("CAR_BRANDS", pre=True)
     def get_car_brands(cls, v: Optional[str], values: Dict[str, Any]) -> Dict:
-        try:
-            return yaml.safe_load(
-                open(
-                    f"{values['FILE_FOLDER']}/internal/car_brands.yml", encoding="utf-8"
-                )
-            )
-        except Exception:
-            logger.error("Couldn't car brands from file.")
-            return {}
+        return yaml.safe_load(
+            open(f"{values['FILE_FOLDER']}/internal/car_brands.yml", encoding="utf-8")
+        )
 
     # fixed_matches
     FIXED_MATCHES: Dict = {}
 
     @validator("FIXED_MATCHES", pre=True)
     def get_fixed_matches(cls, v: Optional[str], values: Dict[str, Any]) -> Dict:
-        try:
-            return yaml.safe_load(
-                open(
-                    f"{values['FILE_FOLDER']}/internal/fixed_matches.yml",
-                    encoding="utf-8",
-                )
+        return yaml.safe_load(
+            open(
+                f"{values['FILE_FOLDER']}/internal/fixed_matches.yml", encoding="utf-8",
             )
-        except Exception:
-            logger.error("Couldn't car brands from file.")
-            return {}
+        )
 
-    # allowed_fuel_types
     ENABLED_FUEL_TYPES: List[str] = ["gasoline", "diesel"]
 
     # CARFUELDATA_PATH_OR_URL: str = "https://carfueldata.vehicle-certification-agency.gov.uk/downloads/create_latest_data_csv.asp?id=6"  # noqa: E501
@@ -165,6 +149,20 @@ class Settings(BaseSettings):
     EUROSTAT_FUEL_HISTORY_2005_ONWARDS: str = "https://ec.europa.eu/energy/observatory/reports/Oil_Bulletin_Prices_History.xlsx"  # noqa: E501
     EUROSTAT_TEST_FUEL_HISTORY_2005_ONWARDS: str = f"{FILE_FOLDER}/fuelprices/eurostat_time_series_years_2005_2021.zip"  # noqa: E501
     EUROSTAT_FUEL_ATTRIBUTION: str = "European Union, 1995 - today"
+
+    # Envirocar
+    ENVIROCAR_BASE_URL: str = "https://envirocar.org/api/stable"
+    TEST_ENVIROCAR_PHENOMENONS_RESPONSE: str = f"{FILE_FOLDER}/envirocar/test_envircoar_phenomenons.json"
+    TEST_ENVIROCAR_SENSOR_ID_RESPONSE: str = f"{FILE_FOLDER}/envirocar/test_envirocar_sensor_id_response.json"
+    TEST_ENVIROCAR_SENSORS_RESPONSE: str = f"{FILE_FOLDER}/envirocar/test_envirocar_sensors_response.json"
+    TEST_ENVIROCAR_TRACK_ID_RESPONSE: str = f"{FILE_FOLDER}/envirocar/test_envirocar_track_id_response.json"
+    TEST_ENVIROCAR_TRACK_MEASUREMENT_RESPONSE: str = f"{FILE_FOLDER}/envirocar/test_envirocar_track_measurements_response.json"  # noqa: E501
+    TEST_ENVIROCAR_TRACKS_RESPONSE: str = f"{FILE_FOLDER}/envirocar/test_envirocar_tracks_response.json"
+
+    # User Agent header
+    USER_AGENT = user_agent("Openfuelservice", "0.0.1")
+    USER_AGENT_FROM = "julian.psotta@heigit.org"
+    GLOBAL_HEADERS = {"User-Agent": USER_AGENT, "From": USER_AGENT_FROM}
 
 
 settings = Settings()

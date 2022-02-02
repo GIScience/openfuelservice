@@ -1,12 +1,14 @@
 import datetime
 import hashlib
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Union
 
+from geoalchemy2 import WKBElement
 from sqlalchemy.ext.declarative import as_declarative, declared_attr
 from sqlalchemy.inspection import inspect
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, validates
 
 from app.db.importer.mappings import BaseMapping
+from app.misc import json_decoders
 
 
 @as_declarative()
@@ -60,3 +62,7 @@ class Base:
                 value = value.strftime("%Y%m%d")
             hash_string = f"{hash_string}{str(value).strip()}"
         return hashlib.md5(hash_string.strip(" ").encode("utf-8")).hexdigest()
+
+    @validates("geom")
+    def validate_geom(self, _: str, geom: Any) -> Union[WKBElement, None]:
+        return json_decoders.json_to_wkb_element(geom)

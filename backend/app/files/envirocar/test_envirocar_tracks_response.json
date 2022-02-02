@@ -1,0 +1,38 @@
+{
+  "tracks": [
+    {
+      "id": "61d543bef4c3e97fbd560705",
+      "length": 1.6433079402813489,
+      "begin": "2021-12-30T17:18:00Z",
+      "end": "2021-12-30T17:21:01Z",
+      "sensor": {
+        "type": "car",
+        "properties": {
+          "engineDisplacement": 1595,
+          "model": "Golf V Plus 1.6",
+          "id": "5fd9d14e05fa792e88dc8b7b",
+          "fuelType": "gasoline",
+          "constructionYear": 2006,
+          "manufacturer": "VW"
+        }
+      }
+    },
+    {
+      "id": "61d543bef4c3e97fbd56072d",
+      "length": 3.203048184310685,
+      "begin": "2021-12-30T16:39:26Z",
+      "end": "2021-12-30T16:44:42Z",
+      "sensor": {
+        "type": "car",
+        "properties": {
+          "engineDisplacement": 1595,
+          "model": "Golf V Plus 1.6",
+          "id": "5fd9d14e05fa792e88dc8b7b",
+          "fuelType": "gasoline",
+          "constructionYear": 2006,
+          "manufacturer": "VW"
+        }
+      }
+    }
+  ]
+}

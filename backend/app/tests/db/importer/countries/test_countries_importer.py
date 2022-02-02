@@ -9,6 +9,10 @@ from app.models import CountryData
 
 
 def test_countries_importer(db: Session) -> None:
+    # Clean the database
+    db.query(CountryData).delete()
+    db.commit()
+
     country_codes_reader: CountryCodesReader = CountryCodesReader(
         settings.COUNTRY_CODES_TEST_PATH
     )

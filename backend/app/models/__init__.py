@@ -8,9 +8,8 @@ from .envirocar import (
     EnvirocarSensor,
     EnvirocarSensorStatistic,
     EnvirocarTrack,
-    EnvirocarTrackFeature,
     EnvirocarTrackMeasurement,
-    EnvirocarTrackStatistic,
+    EnvirocarTrackMeasurementPhenomenon,
     MatchedWikiEnvirocar,
 )
 from .eurostat import EurostatCountryPrice, EurostatGeneralPrice

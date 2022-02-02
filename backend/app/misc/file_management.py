@@ -16,7 +16,7 @@ def unzip_download(zip_file_path: Path, destination_folder: Path) -> List[Path]:
             raise FileNotFoundError
         elif zip_file_path.name.rsplit(".", 1)[-1] != "zip":
             logger.debug(
-                f"File {zip_file_path} is valid but not a zip file. Returning it."
+                f"File {zip_file_path} exists but is not a zip file. Returning it."
             )
             return [zip_file_path]
         elif not zipfile.is_zipfile(zip_file_path):  # noqa
@@ -44,8 +44,8 @@ def unzip_download(zip_file_path: Path, destination_folder: Path) -> List[Path]:
 
 
 def download_file_with_name(
-    url_or_path: Union[str, Path], file_name: str, output_folder: Path
-) -> Path:
+    url_or_path: Union[str, Path, None], file_name: str, output_folder: Path
+) -> Union[Path, None]:
     """Downloads and stores a file. It will always be stored in the temp folder!!!
         If the path is not an url but local path it will copy the file to the temp destination.
 
@@ -56,7 +56,11 @@ def download_file_with_name(
         :rtype: str
         """
     try:
-        if type(url_or_path) == str and "https://" in url_or_path:  # noqa
+        if url_or_path is None:
+            return None
+        if type(url_or_path) == str and any(
+            schema in url_or_path for schema in ["https://", "http://"]
+        ):  # noqa
             response = get_response(url_or_path)
             if not response:
                 return Path("")

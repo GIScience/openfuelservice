@@ -337,7 +337,9 @@ class EurostatFuelReader(BaseReader):
                     date_value
                 ] = eurostat_price_object
 
-    def _process_data(self, data_file: Path) -> None:
+    def _process_data(self, data_file: Union[Path, None]) -> None:
+        if not data_file:
+            return
         files: list = file_management.unzip_download(
             zip_file_path=data_file, destination_folder=self._tempfolder
         )
@@ -366,7 +368,7 @@ class EurostatFuelReader(BaseReader):
                 )
                 sheet_mapping: EurostatSheetMapping
                 for sheet_mapping in sheets:
-                    self._process_per_ctr(wb.get_sheet_by_name(sheet_mapping.value))
+                    self._process_per_ctr(wb[sheet_mapping.value])
         database_objects: Dict
         for key, database_objects in self._objects_list_ordered.items():
             while database_objects:

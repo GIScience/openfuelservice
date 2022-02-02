@@ -17,7 +17,12 @@ class CarFuelDataReader(BaseReader):
         super().__init__(file_to_read)
         self.name = "CarFuelDataReader"
 
-    def _process_data(self, data_file: Path) -> None:
+    def _process_data(self, data_file: Union[Path, None]) -> None:
+        if not data_file:
+            logger.warning(
+                "Carfueldata Reader _process_data called with invalid data_file."
+            )
+            return
         files: list = file_management.unzip_download(
             zip_file_path=data_file, destination_folder=self._tempfolder
         )

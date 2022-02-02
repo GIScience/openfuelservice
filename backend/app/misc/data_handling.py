@@ -1,5 +1,5 @@
 import logging
-from typing import Dict, Union
+from typing import Any, Dict, Mapping, Union
 
 from app.core.config import settings
 
@@ -24,6 +24,20 @@ def check_manufacturer(manufacturer_to_check: str) -> Union[str, None]:
             return manufacturer
     logger.debug(f"Manufacturer: {manufacturer_to_check} not in known list.")
     return None
+
+
+def flatten_dictionary(
+    d: Dict,
+) -> Union[Mapping[Any, Any], Mapping[Any, Union[Mapping[Any, Any], Dict[Any, Any]]]]:
+    items: Dict[Any, Any] = {}
+    if d is None or not isinstance(d, dict):
+        return {}
+    for k, v in d.items():
+        if isinstance(v, dict):
+            items.update(flatten_dictionary(v))  # type: ignore
+        else:
+            items.update({k.lower().strip(): v})
+    return items
 
 
 # def get_negative_brand_intents(brand_name_or_path: str or PosixPath) -> dict() or None:

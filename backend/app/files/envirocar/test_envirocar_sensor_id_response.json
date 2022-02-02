@@ -1,0 +1,15 @@
+{
+  "5fd9d14e05fa792e88dc8b7b": {
+    "type": "car",
+    "properties": {
+      "fuelType": "gasoline",
+      "constructionYear": 2006,
+      "created": "2020-12-16T09:20:14Z",
+      "engineDisplacement": 1595,
+      "modified": "2020-12-16T09:20:14Z",
+      "model": "Golf V Plus 1.6",
+      "id": "5fd9d14e05fa792e88dc8b7b",
+      "manufacturer": "VW"
+    }
+  }
+}
