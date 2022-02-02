@@ -145,7 +145,7 @@ class EnvirocarReader(BaseReader):
                 continue
             if not skip_next_pages and response.links.get("last"):
                 last_link: Optional[Any] = response.links.get("last")
-                if not type(last_link) == Dict:
+                if not isinstance(last_link, Dict):
                     continue
                 last_url: urllib.parse.ParseResult = urlparse(last_link["url"])
                 original_base_url = response.url.rsplit("?")[0] + "/"

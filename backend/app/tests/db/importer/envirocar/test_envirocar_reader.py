@@ -141,8 +141,8 @@ def test_fetch_and_process_data(
     )
     envirocar_reader.fetch_and_process_data()
     # Check sensors and track_ids response
-    assert len(envirocar_reader.objects_list) == 1247
-    for envirocar_object in envirocar_reader.objects_list:
+    assert len(envirocar_reader.objects_ordered) == 1247
+    for index, envirocar_object in envirocar_reader.objects_ordered.items():
         assert type(envirocar_object) in [
             EnvirocarPhenomenon,
             EnvirocarTrack,

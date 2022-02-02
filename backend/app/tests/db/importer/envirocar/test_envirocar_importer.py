@@ -37,7 +37,7 @@ def test_envirocar_importer(
     envirocar_reader.fetch_and_process_data()
     for index, object_collection in envirocar_reader.objects_ordered.items():
         BaseImporter(db=db).import_data(db_objects=object_collection)
-        if index == "phenomenons":
+        if index == 0:
             unique_ids_phenomenons = list(
                 set(
                     [
@@ -47,7 +47,7 @@ def test_envirocar_importer(
                     ]
                 )
             )
-        if index == "sensors":
+        if index == 1:
             unique_ids_sensors = list(
                 set(
                     [
@@ -57,7 +57,7 @@ def test_envirocar_importer(
                     ]
                 )
             )
-        elif index == "tracks":
+        elif index == 2:
             unique_ids_tracks = list(
                 set(
                     [
@@ -67,7 +67,7 @@ def test_envirocar_importer(
                     ]
                 )
             )
-        elif index == "track_measurements":
+        elif index == 3:
             unique_ids_track_measurements = list(
                 set(
                     [
@@ -77,7 +77,7 @@ def test_envirocar_importer(
                     ]
                 )
             )
-        elif index == "track_measurements_phenomenons":
+        elif index == 4:
             unique_ids_track_measurements_phenomenons = list(
                 set(
                     [
