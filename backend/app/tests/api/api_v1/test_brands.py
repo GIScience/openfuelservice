@@ -10,7 +10,7 @@ from requests import Response
 
 
 def test_read_brands(
-        client: TestClient, db: Session, mock_cfd_brands: List[models.CarFuelDataCar]
+        client: TestClient, db: Session, mock_cfd_cars
 ) -> None:
     response: Response = client.get(f"{settings.API_V1_STR}/brands/", )
     assert response.status_code == 200
@@ -18,5 +18,5 @@ def test_read_brands(
     assert isinstance(content["brands"], list)
     assert len(content["brands"]) == 10
     carFuelDataCar: CarFuelDataCar
-    for carFuelDataCar in mock_cfd_brands:
+    for carFuelDataCar in mock_cfd_cars:
         assert carFuelDataCar.manufacturer in content["brands"]

@@ -185,7 +185,7 @@ def random_track_measurement_1(
 
 
 @pytest.fixture(scope="function")
-def mock_cfd_brands(db: Session,) -> Generator[List[models.CarFuelDataCar], None, None]:
+def mock_cfd_cars(db: Session) -> Generator[List[models.CarFuelDataCar], None, None]:
     db.query(CarFuelDataCar).delete()
     db.commit()
     cfd_reader_test: CarFuelDataReader = CarFuelDataReader(
