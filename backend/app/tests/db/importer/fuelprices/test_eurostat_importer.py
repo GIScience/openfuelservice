@@ -45,3 +45,4 @@ def test_eurostat_importer(db: Session) -> None:
     assert len(all_general_prices_in_db) == len(general_price_objects)
     db.query(EurostatCountryPrice).delete()
     db.query(EurostatGeneralPrice).delete()
+    db.commit()

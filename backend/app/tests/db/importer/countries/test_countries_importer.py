@@ -32,3 +32,4 @@ def test_countries_importer(db: Session) -> None:
         assert source_country[0] in unique_ids
 
     db.query(CountryData).delete()
+    db.commit()
