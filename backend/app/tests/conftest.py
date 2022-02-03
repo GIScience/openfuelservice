@@ -1,6 +1,6 @@
 import json
 import pathlib
-from typing import Dict, Generator
+from typing import Dict, Generator, List
 
 import pytest
 import pytest_alembic
@@ -14,8 +14,11 @@ from sqlalchemy.orm import Session
 from alembic.config import Config
 from app import crud, models, schemas
 from app.core.config import settings
+from app.db.importer.base_importer import BaseImporter
+from app.db.importer.carfueldata.carfueldata_reader import CarFuelDataReader
 from app.db.session import SessionLocal
 from app.main import app
+from app.models import CarFuelDataCar
 from app.tests.utils.envirocar import (
     create_random_sensor,
     create_random_track,
@@ -179,6 +182,22 @@ def random_track_measurement_1(
     crud.track_measurement.remove(db=db, id=track.id)
     crud.track.remove(db=db, id=track.id)
     crud.sensor.remove(db=db, id=sensor.id)
+
+
+@pytest.fixture(scope="function")
+def mock_cfd_brands(db: Session,) -> Generator[List[models.CarFuelDataCar], None, None]:
+    db.query(CarFuelDataCar).delete()
+    db.commit()
+    cfd_reader_test: CarFuelDataReader = CarFuelDataReader(
+        settings.CARFUELDATA_TEST_PATH_OR_URL
+    )
+    cfd_reader_test.fetch_and_process_data()
+    BaseImporter(db=db).import_data(db_objects=cfd_reader_test.objects_list)
+
+    yield cfd_reader_test.objects_list
+    cfd: CarFuelDataCar
+    db.query(CarFuelDataCar).delete()
+    db.commit()
 
 
 @pytest.fixture(scope="function")
