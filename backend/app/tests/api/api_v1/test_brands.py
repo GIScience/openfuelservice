@@ -17,6 +17,6 @@ def test_read_brands(
     content: dict = response.json()
     assert isinstance(content["brands"], list)
     assert len(content["brands"]) == 10
-    carfueldatacar: CarFuelDataCar
-    for carfueldatacar in mock_cfd_brands:
-        assert carfueldatacar.manufacturer in content["brands"]
+    carFuelDataCar: CarFuelDataCar
+    for carFuelDataCar in mock_cfd_brands:
+        assert carFuelDataCar.manufacturer in content["brands"]
