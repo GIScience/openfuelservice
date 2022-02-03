@@ -11,7 +11,7 @@ router = APIRouter()
 
 
 @router.get("/", response_model=schemas.Brands)
-def read_brands(db: Session = Depends(deps.get_db)) -> Any:
+async def read_brands(db: Session = Depends(deps.get_db)) -> Any:
     """Request the available models for fuel calculations."""
     return {
         "data": [
