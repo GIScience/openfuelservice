@@ -142,14 +142,16 @@ def test_fetch_and_process_data(
     envirocar_reader.fetch_and_process_data()
     # Check sensors and track_ids response
     assert len(envirocar_reader.objects_ordered) == 5
-    all_objects = []
-    [all_objects.extend(objects) for objects in envirocar_reader.objects_ordered.values()]
-    assert len(all_objects) == 1247
-    for envirocar_object in all_objects:
-        assert type(envirocar_object) in [
-            EnvirocarPhenomenon,
-            EnvirocarTrack,
-            EnvirocarSensor,
-            EnvirocarTrackMeasurementPhenomenon,
-            EnvirocarTrackMeasurement,
-        ]
+    assert (
+        sum([len(objects) for objects in envirocar_reader.objects_ordered.values()])
+        == 1247
+    )
+    for i in range(0, len(envirocar_reader.objects_ordered)):
+        for envirocar_object in envirocar_reader.objects_ordered[i]:
+            assert type(envirocar_object) in [
+                EnvirocarPhenomenon,
+                EnvirocarTrack,
+                EnvirocarSensor,
+                EnvirocarTrackMeasurementPhenomenon,
+                EnvirocarTrackMeasurement,
+            ]

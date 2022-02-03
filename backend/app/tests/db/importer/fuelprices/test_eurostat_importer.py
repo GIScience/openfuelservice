@@ -43,3 +43,5 @@ def test_eurostat_importer(db: Session) -> None:
     all_general_prices_in_db: List = db.query(EurostatGeneralPrice.id).all()
     assert len(all_country_prices_in_db) == len(country_price_objects)
     assert len(all_general_prices_in_db) == len(general_price_objects)
+    db.query(EurostatCountryPrice).delete()
+    db.query(EurostatGeneralPrice).delete()

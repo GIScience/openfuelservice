@@ -31,4 +31,4 @@ def test_countries_importer(db: Session) -> None:
     for source_country in unique_ids_db:
         assert source_country[0] in unique_ids
 
-    CountryData.__table__.delete().where(CountryData.id.in_([unique_ids]))
+    db.query(CountryData).delete()
