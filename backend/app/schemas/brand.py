@@ -1,6 +1,6 @@
-from pydantic import BaseModel
+from app.schemas.schema_base import SchemaBase
 
 
 # Properties to return to client
-class Brands(BaseModel):
-    brands: list
+class Brands(SchemaBase):
+    data: list
