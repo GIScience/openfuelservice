@@ -1,12 +1,13 @@
 import json
 import pathlib
-from typing import Dict, Generator, List
+from typing import AsyncGenerator, Dict, Generator, List
 
 import pytest
 import pytest_alembic
 import responses
 import sqlalchemy
 from fastapi.testclient import TestClient
+from httpx import AsyncClient
 from pytest_alembic.runner import MigrationContext
 from sqlalchemy.engine.base import Engine
 from sqlalchemy.orm import Session
@@ -53,8 +54,14 @@ def db(alembic_runner: MigrationContext) -> Generator:
 
 
 @pytest.fixture(scope="module")
-def client() -> Generator:
+def client() -> Generator[TestClient, None, None]:
     with TestClient(app) as c:
+        yield c
+
+
+@pytest.fixture(scope="function")
+async def async_client() -> AsyncGenerator[AsyncClient, None]:
+    async with AsyncClient(app=app, base_url="http://testserver") as c:
         yield c
 
 
