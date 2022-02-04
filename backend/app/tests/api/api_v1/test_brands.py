@@ -21,7 +21,7 @@ async def test_read_brands(
     data = content["data"]
     assert len(data) == 10
     assert isinstance(data, list)
-    assert data == [
+    assert data.sort() == [
         "Aston Martin",
         "Abarth",
         "Honda",
@@ -32,4 +32,4 @@ async def test_read_brands(
         "Citroën",
         "Tesla",
         "Hyundai",
-    ]
+    ].sort()
