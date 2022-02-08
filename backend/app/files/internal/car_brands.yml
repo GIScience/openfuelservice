@@ -8757,7 +8757,6 @@ brands:
   Volpe: ''
   Voltor: ''
   Voltra: ''
-  Volugrafo: ''
   Volvo: ''
   Volvo-Autocar: ''
   Vomag: ''
@@ -9665,6 +9664,7 @@ aliases:
   MAN: ['MAN-Büssing', 'MAN-Meccanica', 'MAN-VW']
 
 ignore_list:
+  Volugrafo: 'reason:relevance'
   Kleinstwagen: 'reason: category'
   Kei-Car: 'reason: relevance'
   Balaton (Auto): 'reason: relevance'
@@ -9760,6 +9760,7 @@ ignore_list:
   Twike: 'reason: relevance'
   Trouvé Tricycle: 'reason: relevance'
   List of microcars by country of origin: 'reason: category'
+  List of microcars: 'reason: category'
   Microcar: 'reason: relevance'
   Motorised quadricycle: 'reason: relevance'
   Airway (automobile): 'reason: relevance'
