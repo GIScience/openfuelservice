@@ -1,9 +1,102 @@
 import logging
-from typing import Any, Dict, Mapping, Union
+import re
+from typing import Any, Dict, List, Mapping, Union
 
 from app.core.config import settings
 
 logger = logging.getLogger(__name__)
+
+
+def clean_vehicle_name(vehicle_name: str) -> Union[str, None]:
+    if not vehicle_name:
+        return None
+    new_name = re.sub(r"[\\\"\'#@;*<>{}`+=~|!?,]", "", vehicle_name).strip()
+    new_name = re.sub(r" \.", "", new_name).strip().rstrip(".")
+    new_name = re.sub(r" +", " ", new_name).strip()
+    if not len(new_name) > 0:
+        return None
+    return new_name
+
+
+def vehicle_is_ignored(car_brand_or_name: str) -> bool:
+    if car_brand_or_name in settings.CAR_BRANDS["ignore_list"]:
+        return True
+    return False
+
+
+def check_static_vehicles_list(car_name: str) -> tuple:
+    if car_name in settings.CAR_BRANDS["vehicles"]:
+        model_brand = settings.CAR_BRANDS["vehicles"][car_name]["brand"]
+        model_name = settings.CAR_BRANDS["vehicles"][car_name]["name"]
+        return model_brand, model_name
+    return None, None
+
+
+def check_brand_aliases(short_name: str, car_name: str) -> tuple:
+    correct_brand: Union[str, None] = None
+    if not short_name or not car_name:
+        return None, None
+    for brand in settings.CAR_BRANDS["aliases"]:
+        if short_name.lower().strip() == brand.lower().strip():
+            correct_brand = brand
+        aliases: List = [
+            alias.strip().lower() for alias in settings.CAR_BRANDS["aliases"][brand]
+        ]
+        if not short_name.strip().lower() in aliases:
+            continue
+        for i in range(len(aliases)):
+            if short_name.strip().lower() == aliases[i]:
+                correct_brand = brand
+                break
+        break
+
+    if not correct_brand:
+        return None, None
+
+    model_name = car_name.replace(short_name, "", -1).strip()
+    startswith = None
+    endswith = None
+    if len(model_name) > 0:
+        startswith = model_name[0]
+        endswith = model_name[-1:]
+    if startswith == "-" or startswith == "/":
+        model_name = model_name[1:]
+    if startswith == "(" and endswith == ")":
+        return None, None
+    return correct_brand, model_name
+
+
+def check_brands(short_name: str, wiki_name: str) -> tuple:
+    if len(short_name) <= 1 or short_name not in settings.CAR_BRANDS["brands"]:
+        return None, None
+    # cleaned_wiki_name = re.sub("[0-9]", " ", wiki_name)
+    if re.search(r"\b{}\b".format(short_name), wiki_name):
+        model_name = wiki_name.replace(short_name, "", -1).strip()
+        model_brand = short_name.strip()
+        if model_name and len(model_name) > 0:
+            startswith = model_name[0]
+            endswith = model_name[-1:]
+            if startswith == "-" or startswith == "/":
+                model_name = model_name[1:]
+            if startswith == "(" and endswith == ")":
+                return None, None
+            return model_brand, model_name
+    cleaned_wiki_name = re.sub("[/]", "", wiki_name)
+    cleaned_wiki_name = re.sub("[-]", " ", cleaned_wiki_name)
+    if cleaned_wiki_name != wiki_name and re.search(
+        r"\b{}\b".format(short_name), cleaned_wiki_name
+    ):
+        model_name = cleaned_wiki_name.replace(short_name, "", -1).strip()
+        model_brand = short_name.strip()
+        if model_name and len(model_name) > 0:
+            startswith = model_name[0]
+            endswith = model_name[-1:]
+            if startswith == "-" or startswith == "/":
+                model_name = model_name[1:]
+            if startswith == "(" and endswith == ")":
+                return None, None
+            return model_brand, model_name
+    return None, None
 
 
 def check_manufacturer(manufacturer_to_check: str) -> Union[str, None]:

@@ -145,6 +145,4 @@ class CarFuelDataAverageCategoryStatistics(Base):
     value = Column(Float, nullable=False)
     numb_cars = Column(Integer, nullable=False)
     year = Column(Integer, nullable=False, index=True)
-    category_short_eu = Column(
-        String, ForeignKey("{}.category_short_eu".format("wikicarcategory"))
-    )
+    category_short_eu = Column(String, ForeignKey("{}.id".format("wikicarcategory")))

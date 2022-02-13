@@ -257,9 +257,7 @@ class EnvirocarAverageCategoryStatistics(Base):
     min = Column(Float(asdecimal=True))
     measurements = Column(Integer, nullable=False)
     numb_sensors = Column(Integer, nullable=False)
-    category_short_eu = Column(
-        String, ForeignKey("{}.category_short_eu".format("wikicarcategory"))
-    )
+    category_short_eu = Column(String, ForeignKey("{}.id".format("wikicarcategory")))
 
 
 class EnvirocarAverageVehicleTypeStatistic(Base):

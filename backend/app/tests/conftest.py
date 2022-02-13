@@ -1,4 +1,5 @@
 import json
+import logging
 import pathlib
 from typing import AsyncGenerator, Dict, Generator, List
 
@@ -9,15 +10,17 @@ import sqlalchemy
 from fastapi.testclient import TestClient
 from httpx import AsyncClient
 from pytest_alembic.runner import MigrationContext
+from sqlalchemy import exc
 from sqlalchemy.engine.base import Engine
 from sqlalchemy.orm import Session
 
 from alembic.config import Config
 from app import crud, models, schemas
 from app.core.config import settings
+from app.db.base_class import Base
 from app.db.importer.base_importer import BaseImporter
 from app.db.importer.carfueldata.carfueldata_reader import CarFuelDataReader
-from app.db.session import SessionLocal
+from app.db.session import SessionLocal, engine
 from app.main import app
 from app.models import CarFuelDataCar
 from app.tests.utils.envirocar import (
@@ -33,24 +36,67 @@ from app.tests.utils.utils import (
 )
 
 script_location = pathlib.Path(__file__).parent.resolve()
+logger = logging.getLogger(__name__)
 
 
 @pytest.fixture(scope="session")
 def db(alembic_runner: MigrationContext) -> Generator:
-    # try:
-    #     alembic_runner.migrate_up_to("head")
-    # except exc.ProgrammingError:
-    #     Base.metadata.drop_all(bind=engine)
-    # finally:
-    #     alembic_runner.migrate_up_to("head")
-    # try:
-    #     alembic_runner.migrate_down_to("base")
-    # except exc.ProgrammingError:
-    #     Base.metadata.create_all(bind=engine)
-    # finally:
-    #     Base.metadata.drop_all(bind=engine)
-    #     alembic_runner.migrate_up_to("head")
+    # client = None
+    # container_id = None
+    # if settings.USE_CONTAINER_TESTING_DB:
+    #     try:
+    #         client = docker.APIClient(base_url='unix://var/run/docker.sock')
+    #         logger.info("##################################################")
+    #         logger.info("> Initializing containerized database for testing: ")
+    #         logger.info(f"> Docker Version: {client.version()}")
+    #         logger.info(f"> Docker API Version: {client.api_version}")
+    #         logger.info(f"> Docker image: postgis/postgis:12-3.1-alpine")
+    #         logger.info(f"> Docker Ports:  5432: 1111")
+    #         logger.info(f"> Docker POSTGRES_USER:  postgres")
+    #         logger.info(f"> Docker POSTGRES_PASSWORD:  foo")
+    #         logger.info(f"> Docker POSTGRES_DB:  testing_db")
+    #         container = client.create_container(
+    #             'postgis/postgis:12-3.1-alpine', ports=[1111, 5432], environment={"POSTGRES_USER": "postgres",
+    #                                                                               "POSTGRES_PASSWORD": "foo1234",
+    #                                                                               "PGUSER": "postgres",
+    #                                                                               "POSTGRES_DB": "testing",
+    #                                                                               "PGPORT": 5432},
+    #             healthcheck={"test": ["CMD-SHELL", "pg_isready -U postgres"], "interval": 10000000000,
+    #             "timeout": 5000000000,
+    #                          "retries": 5},
+    #             host_config=client.create_host_config(port_bindings={
+    #                 5432: 1111,
+    #             }), detach=True
+    #         )
+    #         container_id = container['Id']
+    #         logger.info(f"> Docker container created with id: {container_id}")
+    #         logger.info(f"> Starting Docker container with id: {container_id}")
+    #         client.start(container_id)
+    #         logger.info(f"> Docker container successfully started with id: {container_id}")
+    #         testing_engine = create_engine("postgresql://postgres:foo@0.0.0.0:1111/testing_db", pool_pre_ping=True)
+    #         testing_session = sessionmaker(autocommit=False, autoflush=False, bind=testing_engine)
+    #         global_session.temp_session = global_session.SessionLocal
+    #         global_session.SessionLocal = testing_session
+    #         logger.info(f"> Docker container successfully removed with id: {container_id}")
+    #     except Exception as err:
+    #         logger.error("Error setting up testing database with docker.")
+    try:
+        alembic_runner.migrate_up_to("head")
+    except exc.ProgrammingError:
+        Base.metadata.drop_all(bind=engine)
+    finally:
+        alembic_runner.migrate_up_to("head")
+    try:
+        alembic_runner.migrate_down_to("base")
+    except exc.ProgrammingError:
+        Base.metadata.create_all(bind=engine)
+    finally:
+        Base.metadata.drop_all(bind=engine)
+        alembic_runner.migrate_up_to("head")
     yield SessionLocal()
+    # if container_id and client:
+    #     client.remove_container(container_id, force=True)
+    #
 
 
 @pytest.fixture(scope="module")
@@ -141,7 +187,11 @@ def alembic_config() -> Config:
 def alembic_engine() -> Engine:
     """Override this fixture to provide pytest-alembic
     powered tests with a database handle."""
-
+    # if settings.USE_CONTAINER_TESTING_DB:
+    #     return sqlalchemy.create_engine(
+    #         settings.SQLALCHEMY_DATABASE_TESTING_URI, pool_pre_ping=True
+    #     )
+    # else:
     return sqlalchemy.create_engine(
         settings.SQLALCHEMY_DATABASE_URI, pool_pre_ping=True
     )
@@ -282,6 +332,78 @@ def envirocar_mocked_responses() -> Generator[responses.RequestsMock, None, None
             status=200,
             content_type="application/json",
         )
+        yield rsps
+        rsps.reset()
+
+
+@pytest.fixture(scope="function")
+def wikipedia_mocked_responses() -> Generator[responses.RequestsMock, None, None]:
+    with responses.RequestsMock() as rsps:
+        with open(
+            settings.TEST_WIKIPEDIA_KATEGORIE_KLEINSTWAGEN_RESPONSE, mode="r"
+        ) as f:
+            kategorie_kleinstwagen_response = json.load(f)
+        with open(
+            settings.TEST_WIKIPEDIA_KATEGORIE_KLEINSTWAGEN_INFO_RESPONSE, mode="r"
+        ) as f:
+            kategorie_kleinstwagen_info_response = json.load(f)
+        with open(
+            settings.TEST_WIKIPEDIA_KATEGORIE_LEICHTFAHRZEUGE_RESPONSE, mode="r"
+        ) as f:
+            kategorie_leichtfahrzeuge_response = json.load(f)
+        with open(
+            settings.TEST_WIKIPEDIA_KATEGORIE_LEICHTFAHRZEUGE_INFO_RESPONSE, mode="r"
+        ) as f:
+            kategorie_leichtfahrzeuge_info_response = json.load(f)
+        with open(settings.TEST_WIKIPEDIA_CATEGORY_MICROCARS_RESPONSE, mode="r") as f:
+            kategorie_microcars_response = json.load(f)
+        with open(
+            settings.TEST_WIKIPEDIA_CATEGORY_MICROCARS_INFO_RESPONSE, mode="r"
+        ) as f:
+            kategorie_microcars_info_response = json.load(f)
+        rsps.add(
+            method=responses.GET,
+            url="https://de.wikipedia.org/w/api.php?action=query&list=categorymembers&cmtitle=Kategorie%3AKleinstwagen&cmlimit=500&format=json&redirects=1",  # noqa
+            json=kategorie_kleinstwagen_response,
+            status=200,
+            content_type="application/json",
+        )
+        rsps.add(
+            method=responses.GET,
+            url="https://de.wikipedia.org/w/api.php?action=query&prop=info&titles=Kategorie%3AKleinstwagen&inprop=protection%7Ctalkid%7Cwatched%7Cwatchers%7Cvisitingwatchers%7Cnotificationtimestamp%7Csubjectid%7Curl%7Creadable%7Cpreload%7Cdisplaytitle&format=json&redirects=1",  # noqa
+            json=kategorie_kleinstwagen_info_response,
+            status=200,
+            content_type="application/json",
+        )
+        rsps.add(
+            method=responses.GET,
+            url="https://de.wikipedia.org/w/api.php?action=query&list=categorymembers&cmtitle=Kategorie%3ALeichtfahrzeug&cmlimit=500&format=json&redirects=1",  # noqa
+            json=kategorie_leichtfahrzeuge_response,
+            status=200,
+            content_type="application/json",
+        )
+        rsps.add(
+            method=responses.GET,
+            url="https://de.wikipedia.org/w/api.php?action=query&prop=info&titles=Kategorie%3ALeichtfahrzeug&inprop=protection%7Ctalkid%7Cwatched%7Cwatchers%7Cvisitingwatchers%7Cnotificationtimestamp%7Csubjectid%7Curl%7Creadable%7Cpreload%7Cdisplaytitle&format=json&redirects=1",  # noqa
+            json=kategorie_leichtfahrzeuge_info_response,
+            status=200,
+            content_type="application/json",
+        )
+        rsps.add(
+            method=responses.GET,
+            url="https://en.wikipedia.org/w/api.php?action=query&list=categorymembers&cmtitle=Category%3AMicrocars&cmlimit=500&format=json&redirects=1",  # noqa
+            json=kategorie_microcars_response,
+            status=200,
+            content_type="application/json",
+        )
+        rsps.add(
+            method=responses.GET,
+            url="https://en.wikipedia.org/w/api.php?action=query&prop=info&titles=Category%3AMicrocars&inprop=protection%7Ctalkid%7Cwatched%7Cwatchers%7Cvisitingwatchers%7Cnotificationtimestamp%7Csubjectid%7Curl%7Creadable%7Cpreload%7Cdisplaytitle&format=json&redirects=1",  # noqa
+            json=kategorie_microcars_info_response,
+            status=200,
+            content_type="application/json",
+        )
+
         yield rsps
         rsps.reset()
 

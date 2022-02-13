@@ -1,0 +1,22 @@
+{
+  "batchcomplete": "",
+  "query": {
+    "categorymembers": [
+      {
+        "pageid": 287047,
+        "ns": 0,
+        "title": "Leichtfahrzeug"
+      },
+      {
+        "pageid": 4459738,
+        "ns": 0,
+        "title": "Aptera 2 Series"
+      },
+      {
+        "pageid": 7066964,
+        "ns": 0,
+        "title": "Nissan Land Glider"
+      }
+    ]
+  }
+}

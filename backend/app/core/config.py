@@ -13,6 +13,9 @@ logger = logging.getLogger(__name__)
 
 
 class Settings(BaseSettings):
+    # Testing settings
+    # USE_CONTAINER_TESTING_DB: bool = True
+
     API_V1_STR: str = "/api/v1"
     SECRET_KEY: str = secrets.token_urlsafe(32)
     # 60 minutes * 24 hours * 8 days = 8 days
@@ -158,6 +161,14 @@ class Settings(BaseSettings):
     TEST_ENVIROCAR_TRACK_ID_RESPONSE: str = f"{FILE_FOLDER}/envirocar/test_envirocar_track_id_response.json"
     TEST_ENVIROCAR_TRACK_MEASUREMENT_RESPONSE: str = f"{FILE_FOLDER}/envirocar/test_envirocar_track_measurements_response.json"  # noqa: E501
     TEST_ENVIROCAR_TRACKS_RESPONSE: str = f"{FILE_FOLDER}/envirocar/test_envirocar_tracks_response.json"
+
+    # Wikipedia
+    TEST_WIKIPEDIA_KATEGORIE_KLEINSTWAGEN_RESPONSE: str = f"{FILE_FOLDER}/wikipedia/test_kategorie_kleinstwagen_response.json"  # noqa
+    TEST_WIKIPEDIA_KATEGORIE_KLEINSTWAGEN_INFO_RESPONSE: str = f"{FILE_FOLDER}/wikipedia/test_kategorie_kleinstwagen_info_response.json"  # noqa
+    TEST_WIKIPEDIA_KATEGORIE_LEICHTFAHRZEUGE_RESPONSE: str = f"{FILE_FOLDER}/wikipedia/test_kategorie_leichtfahrzeug_response.json"  # noqa
+    TEST_WIKIPEDIA_KATEGORIE_LEICHTFAHRZEUGE_INFO_RESPONSE: str = f"{FILE_FOLDER}/wikipedia/test_kategorie_leichtfahrzeug_info_response.json"  # noqa
+    TEST_WIKIPEDIA_CATEGORY_MICROCARS_RESPONSE: str = f"{FILE_FOLDER}/wikipedia/test_category_microcars_response.json"
+    TEST_WIKIPEDIA_CATEGORY_MICROCARS_INFO_RESPONSE: str = f"{FILE_FOLDER}/wikipedia/test_category_microcars_info_response.json"  # noqa
 
     # User Agent header
     USER_AGENT = user_agent("Openfuelservice", "0.0.1")

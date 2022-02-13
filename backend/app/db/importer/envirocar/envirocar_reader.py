@@ -9,9 +9,7 @@ from urllib.parse import parse_qs, urlparse
 import geojson
 from geojson import Feature
 from requests import Request, Response
-from tqdm import tqdm
 
-from app.core import requestsSession
 from app.core.config import settings
 from app.db.importer.base_reader import BaseReader
 from app.misc import data_handling
@@ -41,32 +39,6 @@ class EnvirocarReader(BaseReader):
         self._headers = settings.GLOBAL_HEADERS
         self._threads = threads
         self._threaded_requests = ThreadedRequests()
-
-    def _repair_tracks(self, sensors: List, tracks: List) -> List:
-        logger.info("Checking and repairing tracks")
-        missing_sensor = 0
-        track_counter = 0
-        for track in tqdm(
-            tracks, total=len(tracks), unit=" Repairing Envirocar Tracks"
-        ):
-            track_sensor = tracks[track]["sensor_id"]
-            if track_sensor not in sensors:
-                # TODO rewrite with threaded requests
-                sensor: Response = requestsSession.get(
-                    self.sensors_url + track_sensor, headers=self._headers
-                )
-                if sensor.status_code != 200:
-                    continue
-                real_sensor_id = sensor.json()["properties"]["id"]
-                tracks[track]["sensor_id"] = real_sensor_id
-                missing_sensor += 1  #
-            track_counter += 1
-        logger.info(
-            "Successfully repaired {} of {} Tracks".format(
-                missing_sensor, track_counter
-            )
-        )
-        return tracks
 
     def get_phenomenons(self) -> List:
         phenomenons: List = []

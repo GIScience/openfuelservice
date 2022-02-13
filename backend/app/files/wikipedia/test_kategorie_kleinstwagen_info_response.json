@@ -1,0 +1,39 @@
+{
+  "batchcomplete": "",
+  "warnings": {
+    "main": {
+      "*": "Subscribe to the mediawiki-api-announce mailing list at <https://lists.wikimedia.org/postorius/lists/mediawiki-api-announce.lists.wikimedia.org/> for notice of API deprecations and breaking changes. Use [[Special:ApiFeatureUsage]] to see usage of deprecated features by your application."
+    },
+    "info": {
+      "*": "The value \"readable\" to parameter \"inprop\" has been deprecated."
+    }
+  },
+  "query": {
+    "pages": {
+      "1620955": {
+        "pageid": 1620955,
+        "ns": 14,
+        "title": "Kategorie:Kleinstwagen",
+        "contentmodel": "wikitext",
+        "pagelanguage": "de",
+        "pagelanguagehtmlcode": "de",
+        "pagelanguagedir": "ltr",
+        "touched": "2022-01-29T16:50:47Z",
+        "lastrevid": 218936032,
+        "length": 354,
+        "protection": [],
+        "restrictiontypes": [
+          "edit",
+          "move"
+        ],
+        "notificationtimestamp": "",
+        "fullurl": "https://de.wikipedia.org/wiki/Kategorie:Kleinstwagen",
+        "editurl": "https://de.wikipedia.org/w/index.php?title=Kategorie:Kleinstwagen&action=edit",
+        "canonicalurl": "https://de.wikipedia.org/wiki/Kategorie:Kleinstwagen",
+        "readable": "",
+        "preload": "",
+        "displaytitle": "Kategorie:Kleinstwagen"
+      }
+    }
+  }
+}

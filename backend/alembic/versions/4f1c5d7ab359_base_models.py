@@ -1,17 +1,17 @@
 """Base Models
 
-Revision ID: 331682c0c36b
+Revision ID: 4f1c5d7ab359
 Revises:
-Create Date: 2022-01-28 18:41:23.517126
+Create Date: 2022-02-13 14:11:25.287772
 
 """
-import geoalchemy2
 import sqlalchemy as sa
+from geoalchemy2.types import Geometry
 
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision = "331682c0c36b"
+revision = "4f1c5d7ab359"
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -87,7 +87,7 @@ def upgrade():
         sa.Column("country_currency_name", sa.String(), nullable=True),
         sa.Column(
             "geom",
-            geoalchemy2.types.Geometry(
+            Geometry(
                 geometry_type="MULTIPOLYGON",
                 srid=4326,
                 from_text="ST_GeomFromEWKT",
@@ -215,10 +215,11 @@ def upgrade():
     op.create_index(op.f("ix_user_id"), "user", ["id"], unique=False)
     op.create_table(
         "wikicarcategory",
-        sa.Column("category_short_eu", sa.String(), nullable=False),
+        sa.Column("id", sa.String(), nullable=False),
         sa.Column("category_name_de", sa.String(), nullable=False),
         sa.Column("category_name_en", sa.String(), nullable=False),
-        sa.PrimaryKeyConstraint("category_short_eu"),
+        sa.Column("category_wiki_names", sa.ARRAY(sa.String()), nullable=False),
+        sa.PrimaryKeyConstraint("id"),
     )
     op.create_index(
         op.f("ix_wikicarcategory_category_name_de"),
@@ -233,10 +234,7 @@ def upgrade():
         unique=True,
     )
     op.create_index(
-        op.f("ix_wikicarcategory_category_short_eu"),
-        "wikicarcategory",
-        ["category_short_eu"],
-        unique=False,
+        op.f("ix_wikicarcategory_id"), "wikicarcategory", ["id"], unique=False
     )
     op.create_table(
         "carfueldataaveragecategorystatistics",
@@ -248,9 +246,7 @@ def upgrade():
         sa.Column("numb_cars", sa.Integer(), nullable=False),
         sa.Column("year", sa.Integer(), nullable=False),
         sa.Column("category_short_eu", sa.String(), nullable=True),
-        sa.ForeignKeyConstraint(
-            ["category_short_eu"], ["wikicarcategory.category_short_eu"],
-        ),
+        sa.ForeignKeyConstraint(["category_short_eu"], ["wikicarcategory.id"],),
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_index(
@@ -295,9 +291,7 @@ def upgrade():
         sa.Column("measurements", sa.Integer(), nullable=False),
         sa.Column("numb_sensors", sa.Integer(), nullable=False),
         sa.Column("category_short_eu", sa.String(), nullable=True),
-        sa.ForeignKeyConstraint(
-            ["category_short_eu"], ["wikicarcategory.category_short_eu"],
-        ),
+        sa.ForeignKeyConstraint(["category_short_eu"], ["wikicarcategory.id"],),
         sa.ForeignKeyConstraint(["phenomenon_name"], ["envirocarphenomenon.id"],),
         sa.PrimaryKeyConstraint("hash_id"),
     )
@@ -492,17 +486,14 @@ def upgrade():
     op.create_index(op.f("ix_item_title"), "item", ["title"], unique=False)
     op.create_table(
         "wikicar",
-        sa.Column("hash_id", sa.CHAR(length=32), nullable=False),
+        sa.Column("id", sa.Integer(), nullable=False),
         sa.Column("wiki_name", sa.String(), nullable=False),
         sa.Column("category_short_eu", sa.String(), nullable=True),
         sa.Column("brand_name", sa.String(), nullable=False),
         sa.Column("car_name", sa.String(), nullable=False),
-        sa.Column("page_id", sa.Integer(), nullable=True),
         sa.Column("page_language", sa.String(), nullable=True),
-        sa.ForeignKeyConstraint(
-            ["category_short_eu"], ["wikicarcategory.category_short_eu"],
-        ),
-        sa.PrimaryKeyConstraint("hash_id"),
+        sa.ForeignKeyConstraint(["category_short_eu"], ["wikicarcategory.id"],),
+        sa.PrimaryKeyConstraint("id"),
     )
     op.create_index(
         op.f("ix_wikicar_brand_name"), "wikicar", ["brand_name"], unique=False
@@ -514,63 +505,15 @@ def upgrade():
         ["category_short_eu"],
         unique=False,
     )
-    op.create_index(op.f("ix_wikicar_hash_id"), "wikicar", ["hash_id"], unique=False)
     op.create_index(
         op.f("ix_wikicar_wiki_name"), "wikicar", ["wiki_name"], unique=False
-    )
-    op.create_table(
-        "wikicarpagetext",
-        sa.Column("hash_id", sa.CHAR(length=32), nullable=False),
-        sa.Column("wiki_name", sa.String(), nullable=False),
-        sa.Column("brand_name", sa.String(), nullable=False),
-        sa.Column("car_name", sa.String(), nullable=False),
-        sa.Column("page_language", sa.String(), nullable=False),
-        sa.Column("page_text", sa.String(), nullable=True),
-        sa.Column("category_short_eu", sa.String(), nullable=True),
-        sa.ForeignKeyConstraint(
-            ["category_short_eu"], ["wikicarcategory.category_short_eu"],
-        ),
-        sa.PrimaryKeyConstraint("hash_id"),
-    )
-    op.create_index(
-        op.f("ix_wikicarpagetext_brand_name"),
-        "wikicarpagetext",
-        ["brand_name"],
-        unique=False,
-    )
-    op.create_index(
-        op.f("ix_wikicarpagetext_car_name"),
-        "wikicarpagetext",
-        ["car_name"],
-        unique=False,
-    )
-    op.create_index(
-        op.f("ix_wikicarpagetext_category_short_eu"),
-        "wikicarpagetext",
-        ["category_short_eu"],
-        unique=False,
-    )
-    op.create_index(
-        op.f("ix_wikicarpagetext_hash_id"), "wikicarpagetext", ["hash_id"], unique=False
-    )
-    op.create_index(
-        op.f("ix_wikicarpagetext_page_language"),
-        "wikicarpagetext",
-        ["page_language"],
-        unique=False,
-    )
-    op.create_index(
-        op.f("ix_wikicarpagetext_wiki_name"),
-        "wikicarpagetext",
-        ["wiki_name"],
-        unique=False,
     )
     op.create_table(
         "envirocartrackmeasurement",
         sa.Column("id", sa.String(), nullable=False),
         sa.Column(
             "geom",
-            geoalchemy2.types.Geometry(
+            Geometry(
                 geometry_type="POINT",
                 srid=4326,
                 from_text="ST_GeomFromEWKT",
@@ -602,6 +545,45 @@ def upgrade():
         unique=False,
     )
     op.create_table(
+        "wikicarpagetext",
+        sa.Column("id", sa.Integer(), nullable=False),
+        sa.Column("brand_name", sa.String(), nullable=False),
+        sa.Column("car_name", sa.String(), nullable=False),
+        sa.Column("page_language", sa.String(), nullable=False),
+        sa.Column("page_text", sa.String(), nullable=True),
+        sa.Column("category_short_eu", sa.String(), nullable=True),
+        sa.ForeignKeyConstraint(["category_short_eu"], ["wikicarcategory.id"],),
+        sa.ForeignKeyConstraint(["id"], ["wikicar.id"],),
+        sa.PrimaryKeyConstraint("id"),
+    )
+    op.create_index(
+        op.f("ix_wikicarpagetext_brand_name"),
+        "wikicarpagetext",
+        ["brand_name"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_wikicarpagetext_car_name"),
+        "wikicarpagetext",
+        ["car_name"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_wikicarpagetext_category_short_eu"),
+        "wikicarpagetext",
+        ["category_short_eu"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_wikicarpagetext_id"), "wikicarpagetext", ["id"], unique=False
+    )
+    op.create_index(
+        op.f("ix_wikicarpagetext_page_language"),
+        "wikicarpagetext",
+        ["page_language"],
+        unique=False,
+    )
+    op.create_table(
         "envirocartrackmeasurementphenomenon",
         sa.Column("id", sa.String(), nullable=False),
         sa.Column("name", sa.String(), nullable=False),
@@ -628,6 +610,16 @@ def downgrade():
     )
     op.drop_table("envirocartrackmeasurementphenomenon")
     op.drop_index(
+        op.f("ix_wikicarpagetext_page_language"), table_name="wikicarpagetext"
+    )
+    op.drop_index(op.f("ix_wikicarpagetext_id"), table_name="wikicarpagetext")
+    op.drop_index(
+        op.f("ix_wikicarpagetext_category_short_eu"), table_name="wikicarpagetext"
+    )
+    op.drop_index(op.f("ix_wikicarpagetext_car_name"), table_name="wikicarpagetext")
+    op.drop_index(op.f("ix_wikicarpagetext_brand_name"), table_name="wikicarpagetext")
+    op.drop_table("wikicarpagetext")
+    op.drop_index(
         op.f("ix_envirocartrackmeasurement_track_id"),
         table_name="envirocartrackmeasurement",
     )
@@ -639,19 +631,7 @@ def downgrade():
         op.f("ix_envirocartrackmeasurement_id"), table_name="envirocartrackmeasurement"
     )
     op.drop_table("envirocartrackmeasurement")
-    op.drop_index(op.f("ix_wikicarpagetext_wiki_name"), table_name="wikicarpagetext")
-    op.drop_index(
-        op.f("ix_wikicarpagetext_page_language"), table_name="wikicarpagetext"
-    )
-    op.drop_index(op.f("ix_wikicarpagetext_hash_id"), table_name="wikicarpagetext")
-    op.drop_index(
-        op.f("ix_wikicarpagetext_category_short_eu"), table_name="wikicarpagetext"
-    )
-    op.drop_index(op.f("ix_wikicarpagetext_car_name"), table_name="wikicarpagetext")
-    op.drop_index(op.f("ix_wikicarpagetext_brand_name"), table_name="wikicarpagetext")
-    op.drop_table("wikicarpagetext")
     op.drop_index(op.f("ix_wikicar_wiki_name"), table_name="wikicar")
-    op.drop_index(op.f("ix_wikicar_hash_id"), table_name="wikicar")
     op.drop_index(op.f("ix_wikicar_category_short_eu"), table_name="wikicar")
     op.drop_index(op.f("ix_wikicar_car_name"), table_name="wikicar")
     op.drop_index(op.f("ix_wikicar_brand_name"), table_name="wikicar")
@@ -754,9 +734,7 @@ def downgrade():
         table_name="carfueldataaveragecategorystatistics",
     )
     op.drop_table("carfueldataaveragecategorystatistics")
-    op.drop_index(
-        op.f("ix_wikicarcategory_category_short_eu"), table_name="wikicarcategory"
-    )
+    op.drop_index(op.f("ix_wikicarcategory_id"), table_name="wikicarcategory")
     op.drop_index(
         op.f("ix_wikicarcategory_category_name_en"), table_name="wikicarcategory"
     )

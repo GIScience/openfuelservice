@@ -1,0 +1,40 @@
+{
+  "batchcomplete": "",
+  "warnings": {
+    "main": {
+      "*": "Subscribe to the mediawiki-api-announce mailing list at <https://lists.wikimedia.org/postorius/lists/mediawiki-api-announce.lists.wikimedia.org/> for notice of API deprecations and breaking changes. Use [[Special:ApiFeatureUsage]] to see usage of deprecated features by your application."
+    },
+    "info": {
+      "*": "The value \"readable\" to parameter \"inprop\" has been deprecated."
+    }
+  },
+  "query": {
+    "pages": {
+      "1349897": {
+        "pageid": 1349897,
+        "ns": 14,
+        "title": "Category:Microcars",
+        "contentmodel": "wikitext",
+        "pagelanguage": "en",
+        "pagelanguagehtmlcode": "en",
+        "pagelanguagedir": "ltr",
+        "touched": "2022-02-06T05:34:45Z",
+        "lastrevid": 988091191,
+        "length": 134,
+        "protection": [],
+        "restrictiontypes": [
+          "edit",
+          "move"
+        ],
+        "notificationtimestamp": "",
+        "talkid": 6371941,
+        "fullurl": "https://en.wikipedia.org/wiki/Category:Microcars",
+        "editurl": "https://en.wikipedia.org/w/index.php?title=Category:Microcars&action=edit",
+        "canonicalurl": "https://en.wikipedia.org/wiki/Category:Microcars",
+        "readable": "",
+        "preload": "",
+        "displaytitle": "Category:Microcars"
+      }
+    }
+  }
+}
