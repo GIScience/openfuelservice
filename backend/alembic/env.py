@@ -3,6 +3,7 @@ from __future__ import with_statement
 import os
 from logging.config import fileConfig
 
+import geoalchemy2
 from dotenv import load_dotenv
 from sqlalchemy import engine_from_config, pool
 
@@ -42,6 +43,8 @@ def get_url():
     debugging_config: str = os.getenv("DEBUGGING_CONFIG", None)
     if debugging_config is not None and len(debugging_config):
         load_dotenv(debugging_config)
+    # if settings.USE_CONTAINER_TESTING_DB:
+    #     return settings.SQLALCHEMY_DATABASE_TESTING_URI
     user = os.getenv("POSTGRES_USER", "postgres")
     password = os.getenv("POSTGRES_PASSWORD", "")
     server = os.getenv("POSTGRES_SERVER", "db")
@@ -75,6 +78,16 @@ def run_migrations_offline():
         context.run_migrations()
 
 
+def render_item(_, obj, autogen_context):
+    """Apply custom rendering for selected items."""
+    if isinstance(obj, geoalchemy2.types.Geometry):
+        autogen_context.imports.add("from geoalchemy2.types import Geometry")
+        return "%r" % obj
+
+    # default rendering for other objects
+    return False
+
+
 def run_migrations_online():
     """Run migrations in 'online' mode.
 
@@ -95,6 +108,7 @@ def run_migrations_online():
             compare_type=True,
             compare_server_default=True,
             include_object=include_object,
+            render_item=render_item,
         )
 
         with context.begin_transaction():
