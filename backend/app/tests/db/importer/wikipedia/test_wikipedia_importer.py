@@ -9,7 +9,7 @@ from app.models import WikiCar, WikiCarCategory, WikiCarPageText
 
 
 def test_wikipedia_importer(
-    db: Session, wikipedia_mocked_responses: responses.RequestsMock,
+        db: Session, mock_wikipedia_responses,
 ) -> None:
     # Clean the database
     db.query(WikiCar).delete()
@@ -18,27 +18,29 @@ def test_wikipedia_importer(
     db.commit()
 
     test_car_category = {
-        "a": {
-            "category_names": [
-                "Kategorie:Kleinstwagen",
-                "Kategorie:Leichtfahrzeug",
-                "Category:Microcars",
-            ],
-            "de": "Kleinstwagen",
-            "en": "mini cars",
-            "single_cars": [],
-            "tank_capacity": 15,
+        "car_categories": {
+            "a": {
+                "category_names": [
+                    "Kategorie:Kleinstwagen",
+                    "Kategorie:Leichtfahrzeug",
+                    "Category:Microcars",
+                ],
+                "de": "Kleinstwagen",
+                "en": "mini cars",
+                "single_cars": [],
+                "tank_capacity": 15,
+            }
         }
     }
     wikipedia_reader: WikipediaReader = WikipediaReader(
-        file_or_url=None, threads=None, car_categories=test_car_category
+        file_or_url=None, threads=None, categories=test_car_category
     )
     wikipedia_reader.fetch_and_process_data()
     # Check sensors and track_ids response
     assert len(wikipedia_reader.objects_ordered) == 2
     assert (
-        sum([len(objects) for objects in wikipedia_reader.objects_ordered.values()])
-        == 4
+            sum([len(objects) for objects in wikipedia_reader.objects_ordered.values()])
+            == 4
     )
     assert len(wikipedia_reader.objects_ordered[0]) == 1
     assert len(wikipedia_reader.objects_ordered[1]) == 3
@@ -83,7 +85,7 @@ def test_wikipedia_importer(
                 assert category_in_db.category_name_de == category.category_name_de
                 assert category_in_db.category_name_en == category.category_name_en
                 assert (
-                    category_in_db.category_wiki_names == category.category_wiki_names
+                        category_in_db.category_wiki_names == category.category_wiki_names
                 )
                 wiki_cars_via_reference.extend(category_in_db.car_models.all())  # type: ignore
 

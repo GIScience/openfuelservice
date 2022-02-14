@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 class WikipediaReader(BaseReader):
     def __init__(
         self,
-        car_categories: Dict,
+        categories: Dict,
         file_or_url: Union[str, Path, None],
         threads: Union[int, None] = None,
     ):
@@ -31,7 +31,10 @@ class WikipediaReader(BaseReader):
         self._headers = settings.GLOBAL_HEADERS
         self._threads = threads
         self._threaded_requests = ThreadedRequests()
-        self._raw_car_categories: Dict = car_categories
+        if 'car_categories' not in categories:
+            logger.warning(f"No car categories found. Partially initialized class: {self.__class__}.")
+            return
+        self._raw_car_categories: Dict = categories['car_categories']
 
     def get_category_data(self, categories: Dict) -> List[WikiCarCategory]:
         category_objects: List = []

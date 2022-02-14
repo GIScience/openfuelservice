@@ -20,9 +20,10 @@ from app.core.config import settings
 from app.db.base_class import Base
 from app.db.importer.base_importer import BaseImporter
 from app.db.importer.carfueldata.carfueldata_reader import CarFuelDataReader
+from app.db.importer.wikipedia.wikipedia_reader import WikipediaReader
 from app.db.session import SessionLocal, engine
 from app.main import app
-from app.models import CarFuelDataCar
+from app.models import CarFuelDataCar, WikiCarCategory
 from app.tests.utils.envirocar import (
     create_random_sensor,
     create_random_track,
@@ -167,7 +168,7 @@ def superuser_token_headers(client: TestClient, super_user: tuple) -> Dict[str, 
 
 @pytest.fixture(scope="function")
 def normal_user_token_headers(
-    client: TestClient, db: Session, normal_user: tuple
+        client: TestClient, db: Session, normal_user: tuple
 ) -> Dict[str, str]:
     return authentication_token_from_email(
         client=client, email=normal_user[0].email, db=db
@@ -227,7 +228,7 @@ def random_track_1(db: Session) -> Generator[models.EnvirocarTrack, None, None]:
 
 @pytest.fixture(scope="function")
 def random_track_measurement_1(
-    db: Session,
+        db: Session,
 ) -> Generator[models.EnvirocarTrackMeasurement, None, None]:
     sensor: models.EnvirocarSensor = create_random_sensor(db=db)
     track: models.EnvirocarTrack = create_random_track(db=db, sensor=sensor)
@@ -243,7 +244,7 @@ def random_track_measurement_1(
 
 @pytest.fixture(scope="function")
 def mock_cfd_cars(db: Session) -> Generator[List[models.CarFuelDataCar], None, None]:
-    db.query(CarFuelDataCar).delete()
+    db.query(models.CarFuelDataCar).delete()
     db.commit()
     cfd_reader_test: CarFuelDataReader = CarFuelDataReader(
         settings.CARFUELDATA_TEST_PATH_OR_URL
@@ -252,7 +253,6 @@ def mock_cfd_cars(db: Session) -> Generator[List[models.CarFuelDataCar], None, N
     BaseImporter(db=db).import_data(db_objects=cfd_reader_test.objects_list)
 
     yield cfd_reader_test.objects_list
-    cfd: CarFuelDataCar
     db.query(CarFuelDataCar).delete()
     db.commit()
 
@@ -337,68 +337,74 @@ def envirocar_mocked_responses() -> Generator[responses.RequestsMock, None, None
 
 
 @pytest.fixture(scope="function")
-def wikipedia_mocked_responses() -> Generator[responses.RequestsMock, None, None]:
+def mock_wikipedia_responses() -> Generator[responses.RequestsMock, None, None]:
     with responses.RequestsMock() as rsps:
         with open(
-            settings.TEST_WIKIPEDIA_KATEGORIE_KLEINSTWAGEN_RESPONSE, mode="r"
+                settings.TEST_WIKIPEDIA_KATEGORIE_KLEINSTWAGEN_RESPONSE, mode="r"
         ) as f:
             kategorie_kleinstwagen_response = json.load(f)
         with open(
-            settings.TEST_WIKIPEDIA_KATEGORIE_KLEINSTWAGEN_INFO_RESPONSE, mode="r"
+                settings.TEST_WIKIPEDIA_KATEGORIE_KLEINSTWAGEN_INFO_RESPONSE, mode="r"
         ) as f:
             kategorie_kleinstwagen_info_response = json.load(f)
         with open(
-            settings.TEST_WIKIPEDIA_KATEGORIE_LEICHTFAHRZEUGE_RESPONSE, mode="r"
+                settings.TEST_WIKIPEDIA_KATEGORIE_LEICHTFAHRZEUGE_RESPONSE, mode="r"
         ) as f:
             kategorie_leichtfahrzeuge_response = json.load(f)
         with open(
-            settings.TEST_WIKIPEDIA_KATEGORIE_LEICHTFAHRZEUGE_INFO_RESPONSE, mode="r"
+                settings.TEST_WIKIPEDIA_KATEGORIE_LEICHTFAHRZEUGE_INFO_RESPONSE, mode="r"
         ) as f:
             kategorie_leichtfahrzeuge_info_response = json.load(f)
         with open(settings.TEST_WIKIPEDIA_CATEGORY_MICROCARS_RESPONSE, mode="r") as f:
             kategorie_microcars_response = json.load(f)
         with open(
-            settings.TEST_WIKIPEDIA_CATEGORY_MICROCARS_INFO_RESPONSE, mode="r"
+                settings.TEST_WIKIPEDIA_CATEGORY_MICROCARS_INFO_RESPONSE, mode="r"
         ) as f:
             kategorie_microcars_info_response = json.load(f)
         rsps.add(
             method=responses.GET,
-            url="https://de.wikipedia.org/w/api.php?action=query&list=categorymembers&cmtitle=Kategorie%3AKleinstwagen&cmlimit=500&format=json&redirects=1",  # noqa
+            url="https://de.wikipedia.org/w/api.php?action=query&list=categorymembers&cmtitle=Kategorie%3AKleinstwagen&cmlimit=500&format=json&redirects=1",
+            # noqa
             json=kategorie_kleinstwagen_response,
             status=200,
             content_type="application/json",
         )
         rsps.add(
             method=responses.GET,
-            url="https://de.wikipedia.org/w/api.php?action=query&prop=info&titles=Kategorie%3AKleinstwagen&inprop=protection%7Ctalkid%7Cwatched%7Cwatchers%7Cvisitingwatchers%7Cnotificationtimestamp%7Csubjectid%7Curl%7Creadable%7Cpreload%7Cdisplaytitle&format=json&redirects=1",  # noqa
+            url="https://de.wikipedia.org/w/api.php?action=query&prop=info&titles=Kategorie%3AKleinstwagen&inprop=protection%7Ctalkid%7Cwatched%7Cwatchers%7Cvisitingwatchers%7Cnotificationtimestamp%7Csubjectid%7Curl%7Creadable%7Cpreload%7Cdisplaytitle&format=json&redirects=1",
+            # noqa
             json=kategorie_kleinstwagen_info_response,
             status=200,
             content_type="application/json",
         )
         rsps.add(
             method=responses.GET,
-            url="https://de.wikipedia.org/w/api.php?action=query&list=categorymembers&cmtitle=Kategorie%3ALeichtfahrzeug&cmlimit=500&format=json&redirects=1",  # noqa
+            url="https://de.wikipedia.org/w/api.php?action=query&list=categorymembers&cmtitle=Kategorie%3ALeichtfahrzeug&cmlimit=500&format=json&redirects=1",
+            # noqa
             json=kategorie_leichtfahrzeuge_response,
             status=200,
             content_type="application/json",
         )
         rsps.add(
             method=responses.GET,
-            url="https://de.wikipedia.org/w/api.php?action=query&prop=info&titles=Kategorie%3ALeichtfahrzeug&inprop=protection%7Ctalkid%7Cwatched%7Cwatchers%7Cvisitingwatchers%7Cnotificationtimestamp%7Csubjectid%7Curl%7Creadable%7Cpreload%7Cdisplaytitle&format=json&redirects=1",  # noqa
+            url="https://de.wikipedia.org/w/api.php?action=query&prop=info&titles=Kategorie%3ALeichtfahrzeug&inprop=protection%7Ctalkid%7Cwatched%7Cwatchers%7Cvisitingwatchers%7Cnotificationtimestamp%7Csubjectid%7Curl%7Creadable%7Cpreload%7Cdisplaytitle&format=json&redirects=1",
+            # noqa
             json=kategorie_leichtfahrzeuge_info_response,
             status=200,
             content_type="application/json",
         )
         rsps.add(
             method=responses.GET,
-            url="https://en.wikipedia.org/w/api.php?action=query&list=categorymembers&cmtitle=Category%3AMicrocars&cmlimit=500&format=json&redirects=1",  # noqa
+            url="https://en.wikipedia.org/w/api.php?action=query&list=categorymembers&cmtitle=Category%3AMicrocars&cmlimit=500&format=json&redirects=1",
+            # noqa
             json=kategorie_microcars_response,
             status=200,
             content_type="application/json",
         )
         rsps.add(
             method=responses.GET,
-            url="https://en.wikipedia.org/w/api.php?action=query&prop=info&titles=Category%3AMicrocars&inprop=protection%7Ctalkid%7Cwatched%7Cwatchers%7Cvisitingwatchers%7Cnotificationtimestamp%7Csubjectid%7Curl%7Creadable%7Cpreload%7Cdisplaytitle&format=json&redirects=1",  # noqa
+            url="https://en.wikipedia.org/w/api.php?action=query&prop=info&titles=Category%3AMicrocars&inprop=protection%7Ctalkid%7Cwatched%7Cwatchers%7Cvisitingwatchers%7Cnotificationtimestamp%7Csubjectid%7Curl%7Creadable%7Cpreload%7Cdisplaytitle&format=json&redirects=1",
+            # noqa
             json=kategorie_microcars_info_response,
             status=200,
             content_type="application/json",
@@ -406,6 +412,37 @@ def wikipedia_mocked_responses() -> Generator[responses.RequestsMock, None, None
 
         yield rsps
         rsps.reset()
+
+
+@pytest.fixture(scope="function")
+def mock_wikipedia_car_categories(db: Session,
+                                  mock_wikipedia_responses) -> \
+Generator[List[models.WikiCarCategory], None, None]:
+    db.query(models.WikiCarCategory).delete()
+    db.commit()
+    test_car_category = {
+        "car_categories": {
+            "a": {
+                "category_names": [
+                    "Kategorie:Kleinstwagen",
+                    "Kategorie:Leichtfahrzeug",
+                    "Category:Microcars",
+                ],
+                "de": "Kleinstwagen",
+                "en": "mini cars",
+                "single_cars": [],
+                "tank_capacity": 15,
+            }
+        }
+    }
+    wikipedia_reader: WikipediaReader = WikipediaReader(
+        file_or_url=None, threads=None, categories=test_car_category
+    )
+    wikipedia_reader.fetch_and_process_data()
+    BaseImporter(db=db).import_data(db_objects=wikipedia_reader.objects_ordered[0])
+    yield wikipedia_reader.objects_ordered[0]
+    db.query(WikiCarCategory).delete()
+    db.commit()
 
 
 @pytest.fixture(scope="function")

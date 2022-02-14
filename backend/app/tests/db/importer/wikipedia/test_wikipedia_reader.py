@@ -8,25 +8,27 @@ from app.db.importer.wikipedia.wikipedia_reader import WikipediaReader
 from app.models import WikiCar, WikiCarCategory
 
 
-def test_get_category_data(wikipedia_mocked_responses: responses.RequestsMock,) -> None:
+def test_get_category_data(mock_wikipedia_responses, ) -> None:
     test_car_category = {
-        "a": {
-            "category_names": [
-                "Kategorie:Kleinstwagen",
-                "Kategorie:Leichtfahrzeug",
-                "Category:Microcars",
-            ],
-            "de": "Kleinstwagen",
-            "en": "mini cars",
-            "single_cars": [],
-            "tank_capacity": 15,
+        "car_categories": {
+            "a": {
+                "category_names": [
+                    "Kategorie:Kleinstwagen",
+                    "Kategorie:Leichtfahrzeug",
+                    "Category:Microcars",
+                ],
+                "de": "Kleinstwagen",
+                "en": "mini cars",
+                "single_cars": [],
+                "tank_capacity": 15,
+            }
         }
     }
     wikipedia_reader: WikipediaReader = WikipediaReader(
-        file_or_url=None, threads=None, car_categories={}
+        file_or_url=None, threads=None, categories=test_car_category
     )
     category_objects: List = wikipedia_reader.get_category_data(
-        categories=test_car_category
+        categories=wikipedia_reader._raw_car_categories
     )
     assert len(category_objects) == 1
     assert isinstance(category_objects[0], WikiCarCategory)
@@ -36,31 +38,33 @@ def test_get_category_data(wikipedia_mocked_responses: responses.RequestsMock,) 
     assert category_object.category_short_eu == "a"
     assert category_object.id == category_object.category_short_eu
     assert len(category_object.category_wiki_names) == 3
-    category_names: List = test_car_category["a"]["category_names"]  # type: ignore
+    category_names: List = test_car_category["car_categories"]["a"]["category_names"]  # type: ignore
     assert category_object.category_wiki_names.sort() == category_names.sort()
 
 
 def test_get_category_car_data(
-    wikipedia_mocked_responses: responses.RequestsMock,
+        mock_wikipedia_responses,
 ) -> None:
     test_car_category = {
-        "a": {
-            "category_names": [
-                "Kategorie:Kleinstwagen",
-                "Kategorie:Leichtfahrzeug",
-                "Category:Microcars",
-            ],
-            "de": "Kleinstwagen",
-            "en": "mini cars",
-            "single_cars": [],
-            "tank_capacity": 15,
+        "car_categories": {
+            "a": {
+                "category_names": [
+                    "Kategorie:Kleinstwagen",
+                    "Kategorie:Leichtfahrzeug",
+                    "Category:Microcars",
+                ],
+                "de": "Kleinstwagen",
+                "en": "mini cars",
+                "single_cars": [],
+                "tank_capacity": 15,
+            }
         }
     }
     wikipedia_reader: WikipediaReader = WikipediaReader(
-        file_or_url=None, threads=None, car_categories={}
+        file_or_url=None, threads=None, categories=test_car_category
     )
     category_objects: List[WikiCarCategory] = wikipedia_reader.get_category_data(
-        categories=test_car_category
+        categories=wikipedia_reader._raw_car_categories
     )
     wiki_car_objects = wikipedia_reader.get_category_car_data(
         category_db_objects=category_objects
@@ -99,7 +103,7 @@ def test_get_category_car_data(
 )
 def test__process_category_member(test_string: str, expected_result: str) -> None:
     wikipedia_reader: WikipediaReader = WikipediaReader(
-        file_or_url=None, threads=None, car_categories={}
+        file_or_url=None, threads=None, categories={}
     )
     wiki_car: Union[WikiCar, None] = wikipedia_reader._process_category_member(
         member_name=test_string
@@ -116,7 +120,7 @@ def test__process_category_member(test_string: str, expected_result: str) -> Non
 )
 def test__process_category_member_ignore_list(test_string: str) -> None:
     wikipedia_reader: WikipediaReader = WikipediaReader(
-        file_or_url=None, threads=None, car_categories={}
+        file_or_url=None, threads=None, categories={}
     )
     wiki_car: Union[WikiCar, None] = wikipedia_reader._process_category_member(
         member_name=test_string
@@ -129,7 +133,7 @@ def test__process_category_member_ignore_list(test_string: str) -> None:
 )
 def test__process_category_member_brands_list(test_string: str) -> None:
     wikipedia_reader: WikipediaReader = WikipediaReader(
-        file_or_url=None, threads=None, car_categories={}
+        file_or_url=None, threads=None, categories={}
     )
     wiki_car: Union[WikiCar, None] = wikipedia_reader._process_category_member(
         member_name=test_string + " Foobar"
@@ -144,7 +148,7 @@ def test__process_category_member_brands_list(test_string: str) -> None:
 )
 def test__process_category_member_vehicles_list(test_string: str) -> None:
     wikipedia_reader: WikipediaReader = WikipediaReader(
-        file_or_url=None, threads=None, car_categories={}
+        file_or_url=None, threads=None, categories={}
     )
     wiki_car: Union[WikiCar, None] = wikipedia_reader._process_category_member(
         member_name=test_string
@@ -155,23 +159,25 @@ def test__process_category_member_vehicles_list(test_string: str) -> None:
 
 
 def test_fetch_and_process_data(
-    wikipedia_mocked_responses: responses.RequestsMock,
+        mock_wikipedia_responses,
 ) -> None:
     test_car_category = {
-        "a": {
-            "category_names": [
-                "Kategorie:Kleinstwagen",
-                "Kategorie:Leichtfahrzeug",
-                "Category:Microcars",
-            ],
-            "de": "Kleinstwagen",
-            "en": "mini cars",
-            "single_cars": [],
-            "tank_capacity": 15,
+        "car_categories": {
+            "a": {
+                "category_names": [
+                    "Kategorie:Kleinstwagen",
+                    "Kategorie:Leichtfahrzeug",
+                    "Category:Microcars",
+                ],
+                "de": "Kleinstwagen",
+                "en": "mini cars",
+                "single_cars": [],
+                "tank_capacity": 15,
+            }
         }
     }
     wikipedia_reader: WikipediaReader = WikipediaReader(
-        file_or_url=None, threads=None, car_categories=test_car_category
+        file_or_url=None, threads=None, categories=test_car_category
     )
     wikipedia_reader.fetch_and_process_data()
     # Check sensors and track_ids response
