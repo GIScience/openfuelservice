@@ -5,6 +5,7 @@ from httpx import AsyncClient
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
+from app.schemas import Car
 
 
 @pytest.mark.parametrize(
@@ -26,14 +27,15 @@ async def test_read_car_by_brand(
         data = content["data"]
         assert len(data) == 5
         ids_in_mocks: List = [cfd.id for cfd in mock_cfd_cars]
+        car: Dict
         for car in data:
-            assert len(car) == 6
-            assert car["id"] in ids_in_mocks
-            assert car["manufacturer"]
-            assert car["model"]
-            assert car["description"]
-            assert car["fuel_type"]
-            assert car["year"]
+            orm_car = Car.parse_obj(car)
+            assert orm_car.id in ids_in_mocks
+            assert orm_car.manufacturer
+            assert orm_car.model
+            assert orm_car.description
+            assert orm_car.fuel_type
+            assert orm_car.year
 
 
 @pytest.mark.parametrize(
@@ -73,10 +75,12 @@ async def test_read_car_by_brand_ordered(
         assert car_name_2021["ids"] == ids
         cars = car_name_2021["cars"]
         assert len(cars) == 3
+        car: Dict
         for car in cars:
-            assert car["id"] in ids
-            assert car["manufacturer"]
-            assert car["model"]
-            assert car["description"]
-            assert car["fuel_type"]
-            assert car["year"]
+            orm_car = Car.parse_obj(car)
+            assert orm_car.id in ids
+            assert orm_car.manufacturer
+            assert orm_car.model
+            assert orm_car.description
+            assert orm_car.fuel_type
+            assert orm_car.year
