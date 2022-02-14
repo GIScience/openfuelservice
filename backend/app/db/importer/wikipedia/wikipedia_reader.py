@@ -31,10 +31,12 @@ class WikipediaReader(BaseReader):
         self._headers = settings.GLOBAL_HEADERS
         self._threads = threads
         self._threaded_requests = ThreadedRequests()
-        if 'car_categories' not in categories:
-            logger.warning(f"No car categories found. Partially initialized class: {self.__class__}.")
+        if "car_categories" not in categories:
+            logger.warning(
+                f"No car categories found. Partially initialized class: {self.__class__}."
+            )
             return
-        self._raw_car_categories: Dict = categories['car_categories']
+        self._raw_car_categories: Dict = categories["car_categories"]
 
     def get_category_data(self, categories: Dict) -> List[WikiCarCategory]:
         category_objects: List = []

@@ -1,4 +1,4 @@
-from typing import List, Union
+from typing import Generator, List, Union
 
 import pytest
 import responses
@@ -8,7 +8,9 @@ from app.db.importer.wikipedia.wikipedia_reader import WikipediaReader
 from app.models import WikiCar, WikiCarCategory
 
 
-def test_get_category_data(mock_wikipedia_responses, ) -> None:
+def test_get_category_data(
+    mock_wikipedia_responses: Generator[responses.RequestsMock, None, None]
+) -> None:
     test_car_category = {
         "car_categories": {
             "a": {
@@ -43,7 +45,7 @@ def test_get_category_data(mock_wikipedia_responses, ) -> None:
 
 
 def test_get_category_car_data(
-        mock_wikipedia_responses,
+    mock_wikipedia_responses: Generator[responses.RequestsMock, None, None]
 ) -> None:
     test_car_category = {
         "car_categories": {
@@ -159,7 +161,7 @@ def test__process_category_member_vehicles_list(test_string: str) -> None:
 
 
 def test_fetch_and_process_data(
-        mock_wikipedia_responses,
+    mock_wikipedia_responses: Generator[responses.RequestsMock, None, None]
 ) -> None:
     test_car_category = {
         "car_categories": {

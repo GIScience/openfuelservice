@@ -1,7 +1,8 @@
 from typing import List
 
-from app.schemas.schema_base import SchemaBase
 from pydantic import BaseModel
+
+from app.schemas.schema_base import SchemaBase
 
 
 class Category(BaseModel):

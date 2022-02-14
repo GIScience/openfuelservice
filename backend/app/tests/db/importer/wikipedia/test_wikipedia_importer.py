@@ -1,4 +1,4 @@
-from typing import List, Set
+from typing import Generator, List, Set
 
 import responses
 from sqlalchemy.orm import Session
@@ -9,7 +9,7 @@ from app.models import WikiCar, WikiCarCategory, WikiCarPageText
 
 
 def test_wikipedia_importer(
-        db: Session, mock_wikipedia_responses,
+    db: Session, mock_wikipedia_responses: Generator[responses.RequestsMock, None, None]
 ) -> None:
     # Clean the database
     db.query(WikiCar).delete()
@@ -39,8 +39,8 @@ def test_wikipedia_importer(
     # Check sensors and track_ids response
     assert len(wikipedia_reader.objects_ordered) == 2
     assert (
-            sum([len(objects) for objects in wikipedia_reader.objects_ordered.values()])
-            == 4
+        sum([len(objects) for objects in wikipedia_reader.objects_ordered.values()])
+        == 4
     )
     assert len(wikipedia_reader.objects_ordered[0]) == 1
     assert len(wikipedia_reader.objects_ordered[1]) == 3
@@ -85,7 +85,7 @@ def test_wikipedia_importer(
                 assert category_in_db.category_name_de == category.category_name_de
                 assert category_in_db.category_name_en == category.category_name_en
                 assert (
-                        category_in_db.category_wiki_names == category.category_wiki_names
+                    category_in_db.category_wiki_names == category.category_wiki_names
                 )
                 wiki_cars_via_reference.extend(category_in_db.car_models.all())  # type: ignore
 
