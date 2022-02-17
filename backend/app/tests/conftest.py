@@ -1,3 +1,4 @@
+import datetime
 import json
 import logging
 import pathlib
@@ -199,7 +200,9 @@ def alembic_engine() -> Engine:
 
 
 @pytest.fixture(scope="session")
-def alembic_runner(alembic_config: Config, alembic_engine: Engine) -> MigrationContext:
+def alembic_runner(
+    alembic_config: Config, alembic_engine: Engine
+) -> Generator[MigrationContext, None, None]:
     """Produce the primary alembic migration context in which to execute alembic tests.
 
     This fixture allows authoring custom tests which are specific to your particular
@@ -253,6 +256,22 @@ def mock_cfd_cars(db: Session) -> Generator[List[models.CarFuelDataCar], None, N
     BaseImporter(db=db).import_data(db_objects=cfd_reader_test.objects_list)
 
     yield cfd_reader_test.objects_list
+    db.query(CarFuelDataCar).delete()
+    db.commit()
+
+
+@pytest.fixture(scope="function")
+def mock_random_cfd_car(db: Session) -> Generator[models.CarFuelDataCar, None, None]:
+    db.query(models.CarFuelDataCar).delete()
+    db.commit()
+    random_cfd_car: CarFuelDataCar = CarFuelDataCar(
+        manufacturer=random_lower_string(),
+        model=random_lower_string(),
+        fuel_type="Carbon",
+        date_of_change=datetime.date.today(),
+    )
+    BaseImporter(db=db).import_data(db_objects=[random_cfd_car])
+    yield random_cfd_car
     db.query(CarFuelDataCar).delete()
     db.commit()
 
@@ -363,42 +382,51 @@ def mock_wikipedia_responses() -> Generator[responses.RequestsMock, None, None]:
             kategorie_microcars_info_response = json.load(f)
         rsps.add(
             method=responses.GET,
-            url="https://de.wikipedia.org/w/api.php?action=query&list=categorymembers&cmtitle=Kategorie%3AKleinstwagen&cmlimit=500&format=json&redirects=1",  # noqa
+            url="https://de.wikipedia.org/w/api.php?action=query&list=categorymembers&cmtitle=Kategorie%3AKleinst"
+            "wagen&cmlimit=500&format=json&redirects=1",
             json=kategorie_kleinstwagen_response,
             status=200,
             content_type="application/json",
         )
         rsps.add(
             method=responses.GET,
-            url="https://de.wikipedia.org/w/api.php?action=query&prop=info&titles=Kategorie%3AKleinstwagen&inprop=protection%7Ctalkid%7Cwatched%7Cwatchers%7Cvisitingwatchers%7Cnotificationtimestamp%7Csubjectid%7Curl%7Creadable%7Cpreload%7Cdisplaytitle&format=json&redirects=1",  # noqa
+            url="https://de.wikipedia.org/w/api.php?action=query&prop=info&titles=Kategorie%3AKleinstwagen&inprop="
+            "protection%7Ctalkid%7Cwatched%7Cwatchers%7Cvisitingwatchers%7Cnotificationtimestamp%7Csubjectid%7"
+            "Curl%7Creadable%7Cpreload%7Cdisplaytitle&format=json&redirects=1",
             json=kategorie_kleinstwagen_info_response,
             status=200,
             content_type="application/json",
         )
         rsps.add(
             method=responses.GET,
-            url="https://de.wikipedia.org/w/api.php?action=query&list=categorymembers&cmtitle=Kategorie%3ALeichtfahrzeug&cmlimit=500&format=json&redirects=1",  # noqa
+            url="https://de.wikipedia.org/w/api.php?action=query&list=categorymembers&cmtitle=Kategorie%3A"
+            "Leichtfahrzeug&cmlimit=500&format=json&redirects=1",
             json=kategorie_leichtfahrzeuge_response,
             status=200,
             content_type="application/json",
         )
         rsps.add(
             method=responses.GET,
-            url="https://de.wikipedia.org/w/api.php?action=query&prop=info&titles=Kategorie%3ALeichtfahrzeug&inprop=protection%7Ctalkid%7Cwatched%7Cwatchers%7Cvisitingwatchers%7Cnotificationtimestamp%7Csubjectid%7Curl%7Creadable%7Cpreload%7Cdisplaytitle&format=json&redirects=1",  # noqa
+            url="https://de.wikipedia.org/w/api.php?action=query&prop=info&titles=Kategorie%3ALeichtfahrzeug&inprop"
+            "=protection%7Ctalkid%7Cwatched%7Cwatchers%7Cvisitingwatchers%7Cnotificationtimestamp%7Csubjectid%"
+            "7Curl%7Creadable%7Cpreload%7Cdisplaytitle&format=json&redirects=1",
             json=kategorie_leichtfahrzeuge_info_response,
             status=200,
             content_type="application/json",
         )
         rsps.add(
             method=responses.GET,
-            url="https://en.wikipedia.org/w/api.php?action=query&list=categorymembers&cmtitle=Category%3AMicrocars&cmlimit=500&format=json&redirects=1",  # noqa
+            url="https://en.wikipedia.org/w/api.php?action=query&list=categorymembers&cmtitle=Category%3AMicrocars"
+            "&cmlimit=500&format=json&redirects=1",
             json=kategorie_microcars_response,
             status=200,
             content_type="application/json",
         )
         rsps.add(
             method=responses.GET,
-            url="https://en.wikipedia.org/w/api.php?action=query&prop=info&titles=Category%3AMicrocars&inprop=protection%7Ctalkid%7Cwatched%7Cwatchers%7Cvisitingwatchers%7Cnotificationtimestamp%7Csubjectid%7Curl%7Creadable%7Cpreload%7Cdisplaytitle&format=json&redirects=1",  # noqa
+            url="https://en.wikipedia.org/w/api.php?action=query&prop=info&titles=Category%3AMicrocars&inprop="
+            "protection%7Ctalkid%7Cwatched%7Cwatchers%7Cvisitingwatchers%7Cnotificationtimestamp%7Csubjectid%7Curl"
+            "%7Creadable%7Cpreload%7Cdisplaytitle&format=json&redirects=1",
             json=kategorie_microcars_info_response,
             status=200,
             content_type="application/json",

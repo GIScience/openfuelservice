@@ -2,11 +2,13 @@ import logging
 import os
 import pathlib
 import secrets
+import tarfile
 from typing import Any, Dict, List, Optional, Union
 
 import yaml
 from pydantic import AnyHttpUrl, BaseSettings, EmailStr, HttpUrl, PostgresDsn, validator
 from requests_toolbelt import user_agent
+from tqdm import tqdm
 
 script_location = pathlib.Path(__file__).parent.resolve()
 logger = logging.getLogger(__name__)
@@ -174,6 +176,50 @@ class Settings(BaseSettings):
     USER_AGENT = user_agent("Openfuelservice", "0.0.1")
     USER_AGENT_FROM = "julian.psotta@heigit.org"
     GLOBAL_HEADERS = {"User-Agent": USER_AGENT, "From": USER_AGENT_FROM}
+
+    # Matching Settings
+    UNCOMPRESSED_MATCHING_DATA: str = f"{FILE_FOLDER}/matching/models/"
+    COMPRESSED_MATCHING_DATA: str = f"{FILE_FOLDER}/matching/models.tar.xz"
+
+    @validator("COMPRESSED_MATCHING_DATA", pre=True)
+    def uncompress_matching_data(cls, v: str, values: Dict[str, Any]) -> str:
+        compressed_model_path: pathlib.Path = pathlib.Path(v)
+        uncomporessed_model_path = pathlib.Path(values["UNCOMPRESSED_MATCHING_DATA"])
+        if not compressed_model_path.exists():
+            raise ValueError(f"COMPRESSED_MATCHING_DATA doesn't exist: {v}")
+        if not uncomporessed_model_path.exists():
+            os.mkdir(uncomporessed_model_path)
+        existing_models = [name for name in os.listdir(uncomporessed_model_path)]
+        if len(existing_models) > 0:
+            logger.info(
+                f"Matching models found. Delete them if you want to start fresh. Models: {len(existing_models)} | "
+                f"Folder: {values['UNCOMPRESSED_MATCHING_DATA']}"
+            )
+            return v
+        logger.info(
+            f"No models found. Starting model extraction to folder: {uncomporessed_model_path}"
+        )
+        with tarfile.open(v) as f:
+            members = f.getmembers()
+            logger.info(f"Found {len(members)} models. Extracting them now.")
+            for member in tqdm(
+                members,
+                desc=" Uncompressing models.",
+                total=len(members),
+                unit=" Models",
+            ):
+                member.path = member.path.strip("models/")
+                f.extract(member=member, path=uncomporessed_model_path)
+            # f.extractall('.')
+        existing_models = [
+            name
+            for name in os.listdir(uncomporessed_model_path)
+            if os.path.isfile(name)
+        ]
+        logger.info(
+            f"Successfully extracted {existing_models} models to folder: {uncomporessed_model_path}"
+        )
+        return v
 
 
 settings = Settings()
