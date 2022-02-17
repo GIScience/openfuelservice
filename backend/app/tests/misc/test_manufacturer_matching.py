@@ -4,7 +4,7 @@ from typing import List
 import pytest
 
 from app.core.config import settings
-from app.misc.manufacturer_matching import (
+from app.matching.manufacturer_matching import (
     ManufacturerAnnCollection,
     ManufacturerAnnModel,
 )
