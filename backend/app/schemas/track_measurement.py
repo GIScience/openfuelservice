@@ -6,7 +6,7 @@ from geoalchemy2.shape import from_shape
 from pydantic import BaseModel, validator
 from shapely.geometry import shape
 
-from app.misc.json_encoders import json_encoders
+from app.misc.json_encoders import geojson_encoders
 
 
 class TrackMeasurementBase(BaseModel):
@@ -17,7 +17,7 @@ class TrackMeasurementBase(BaseModel):
 
     class Config:
         arbitrary_types_allowed = True
-        json_encoders = json_encoders
+        json_encoders = geojson_encoders
 
 
 # Properties to receive on TrackMeasurement creation

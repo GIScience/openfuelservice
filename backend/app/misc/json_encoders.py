@@ -4,7 +4,7 @@ from geoalchemy2 import WKBElement
 from geoalchemy2.shape import to_shape
 from shapely.geometry.base import BaseGeometry
 
-json_encoders = {}
+geojson_encoders = {}
 
 
 class ToShapeDecoder:
@@ -17,4 +17,4 @@ class ToShapeDecoder:
         return v
 
 
-json_encoders[WKBElement] = ToShapeDecoder.__serialize__
+geojson_encoders[WKBElement] = ToShapeDecoder.__serialize__
