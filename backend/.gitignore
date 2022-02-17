@@ -3,7 +3,10 @@
 docker-stack.yml
 .idea/
 .tox
-.venv
+.venv*
+.env*
+env*
+venv*
 .coverage
 .pytest_cache
 /coverage.xml
