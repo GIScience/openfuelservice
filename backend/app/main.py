@@ -1,11 +1,19 @@
+import logging
+from logging.config import dictConfig
+
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 
 from app.api.api_v1.api import api_router
-from app.core.config import settings
+from app.core.config import LogConfig, settings
+
+dictConfig(LogConfig().dict())
+logger = logging.getLogger(settings.PROJECT_NAME)
 
 app = FastAPI(
-    title=settings.PROJECT_NAME, openapi_url=f"{settings.API_V1_STR}/openapi.json"
+    title=settings.PROJECT_NAME,
+    openapi_url=f"{settings.API_V1_STR}/openapi.json",
+    debug=True,
 )
 
 # Set all CORS enabled origins

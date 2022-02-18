@@ -1,4 +1,3 @@
-import logging
 import os
 import pathlib
 import secrets
@@ -6,12 +5,19 @@ import tarfile
 from typing import Any, Dict, List, Optional, Union
 
 import yaml
-from pydantic import AnyHttpUrl, BaseSettings, EmailStr, HttpUrl, PostgresDsn, validator
+from pydantic import (
+    AnyHttpUrl,
+    BaseModel,
+    BaseSettings,
+    EmailStr,
+    HttpUrl,
+    PostgresDsn,
+    validator,
+)
 from requests_toolbelt import user_agent
 from tqdm import tqdm
 
 script_location = pathlib.Path(__file__).parent.resolve()
-logger = logging.getLogger(__name__)
 
 
 class Settings(BaseSettings):
@@ -36,6 +42,7 @@ class Settings(BaseSettings):
         raise ValueError(v)
 
     PROJECT_NAME: str
+    DEBUG: bool = False
     SENTRY_DSN: Optional[HttpUrl] = None
 
     @validator("SENTRY_DSN", pre=True)
@@ -208,6 +215,7 @@ class Settings(BaseSettings):
 
     @validator("COMPRESSED_MATCHING_DATA", pre=True)
     def uncompress_matching_data(cls, v: str, values: Dict[str, Any]) -> str:
+        print("Uncompressing Matching data")
         compressed_model_path: pathlib.Path = pathlib.Path(v)
         uncomporessed_model_path = pathlib.Path(values["UNCOMPRESSED_MATCHING_DATA"])
         if not compressed_model_path.exists():
@@ -216,17 +224,17 @@ class Settings(BaseSettings):
             os.mkdir(uncomporessed_model_path)
         existing_models = [name for name in os.listdir(uncomporessed_model_path)]
         if len(existing_models) > 0:
-            logger.info(
-                f"Matching models found. Delete them if you want to start fresh. Models: {len(existing_models)} | "
+            print(
+                f"Found {len(existing_models)} models. Skip uncompressing. Delete them if you want to start fresh. | "
                 f"Folder: {values['UNCOMPRESSED_MATCHING_DATA']}"
             )
             return v
-        logger.info(
+        print(
             f"No models found. Starting model extraction to folder: {uncomporessed_model_path}"
         )
         with tarfile.open(v) as f:
             members = f.getmembers()
-            logger.info(f"Found {len(members)} models. Extracting them now.")
+            print(f"Found {len(members)} models. Extracting them now.")
             for member in tqdm(
                 members,
                 desc=" Uncompressing models.",
@@ -241,10 +249,41 @@ class Settings(BaseSettings):
             for name in os.listdir(uncomporessed_model_path)
             if os.path.isfile(name)
         ]
-        logger.info(
+        print(
             f"Successfully extracted {existing_models} models to folder: {uncomporessed_model_path}"
         )
         return v
 
 
 settings = Settings()
+
+
+class LogConfig(BaseModel):
+    """Logging configuration to be set for the server"""
+
+    LOGGER_NAME: str = settings.PROJECT_NAME
+    LOG_FORMAT: str = (
+        f"%(asctime)s | [{settings.PROJECT_NAME}] | %(levelprefix)s | %(message)s"
+    )
+    LOG_LEVEL: str = "DEBUG" if settings.DEBUG else "INFO"
+
+    # Logging config
+    version = 1
+    disable_existing_loggers = False
+    formatters = {
+        "default": {
+            "()": "uvicorn.logging.DefaultFormatter",
+            "fmt": LOG_FORMAT,
+            "datefmt": "%Y-%m-%d %H:%M:%S",
+        },
+    }
+    handlers = {
+        "default": {
+            "formatter": "default",
+            "class": "logging.StreamHandler",
+            "stream": "ext://sys.stderr",
+        },
+    }
+    loggers = {
+        LOGGER_NAME: {"handlers": ["default"], "level": LOG_LEVEL},
+    }
