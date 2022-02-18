@@ -40,8 +40,8 @@ services:
   backend:
     ports:
       - "8888:8888"
-#    volumes:
-#      - ./backend/app:/app
+    volumes:
+      - ./backend/app/files:/app/app/files
     environment:
       - JUPYTER=jupyter lab --ip=0.0.0.0 --allow-root --NotebookApp.custom_display_url=http://127.0.0.1:8888
       - SERVER_HOST=http://${DOMAIN?Variable not set}
@@ -62,8 +62,8 @@ services:
       - traefik.http.services.${STACK_NAME?Variable not set}-backend.loadbalancer.server.port=80
 
   celeryworker:
-#    volumes:
-#      - ./backend/app:/app
+    volumes:
+      - ./backend/app/files:/app/app/files
     environment:
       - RUN=celery -A app.worker worker -l info -Q main-queue -c 1
       - JUPYTER=jupyter lab --ip=0.0.0.0 --allow-root --NotebookApp.custom_display_url=http://127.0.0.1:8888

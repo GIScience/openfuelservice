@@ -2,13 +2,15 @@
 .gitignore
 .coverage
 .venv
+.venv310
 .tox
 .idea
 .mypy_cache
 .pytest_cache
 coverage.xml
+.coverage
 Dockerfile
 debug.env
 github.env
 debug_runner.py
-files
+**/files

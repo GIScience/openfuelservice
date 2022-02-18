@@ -166,7 +166,7 @@ services:
   celeryworker:
     image: "${DOCKER_IMAGE_CELERYWORKER?Variable not set}:${TAG-latest}"
     entrypoint: /bin/bash
-    command: "/worker-start.sh"
+    command: "/start-worker.sh"
     depends_on:
       - db
       - queue
