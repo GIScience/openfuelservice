@@ -1,4 +1,5 @@
 import datetime
+from decimal import Decimal
 
 from sqlalchemy.orm import Session
 
@@ -11,13 +12,13 @@ def test_base_importer(db: Session) -> None:
     eurostat_general_price = EurostatGeneralPrice()
     eurostat_general_price.price_in_euro = 0
     eurostat_general_price.date = current_datetime
-    eurostat_general_price.euro_ht = 1
+    eurostat_general_price.euro_ht = Decimal(1)
     eurostat_general_price.euro_unit = "liter"
-    eurostat_general_price.euro_ttc = 3
+    eurostat_general_price.euro_ttc = Decimal(3)
     eurostat_general_price.euro_quantity = 4
-    eurostat_general_price.diesel_ht = 5
+    eurostat_general_price.diesel_ht = Decimal(5)
     eurostat_general_price.diesel_unit = "liter"
-    eurostat_general_price.diesel_ttc = 7
+    eurostat_general_price.diesel_ttc = Decimal(7)
     eurostat_general_price.diesel_quantity = 8
     BaseImporter(db=db).import_data([eurostat_general_price])
     db_objects = (

@@ -47,14 +47,14 @@ def download_file_with_name(
     url_or_path: Union[str, Path, None], file_name: str, output_folder: Path
 ) -> Union[Path, None]:
     """Downloads and stores a file. It will always be stored in the temp folder!!!
-        If the path is not an url but local path it will copy the file to the temp destination.
+    If the path is not an url but local path it will copy the file to the temp destination.
 
-        :param url_or_path: Url or Path in String format.
-        :param file_name: Name of the file to store the downloaded file to.
-        :param output_folder: Folder to download the file to.
-        :return: Absolute system path to the downloaded file or None
-        :rtype: str
-        """
+    :param url_or_path: Url or Path in String format.
+    :param file_name: Name of the file to store the downloaded file to.
+    :param output_folder: Folder to download the file to.
+    :return: Absolute system path to the downloaded file or None
+    :rtype: str
+    """
     try:
         if url_or_path is None:
             return None

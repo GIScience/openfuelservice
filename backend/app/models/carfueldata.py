@@ -94,13 +94,13 @@ class CarFuelDataCar(Base):
             if value is None or str(value).lower().strip() == "n/a" or key is None:
                 value = None
             elif key == CarFuelDataHeaderMapping.DATE_OF_CHANGE:
-                value: datetime = (datetime.datetime.strptime(value, "%d %B %Y"))  # type: ignore
+                value: datetime = datetime.datetime.strptime(value, "%d %B %Y")  # type: ignore
                 if "year" not in self.__dict__.keys() or (
                     "year" in self.__dict__.keys() and self.__dict__.get("year") is None
                 ):
                     self.__setattr__("year", value.year)
             elif key == CarFuelDataHeaderMapping.MODEL and type(value) == str:
-                year: int = self._check_name_for_year(car_name=value)  # type: ignore
+                year: Union[int, None] = check_name_for_year(car_name=value)
                 if year:
                     self.__setattr__("year", year)
             elif type(value) == str and not len(value):

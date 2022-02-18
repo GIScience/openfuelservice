@@ -15,7 +15,9 @@ async def test_read_brands(
     db: Session,
     mock_cfd_cars: Generator[List[CarFuelDataCar], None, None],
 ) -> None:
-    response = await async_client.get(f"{settings.API_V1_STR}/brands/",)
+    response = await async_client.get(
+        f"{settings.API_V1_STR}/brands/",
+    )
     assert response.status_code == 200
     content: dict = response.json()
     assert isinstance(content["data"], list)
@@ -40,7 +42,13 @@ async def test_read_brands(
 
 
 @pytest.mark.parametrize(
-    "brand,response_code", (("Abarth", 200), ("", 404), ("Foo", 404), (None, 404),),
+    "brand,response_code",
+    (
+        ("Abarth", 200),
+        ("", 404),
+        ("Foo", 404),
+        (None, 404),
+    ),
 )
 @pytest.mark.anyio
 async def test_read_cars_by_brand(
@@ -70,7 +78,13 @@ async def test_read_cars_by_brand(
 
 
 @pytest.mark.parametrize(
-    "brand,response_code", (("Abarth", 200), ("", 404), ("Foo", 404), (None, 404),),
+    "brand,response_code",
+    (
+        ("Abarth", 200),
+        ("", 404),
+        ("Foo", 404),
+        (None, 404),
+    ),
 )
 @pytest.mark.anyio
 async def test_cars_by_brand_sorted_by_model_and_year(

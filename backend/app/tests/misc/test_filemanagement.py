@@ -102,7 +102,10 @@ def test_download_file_with_mock_must_fail(
 
 @pytest.mark.parametrize(
     "source_file,dest_file",
-    (("Foobar1", "foobar1_output.zip"), ("Foobar2", "foobar2_output.zip"),),
+    (
+        ("Foobar1", "foobar1_output.zip"),
+        ("Foobar2", "foobar2_output.zip"),
+    ),
 )
 def test_download_file_with_name_must_fail(
     source_file: str, dest_file: str, tmpdir: Path
@@ -142,7 +145,9 @@ def test_unzip_download_file_doesnt_exist(
         unzip_download(Path(source_file), Path(tmpdir))
 
 
-def test_unzip_download_file_must_fail(tmpdir: Path,) -> None:
+def test_unzip_download_file_must_fail(
+    tmpdir: Path,
+) -> None:
     damaged_zip: Path = Path(os.path.join(tmpdir, "wrong.zip"))
     with open(damaged_zip, "w+") as f:
         f.write("This is not a zip file")

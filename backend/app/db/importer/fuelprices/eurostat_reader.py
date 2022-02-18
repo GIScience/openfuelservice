@@ -48,9 +48,11 @@ class EurostatFuelReader(BaseReader):
         elif len(country_code) > 3:
             # No country value greater than 3!
             return None
-        country_data_match: CountryData = self._db.query(CountryData).filter(
-            CountryData.country_alpha_2.in_([country_code])
-        ).first()
+        country_data_match: Union[CountryData, None] = (
+            self._db.query(CountryData)
+            .filter(CountryData.country_alpha_2.in_([country_code]))
+            .first()
+        )
         if country_data_match is None:
             country_data_match = (
                 self._db.query(CountryData)
@@ -246,9 +248,11 @@ class EurostatFuelReader(BaseReader):
             ):
                 self._objects_list_ordered[current_country.country_alpha_2] = {}
 
-            taux: Union[float, None] = self._convert_string_prices_to_float(
-                row[taux_column].value
-            ) if taux_column >= 0 else None
+            taux: Union[float, None] = (
+                self._convert_string_prices_to_float(row[taux_column].value)
+                if taux_column >= 0
+                else None
+            )
             if taux is None:
                 taux = float(1)
 

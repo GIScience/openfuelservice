@@ -23,9 +23,9 @@ async def test_initialize_model(
     )
     assert len(model_collection._loaded_models) == 0
     model_names_intents: Path = model_collection._models_intents[model_name] if model_name else None  # type: ignore
-    model_names_training_data: Path = model_collection._models_training_data[
-        model_name
-    ] if model_name else None  # type: ignore
+    model_names_training_data: Path = (
+        model_collection._models_training_data[model_name] if model_name else None  # type: ignore
+    )  # type: ignore
     model = ManufacturerAnnModel(
         model_name=model_name,
         old_intents=model_names_intents,

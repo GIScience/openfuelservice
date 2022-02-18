@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 
 def initialize_session(session: requests.Session) -> requests.Session:
-    """Helper Function to initialize threaded and non-threaded sessions. """
+    """Helper Function to initialize threaded and non-threaded sessions."""
     session.headers.update(settings.GLOBAL_HEADERS)
     return session
 

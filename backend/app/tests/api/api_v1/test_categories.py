@@ -17,7 +17,9 @@ async def test_read_categories(
     mock_wikipedia_responses: Generator[responses.RequestsMock, None, None],
     mock_wikipedia_car_categories: Generator[List[WikiCarCategory], None, None],
 ) -> None:
-    response = await async_client.get(f"{settings.API_V1_STR}/categories/",)
+    response = await async_client.get(
+        f"{settings.API_V1_STR}/categories/",
+    )
     assert response.status_code == 200
     content: dict = response.json()
     assert isinstance(content["data"], list)

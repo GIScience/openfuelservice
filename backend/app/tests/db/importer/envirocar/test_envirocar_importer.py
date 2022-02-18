@@ -99,8 +99,10 @@ def test_envirocar_importer(
     track_measurements_in_db: List = EnvirocarTrackMeasurement.get_all_by_filter(
         db=db, filter_ids=unique_ids_track_measurements, id_only=True
     )
-    track_measurement_phenomenons_in_db = EnvirocarTrackMeasurementPhenomenon.get_all_by_filter(
-        db=db, filter_ids=unique_ids_track_measurements_phenomenons, id_only=True
+    track_measurement_phenomenons_in_db = (
+        EnvirocarTrackMeasurementPhenomenon.get_all_by_filter(
+            db=db, filter_ids=unique_ids_track_measurements_phenomenons, id_only=True
+        )
     )
     assert len(phenomenons_in_db)
     assert len(sensors_in_db)

@@ -24,7 +24,10 @@ from app.misc.json_encoders import ToShapeDecoder
                 "044400000000000004440",
             ),
         ),
-        (None, WKBElement(""),),
+        (
+            None,
+            WKBElement(""),
+        ),
         (None, None),
         (None, None),
         ("foobar", "foobar"),

@@ -246,7 +246,10 @@ def upgrade():
         sa.Column("numb_cars", sa.Integer(), nullable=False),
         sa.Column("year", sa.Integer(), nullable=False),
         sa.Column("category_short_eu", sa.String(), nullable=True),
-        sa.ForeignKeyConstraint(["category_short_eu"], ["wikicarcategory.id"],),
+        sa.ForeignKeyConstraint(
+            ["category_short_eu"],
+            ["wikicarcategory.id"],
+        ),
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_index(
@@ -291,8 +294,14 @@ def upgrade():
         sa.Column("measurements", sa.Integer(), nullable=False),
         sa.Column("numb_sensors", sa.Integer(), nullable=False),
         sa.Column("category_short_eu", sa.String(), nullable=True),
-        sa.ForeignKeyConstraint(["category_short_eu"], ["wikicarcategory.id"],),
-        sa.ForeignKeyConstraint(["phenomenon_name"], ["envirocarphenomenon.id"],),
+        sa.ForeignKeyConstraint(
+            ["category_short_eu"],
+            ["wikicarcategory.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["phenomenon_name"],
+            ["envirocarphenomenon.id"],
+        ),
         sa.PrimaryKeyConstraint("hash_id"),
     )
     op.create_index(
@@ -331,7 +340,10 @@ def upgrade():
         sa.Column("min", sa.Float(asdecimal=True), nullable=True),
         sa.Column("measurements", sa.Integer(), nullable=False),
         sa.Column("numb_sensors", sa.Integer(), nullable=False),
-        sa.ForeignKeyConstraint(["phenomenon_name"], ["envirocarphenomenon.id"],),
+        sa.ForeignKeyConstraint(
+            ["phenomenon_name"],
+            ["envirocarphenomenon.id"],
+        ),
         sa.PrimaryKeyConstraint("hash_id"),
     )
     op.create_index(
@@ -375,7 +387,10 @@ def upgrade():
         sa.Column("min", sa.Float(asdecimal=True), nullable=True),
         sa.Column("measurements", sa.Integer(), nullable=False),
         sa.Column("numb_sensors", sa.Integer(), nullable=False),
-        sa.ForeignKeyConstraint(["phenomenon_name"], ["envirocarphenomenon.id"],),
+        sa.ForeignKeyConstraint(
+            ["phenomenon_name"],
+            ["envirocarphenomenon.id"],
+        ),
         sa.PrimaryKeyConstraint("hash_id"),
     )
     op.create_index(
@@ -413,8 +428,14 @@ def upgrade():
         sa.Column("tracks", sa.Integer(), nullable=True),
         sa.Column("users", sa.Integer(), nullable=True),
         sa.Column("sensors", sa.Integer(), nullable=True),
-        sa.ForeignKeyConstraint(["id"], ["envirocarsensor.id"],),
-        sa.ForeignKeyConstraint(["phenomenon_unit"], ["envirocarphenomenon.id"],),
+        sa.ForeignKeyConstraint(
+            ["id"],
+            ["envirocarsensor.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["phenomenon_unit"],
+            ["envirocarphenomenon.id"],
+        ),
         sa.PrimaryKeyConstraint("id", "phenomenon_unit"),
     )
     op.create_index(
@@ -436,7 +457,10 @@ def upgrade():
         sa.Column("length", sa.Float(asdecimal=True), nullable=True),
         sa.Column("begin", sa.DateTime(), nullable=False),
         sa.Column("end", sa.DateTime(), nullable=False),
-        sa.ForeignKeyConstraint(["sensor_id"], ["envirocarsensor.id"],),
+        sa.ForeignKeyConstraint(
+            ["sensor_id"],
+            ["envirocarsensor.id"],
+        ),
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_index(
@@ -460,7 +484,10 @@ def upgrade():
         sa.Column("diesel_ttc", sa.Numeric(), nullable=True),
         sa.Column("diesel_unit", sa.String(), nullable=False),
         sa.Column("diesel_quantity", sa.Integer(), nullable=False),
-        sa.ForeignKeyConstraint(["country_alpha_2"], ["countrydata.country_alpha_2"],),
+        sa.ForeignKeyConstraint(
+            ["country_alpha_2"],
+            ["countrydata.country_alpha_2"],
+        ),
         sa.PrimaryKeyConstraint("id", "country_alpha_2"),
     )
     op.create_index(
@@ -478,7 +505,10 @@ def upgrade():
         sa.Column("title", sa.String(), nullable=True),
         sa.Column("description", sa.String(), nullable=True),
         sa.Column("owner_id", sa.Integer(), nullable=True),
-        sa.ForeignKeyConstraint(["owner_id"], ["user.id"],),
+        sa.ForeignKeyConstraint(
+            ["owner_id"],
+            ["user.id"],
+        ),
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_index(op.f("ix_item_description"), "item", ["description"], unique=False)
@@ -492,7 +522,10 @@ def upgrade():
         sa.Column("brand_name", sa.String(), nullable=False),
         sa.Column("car_name", sa.String(), nullable=False),
         sa.Column("page_language", sa.String(), nullable=True),
-        sa.ForeignKeyConstraint(["category_short_eu"], ["wikicarcategory.id"],),
+        sa.ForeignKeyConstraint(
+            ["category_short_eu"],
+            ["wikicarcategory.id"],
+        ),
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_index(
@@ -523,7 +556,10 @@ def upgrade():
         ),
         sa.Column("track_id", sa.String(), nullable=False),
         sa.Column("time", sa.DateTime(), nullable=False),
-        sa.ForeignKeyConstraint(["track_id"], ["envirocartrack.id"],),
+        sa.ForeignKeyConstraint(
+            ["track_id"],
+            ["envirocartrack.id"],
+        ),
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_index(
@@ -552,8 +588,14 @@ def upgrade():
         sa.Column("page_language", sa.String(), nullable=False),
         sa.Column("page_text", sa.String(), nullable=True),
         sa.Column("category_short_eu", sa.String(), nullable=True),
-        sa.ForeignKeyConstraint(["category_short_eu"], ["wikicarcategory.id"],),
-        sa.ForeignKeyConstraint(["id"], ["wikicar.id"],),
+        sa.ForeignKeyConstraint(
+            ["category_short_eu"],
+            ["wikicarcategory.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["id"],
+            ["wikicar.id"],
+        ),
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_index(
@@ -589,8 +631,14 @@ def upgrade():
         sa.Column("name", sa.String(), nullable=False),
         sa.Column("unit", sa.String(), nullable=False),
         sa.Column("value", sa.Float(asdecimal=True), nullable=True),
-        sa.ForeignKeyConstraint(["id"], ["envirocartrackmeasurement.id"],),
-        sa.ForeignKeyConstraint(["name"], ["envirocarphenomenon.id"],),
+        sa.ForeignKeyConstraint(
+            ["id"],
+            ["envirocartrackmeasurement.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["name"],
+            ["envirocarphenomenon.id"],
+        ),
         sa.PrimaryKeyConstraint("id", "name"),
     )
     op.create_index(

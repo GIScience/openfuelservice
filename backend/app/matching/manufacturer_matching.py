@@ -48,7 +48,10 @@ def bow(sentence: str, words: List, show_details: bool = False) -> np.ndarray:
 class ManufacturerAnnModel:
     # https://machinelearnings.co/text-classification-using-neural-networks-f5cd7b8765c6
     def __init__(
-        self, model_name: str, old_intents: Path, old_training_data: Path,
+        self,
+        model_name: str,
+        old_intents: Path,
+        old_training_data: Path,
     ):
         self.model_name = model_name
         self._words: List[str] = []

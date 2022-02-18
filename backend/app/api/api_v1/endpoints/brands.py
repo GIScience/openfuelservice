@@ -43,9 +43,9 @@ async def read_cars_by_brand_sorted_by_model_and_year(
 ) -> Any:
     """Request the available models for fuel calculations."""
     results: Dict = {"ids": []}
-    database_entries: List = db.query(CarFuelDataCar).filter(
-        CarFuelDataCar.manufacturer.like(brand)
-    ).all()
+    database_entries: List = (
+        db.query(CarFuelDataCar).filter(CarFuelDataCar.manufacturer.like(brand)).all()
+    )
     if not database_entries:
         raise HTTPException(status_code=404, detail=f"No cars found for brand: {brand}")
     entry: CarFuelDataCar

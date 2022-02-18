@@ -125,14 +125,17 @@ class Settings(BaseSettings):
     def get_fixed_matches(cls, v: Optional[str], values: Dict[str, Any]) -> Dict:
         return yaml.safe_load(
             open(
-                f"{values['FILE_FOLDER']}/internal/fixed_matches.yml", encoding="utf-8",
+                f"{values['FILE_FOLDER']}/internal/fixed_matches.yml",
+                encoding="utf-8",
             )
         )
 
     ENABLED_FUEL_TYPES: List[str] = ["gasoline", "diesel"]
 
     # CARFUELDATA_PATH_OR_URL: str = "https://carfueldata.vehicle-certification-agency.gov.uk/downloads/create_latest_data_csv.asp?id=6"  # noqa: E501
-    CARFUELDATA_PATH_OR_URL: str = f"{FILE_FOLDER}/carfueldata/Euro_6_latest_22-12-2021.zip"
+    CARFUELDATA_PATH_OR_URL: str = (
+        f"{FILE_FOLDER}/carfueldata/Euro_6_latest_22-12-2021.zip"
+    )
     CARFUELDATA_TEST_PATH_OR_URL: str = f"{FILE_FOLDER}/carfueldata/cfd_test_file.zip"
 
     class Config:
@@ -146,8 +149,12 @@ class Settings(BaseSettings):
     COUNTRY_CODES_TEST_PATH: str = f"{FILE_FOLDER}/countrydata/test_country_codes.csv"
     COUNTRY_CODES_ATTRIBUTION: str = "Made with Natural Earth. Free vector and raster map data @ naturalearthdata.com"
     COUNTRY_BOUNDARIES_PATH: str = f"{FILE_FOLDER}/countrydata/TM_WORLD_BORDERS-0.3.zip"
-    COUNTRY_BOUNDARIES_TEST_PATH: str = f"{FILE_FOLDER}/countrydata/TM_WORLD_BORDERS-0.3.zip"
-    COUNTRY_BOUNDARIES_ATTRIBUTION: str = "https://thematicmapping.org/downloads/world_borders.php"
+    COUNTRY_BOUNDARIES_TEST_PATH: str = (
+        f"{FILE_FOLDER}/countrydata/TM_WORLD_BORDERS-0.3.zip"
+    )
+    COUNTRY_BOUNDARIES_ATTRIBUTION: str = (
+        "https://thematicmapping.org/downloads/world_borders.php"
+    )
 
     # Fueldata
     # EUROSTAT_FUEL_HISTORY_1994_2005: str = f"{FILE_FOLDER}/fuelprices/eurostat_time_series_years_1994_2005.zip"
@@ -157,20 +164,38 @@ class Settings(BaseSettings):
 
     # Envirocar
     ENVIROCAR_BASE_URL: str = "https://envirocar.org/api/stable"
-    TEST_ENVIROCAR_PHENOMENONS_RESPONSE: str = f"{FILE_FOLDER}/envirocar/test_envircoar_phenomenons.json"
-    TEST_ENVIROCAR_SENSOR_ID_RESPONSE: str = f"{FILE_FOLDER}/envirocar/test_envirocar_sensor_id_response.json"
-    TEST_ENVIROCAR_SENSORS_RESPONSE: str = f"{FILE_FOLDER}/envirocar/test_envirocar_sensors_response.json"
-    TEST_ENVIROCAR_TRACK_ID_RESPONSE: str = f"{FILE_FOLDER}/envirocar/test_envirocar_track_id_response.json"
+    TEST_ENVIROCAR_PHENOMENONS_RESPONSE: str = (
+        f"{FILE_FOLDER}/envirocar/test_envircoar_phenomenons.json"
+    )
+    TEST_ENVIROCAR_SENSOR_ID_RESPONSE: str = (
+        f"{FILE_FOLDER}/envirocar/test_envirocar_sensor_id_response.json"
+    )
+    TEST_ENVIROCAR_SENSORS_RESPONSE: str = (
+        f"{FILE_FOLDER}/envirocar/test_envirocar_sensors_response.json"
+    )
+    TEST_ENVIROCAR_TRACK_ID_RESPONSE: str = (
+        f"{FILE_FOLDER}/envirocar/test_envirocar_track_id_response.json"
+    )
     TEST_ENVIROCAR_TRACK_MEASUREMENT_RESPONSE: str = f"{FILE_FOLDER}/envirocar/test_envirocar_track_measurements_response.json"  # noqa: E501
-    TEST_ENVIROCAR_TRACKS_RESPONSE: str = f"{FILE_FOLDER}/envirocar/test_envirocar_tracks_response.json"
+    TEST_ENVIROCAR_TRACKS_RESPONSE: str = (
+        f"{FILE_FOLDER}/envirocar/test_envirocar_tracks_response.json"
+    )
 
     # Wikipedia
-    TEST_WIKIPEDIA_KATEGORIE_KLEINSTWAGEN_RESPONSE: str = f"{FILE_FOLDER}/wikipedia/test_kategorie_kleinstwagen_response.json"  # noqa
+    TEST_WIKIPEDIA_KATEGORIE_KLEINSTWAGEN_RESPONSE: str = (
+        f"{FILE_FOLDER}/wikipedia/test_kategorie_kleinstwagen_response.json"  # noqa
+    )
     TEST_WIKIPEDIA_KATEGORIE_KLEINSTWAGEN_INFO_RESPONSE: str = f"{FILE_FOLDER}/wikipedia/test_kategorie_kleinstwagen_info_response.json"  # noqa
-    TEST_WIKIPEDIA_KATEGORIE_LEICHTFAHRZEUGE_RESPONSE: str = f"{FILE_FOLDER}/wikipedia/test_kategorie_leichtfahrzeug_response.json"  # noqa
+    TEST_WIKIPEDIA_KATEGORIE_LEICHTFAHRZEUGE_RESPONSE: str = (
+        f"{FILE_FOLDER}/wikipedia/test_kategorie_leichtfahrzeug_response.json"  # noqa
+    )
     TEST_WIKIPEDIA_KATEGORIE_LEICHTFAHRZEUGE_INFO_RESPONSE: str = f"{FILE_FOLDER}/wikipedia/test_kategorie_leichtfahrzeug_info_response.json"  # noqa
-    TEST_WIKIPEDIA_CATEGORY_MICROCARS_RESPONSE: str = f"{FILE_FOLDER}/wikipedia/test_category_microcars_response.json"
-    TEST_WIKIPEDIA_CATEGORY_MICROCARS_INFO_RESPONSE: str = f"{FILE_FOLDER}/wikipedia/test_category_microcars_info_response.json"  # noqa
+    TEST_WIKIPEDIA_CATEGORY_MICROCARS_RESPONSE: str = (
+        f"{FILE_FOLDER}/wikipedia/test_category_microcars_response.json"
+    )
+    TEST_WIKIPEDIA_CATEGORY_MICROCARS_INFO_RESPONSE: str = (
+        f"{FILE_FOLDER}/wikipedia/test_category_microcars_info_response.json"  # noqa
+    )
 
     # User Agent header
     USER_AGENT = user_agent("Openfuelservice", "0.0.1")

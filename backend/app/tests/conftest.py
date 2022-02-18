@@ -236,8 +236,8 @@ def random_track_measurement_1(
     sensor: models.EnvirocarSensor = create_random_sensor(db=db)
     track: models.EnvirocarTrack = create_random_track(db=db, sensor=sensor)
     # TODO
-    track_measurement: models.EnvirocarTrackMeasurement = create_random_track_measurement(
-        db=db, track=track
+    track_measurement: models.EnvirocarTrackMeasurement = (
+        create_random_track_measurement(db=db, track=track)
     )
     yield track_measurement
     crud.track_measurement.remove(db=db, id=track.id)
