@@ -22,11 +22,10 @@ async def test_read_brands(
     content: dict = response.json()
     assert isinstance(content["data"], list)
     data = content["data"]
+    data.sort()
     assert len(data) == 10
     assert isinstance(data, list)
-    assert (
-        data.sort()
-        == [
+    expected = [
             "Aston Martin",
             "Abarth",
             "Honda",
@@ -37,8 +36,9 @@ async def test_read_brands(
             "Citroën",
             "Tesla",
             "Hyundai",
-        ].sort()
-    )
+        ]
+    expected.sort()
+    assert data == expected
 
 
 @pytest.mark.parametrize(

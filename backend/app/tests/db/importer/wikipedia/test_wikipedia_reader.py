@@ -41,7 +41,9 @@ def test_get_category_data(
     assert category_object.id == category_object.category_short_eu
     assert len(category_object.category_wiki_names) == 3
     category_names: List = test_car_category["car_categories"]["a"]["category_names"]  # type: ignore
-    assert category_object.category_wiki_names.sort() == category_names.sort()
+    category_object.category_wiki_names.sort()
+    category_names.sort()
+    assert category_object.category_wiki_names == category_names
 
 
 def test_get_category_car_data(

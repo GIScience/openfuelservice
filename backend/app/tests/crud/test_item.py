@@ -1,6 +1,9 @@
+from typing import Optional
+
 from sqlalchemy.orm import Session
 
 from app import crud
+from app.models import Item
 from app.schemas.item import ItemCreate, ItemUpdate
 from app.tests.utils.user import create_random_user
 from app.tests.utils.utils import random_lower_string
@@ -57,10 +60,11 @@ def test_delete_item(db: Session) -> None:
     description = random_lower_string()
     item_in = ItemCreate(title=title, description=description)
     user = create_random_user(db)
-    item = crud.item.create_with_owner(db=db, obj_in=item_in, owner_id=user.id)
-    item2 = crud.item.remove(db=db, id=item.id)
-    item3 = crud.item.get(db=db, id=item.id)
+    item: Item = crud.item.create_with_owner(db=db, obj_in=item_in, owner_id=user.id)
+    item2: Optional[Item] = crud.item.remove(db=db, id=item.id)
+    item3: Optional[Item] = crud.item.get(db=db, id=item.id)
     assert item3 is None
+    assert item2
     assert item2.id == item.id
     assert item2.title == title
     assert item2.description == description
