@@ -83,11 +83,12 @@ class WikipediaReader(BaseReader):
                     wiki_car: Union[WikiCar, None] = self._process_category_member(key)
                     if not wiki_car:
                         continue
-                    wiki_car.page_id = page.pageid
-                    wiki_car.page_language = page.language
+                    category_object: wikipediaapi.WikipediaPage = category_members[key]
+                    wiki_car.page_id = category_object.pageid
+                    wiki_car.page_language = category_object.language
                     wiki_car.category_short_eu = category.category_short_eu
                     wiki_car.category_short_eu = category.id
-                    wiki_car.wiki_name = key
+                    wiki_car.wiki_name = category_object.title
                     wiki_cars.append(wiki_car)
         return wiki_cars
 
