@@ -29,7 +29,7 @@ class EnvirocarReader(BaseReader):
     def __init__(
         self,
         file_or_url: Union[str, Path, None],
-        envirocar_base_url: str,
+        envirocar_base_url: str = "https://envirocar.org/api/stable",
         threads: Union[int, None] = None,
     ):
         super().__init__(file_or_url)
