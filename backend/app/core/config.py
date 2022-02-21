@@ -42,7 +42,7 @@ class Settings(BaseSettings):
         raise ValueError(v)
 
     PROJECT_NAME: str
-    DEBUG: bool = False
+    DEBUG: bool = True
     SENTRY_DSN: Optional[HttpUrl] = None
 
     @validator("SENTRY_DSN", pre=True)
@@ -235,12 +235,7 @@ class Settings(BaseSettings):
         with tarfile.open(v) as f:
             members = f.getmembers()
             print(f"Found {len(members)} models. Extracting them now.")
-            for member in tqdm(
-                members,
-                desc=" Uncompressing models.",
-                total=len(members),
-                unit=" Models",
-            ):
+            for member in members:
                 member.path = member.path.strip("models/")
                 f.extract(member=member, path=uncomporessed_model_path)
             # f.extractall('.')
@@ -263,27 +258,68 @@ class LogConfig(BaseModel):
 
     LOGGER_NAME: str = settings.PROJECT_NAME
     LOG_FORMAT: str = (
-        f"%(asctime)s | [{settings.PROJECT_NAME}] | %(levelprefix)s | %(message)s"
+        f'%(asctime)s.%(msecs)d %(levelname)-8s [{settings.PROJECT_NAME}][%(filename)s:%(lineno)d] %(message)s'
     )
+    COLOR_LOG_FORMAT = '%(log_color)s' + LOG_FORMAT
+
     LOG_LEVEL: str = "DEBUG" if settings.DEBUG else "INFO"
 
     # Logging config
     version = 1
     disable_existing_loggers = False
+    colors = {'DEBUG': 'green',
+              'INFO': 'white',
+              'WARNING': 'bold_yellow',
+              'ERROR': 'bold_red',
+              'CRITICAL': 'bold_purple'}
     formatters = {
         "default": {
-            "()": "uvicorn.logging.DefaultFormatter",
+            "()": "logging.Formatter",
+            "fmt": LOG_FORMAT,
+            "datefmt": "%Y-%m-%d %H:%M:%S"
+        },
+        "color": {
+            "()": "colorlog.ColoredFormatter",
+            "fmt": COLOR_LOG_FORMAT,
+            "datefmt": "%Y-%m-%d %H:%M:%S",
+            "log_colors": colors
+        },
+        "access": {
+            "()": "uvicorn.logging.AccessFormatter",
             "fmt": LOG_FORMAT,
             "datefmt": "%Y-%m-%d %H:%M:%S",
         },
     }
     handlers = {
         "default": {
-            "formatter": "default",
+            "formatter": "color",
             "class": "logging.StreamHandler",
             "stream": "ext://sys.stderr",
         },
+        "access": {
+            "formatter": "color",
+            "class": "logging.StreamHandler",
+            "stream": "ext://sys.stdout",
+        },
+        "sqlalchemy": {
+            "formatter": "color",
+            "class": "logging.StreamHandler",
+            "stream": "ext://sys.stdout",
+        },
+        "alembic": {
+            "formatter": "color",
+            "class": "logging.StreamHandler",
+            "stream": "ext://sys.stdout",
+        },
+        "file": {
+            "formatter": "color",
+            "class": "logging.FileHandler",
+            "filename": "logconfig.log",
+        }
     }
     loggers = {
-        LOGGER_NAME: {"handlers": ["default"], "level": LOG_LEVEL},
+        LOGGER_NAME: {"handlers": ["default"], "level": "INFO"},
+        "uvicorn": {"handlers": ["default"], "level": "INFO"},
+        "uvicorn.error": {"level": "INFO"},
+        "uvicorn.access": {"handlers": ["access"], "propagate": False, "level": "INFO"},
     }
