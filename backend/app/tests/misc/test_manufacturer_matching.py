@@ -110,7 +110,7 @@ async def test_classify(
     assert len(model_collection._loaded_models) == 0
     await model_collection._initialize_models(model_names)
     result: List[tuple] = await model_collection.classify(
-        model_name=manufacturer, car_name=car_name, error_threshold=min_certainty
+        model_name=manufacturer, car_name=car_name, accuracy_threshold=min_certainty
     )
     assert len(result) == 1
     assert result[0][0] == expected_result

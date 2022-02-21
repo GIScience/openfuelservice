@@ -40,10 +40,10 @@ def test_wikipedia_importer(
     assert len(wikipedia_reader.objects_ordered) == 2
     assert (
         sum([len(objects) for objects in wikipedia_reader.objects_ordered.values()])
-        == 4
+        == 8
     )
     assert len(wikipedia_reader.objects_ordered[0]) == 1
-    assert len(wikipedia_reader.objects_ordered[1]) == 3
+    assert len(wikipedia_reader.objects_ordered[1]) == 7
     assert isinstance(wikipedia_reader.objects_ordered[0][0], WikiCarCategory)
 
     unique_ids_wiki_car_categories: List = []

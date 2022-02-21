@@ -1,10 +1,83 @@
+import itertools
 import logging
 import re
-from typing import Any, Dict, List, Mapping, Union
+from datetime import datetime
+from itertools import chain, combinations
+from typing import Any, Dict, Iterator, List, Mapping, Union
+
+import nltk
 
 from app.core.config import settings
 
 logger = logging.getLogger(__name__)
+
+try:
+    nltk.download("punkt")
+except Exception:
+    logger.warning(
+        "Couldn't download nltk Punkt package. If the matching module is not used just ignore."
+    )
+
+
+def create_powerset(list_to_powerset: List[Any]) -> List:
+    return_list: List = []
+    if not isinstance(list_to_powerset, List):
+        return []
+    list_to_powerset = (
+        [list_to_powerset] if isinstance(list_to_powerset, str) else list_to_powerset
+    )
+    list_to_powerset_stringified: List[str] = [
+        str(entry) for entry in list_to_powerset if entry is not None
+    ]
+    powersets: Iterator = chain.from_iterable(
+        combinations(list_to_powerset_stringified, r)
+        for r in range(len(list_to_powerset_stringified) + 1)
+    )
+
+    for powerset in powersets:
+        if len(powerset) <= 0:
+            continue
+        return_list.append(" ".join([power for power in powerset]).strip())
+    return sorted(set(return_list))
+
+
+def create_permutations(string_to_permutation: str) -> List:
+    if (
+        string_to_permutation is None
+        or not isinstance(string_to_permutation, str)
+        or not len(string_to_permutation)
+    ):
+        return []
+    string_to_permutation = re.sub(
+        r"[^0-9a-zA-Z. ]+", " ", string_to_permutation
+    ).strip()
+    string_to_permutation = re.sub(r" +", " ", string_to_permutation).strip()
+    string_to_permutation = remove_double_words(string_to_permutation)
+    tokenized_string = nltk.word_tokenize(string_to_permutation)
+    permutations: Iterator = itertools.permutations(tokenized_string)
+    return sorted(set([" ".join(a).strip() for a in permutations]))
+
+
+def remove_double_words(string: str, caseless: bool = False) -> str:
+    if not string:
+        return ""
+    string_words = nltk.word_tokenize(string.casefold() if caseless else string)
+    string_words_unique = list(dict.fromkeys(string_words).keys())
+    return " ".join(string_words_unique).strip()
+
+
+def check_name_for_year(car_name: str) -> Union[int, None]:
+    if not isinstance(car_name, str) or not any(map(str.isdigit, car_name)):
+        # Contains no digits
+        return None
+    current_year: int = datetime.today().year + 1
+    contains_valid_digits = re.search(
+        f"19[7-9][0-9]|20[0-{str(current_year)[2]}][0-9]|{current_year}",
+        car_name,
+    )
+    if contains_valid_digits:
+        return int(contains_valid_digits.group(0))
+    return None
 
 
 def clean_vehicle_name(vehicle_name: str) -> Union[str, None]:
@@ -16,6 +89,27 @@ def clean_vehicle_name(vehicle_name: str) -> Union[str, None]:
     if not len(new_name) > 0:
         return None
     return new_name
+
+
+def check_fixed_matches(
+    manufacturer: str, car_name: str, year: Union[int, None]
+) -> List:
+    if not manufacturer or not car_name:
+        return []
+    if not year:
+        string_year: str = ""
+    else:
+        string_year = str(year)
+    manufacturer = manufacturer.lower()
+    car_name = car_name.replace(str(year), "").lower().strip()
+    if manufacturer in settings.FIXED_MATCHES:
+        manufacturer_matches = settings.FIXED_MATCHES[manufacturer]
+        results = []
+        for fixed_match in settings.FIXED_MATCHES[manufacturer]:
+            if car_name + string_year in fixed_match:
+                results.extend(manufacturer_matches[fixed_match])
+        return list(set(results))
+    return []
 
 
 def vehicle_is_ignored(car_brand_or_name: str) -> bool:
@@ -34,7 +128,7 @@ def check_static_vehicles_list(car_name: str) -> tuple:
 
 def check_brand_aliases(short_name: str, car_name: str) -> tuple:
     correct_brand: Union[str, None] = None
-    if not short_name or not car_name:
+    if not short_name or car_name is None:
         return None, None
     for brand in settings.CAR_BRANDS["aliases"]:
         if short_name.lower().strip() == brand.lower().strip():
@@ -64,6 +158,20 @@ def check_brand_aliases(short_name: str, car_name: str) -> tuple:
     if startswith == "(" and endswith == ")":
         return None, None
     return correct_brand, model_name
+
+
+def get_brand_aliases(brand_name: str) -> List[str]:
+    if not brand_name:
+        return []
+    for brand in settings.CAR_BRANDS["aliases"]:
+        if not brand_name.lower().strip() == brand.lower().strip():
+            continue
+        aliases: List = [
+            alias.strip() for alias in settings.CAR_BRANDS["aliases"][brand]
+        ]
+        aliases.append(brand)
+        return list(set(aliases))
+    return []
 
 
 def check_brands(short_name: str, wiki_name: str) -> tuple:
@@ -201,49 +309,6 @@ def flatten_dictionary(
 #         return car_positive_intents
 #     else:
 #         return []
-#
-#
-# def powerset(iterable) -> []:
-#     return_list = []
-#     set_normal = list(iterable)
-#     set_lower = [x.casefold() for x in set_normal]
-#     set_title = [x.title() for x in set_normal]
-#     set_capital = [x.capitalize() for x in set_normal]
-#     set_caps = [x.upper() for x in set_normal]
-#     powerset_normal = chain.from_iterable(combinations(set_normal, r) for r in range(len(set_normal) + 1))
-#     powerset_lower = chain.from_iterable(combinations(set_lower, r) for r in range(len(set_lower) + 1))
-#     powerset_title = chain.from_iterable(combinations(set_title, r) for r in range(len(set_title) + 1))
-#     powerset_capital = chain.from_iterable(combinations(set_capital, r) for r in range(len(set_capital) + 1))
-#     powerset_caps = chain.from_iterable(combinations(set_caps, r) for r in range(len(set_caps) + 1))
-#
-#     for normal, lower, title, capital, caps in zip_longest(powerset_normal, powerset_lower, powerset_title,
-#                                                            powerset_capital, powerset_caps, fillvalue=''):
-#         sentence_normal = ""
-#         sentence_lower = ""
-#         sentence_title = ""
-#         sentence_capital = ""
-#         sentence_caps = ""
-#         if len(normal) > 0:
-#             for word in normal:
-#                 sentence_normal += ' ' + word
-#             return_list.append(sentence_normal.strip())
-#         if len(lower) > 0:
-#             for word in lower:
-#                 sentence_lower += ' ' + word
-#             return_list.append(sentence_lower.strip())
-#         if len(title) > 0:
-#             for word in title:
-#                 sentence_title += ' ' + word
-#             return_list.append(sentence_title.strip())
-#         if len(capital) > 0:
-#             for word in capital:
-#                 sentence_capital += ' ' + word
-#             return_list.append(sentence_capital.strip())
-#         if len(caps) > 0:
-#             for word in caps:
-#                 sentence_caps += ' ' + word
-#             return_list.append(sentence_caps.strip())
-#     return sorted(set(return_list))
 #
 # def save_fixed_brand_matches(manufacturer: str, wikiCarNames: [], uniqueCarName: str):
 #     originalFixedMatchesPath = basedir.joinpath('categories').joinpath('fixed_matches.yml')

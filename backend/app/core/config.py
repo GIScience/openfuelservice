@@ -1,3 +1,4 @@
+import json
 import os
 import pathlib
 import secrets
@@ -15,7 +16,6 @@ from pydantic import (
     validator,
 )
 from requests_toolbelt import user_agent
-from tqdm import tqdm
 
 script_location = pathlib.Path(__file__).parent.resolve()
 
@@ -130,9 +130,9 @@ class Settings(BaseSettings):
 
     @validator("FIXED_MATCHES", pre=True)
     def get_fixed_matches(cls, v: Optional[str], values: Dict[str, Any]) -> Dict:
-        return yaml.safe_load(
+        return json.load(
             open(
-                f"{values['FILE_FOLDER']}/internal/fixed_matches.yml",
+                f"{values['FILE_FOLDER']}/internal/fixed_matches.json",
                 encoding="utf-8",
             )
         )
@@ -258,31 +258,34 @@ class LogConfig(BaseModel):
 
     LOGGER_NAME: str = settings.PROJECT_NAME
     LOG_FORMAT: str = (
-        f'%(asctime)s.%(msecs)d %(levelname)-8s [{settings.PROJECT_NAME}][%(filename)s:%(lineno)d] %(message)s'
+        f"%(asctime)s.%(msecs)d %(levelname)-8s [{settings.PROJECT_NAME}]"
+        f"[%(filename)s:%(lineno)d] %(message)s"
     )
-    COLOR_LOG_FORMAT = '%(log_color)s' + LOG_FORMAT
+    COLOR_LOG_FORMAT = "%(log_color)s" + LOG_FORMAT
 
     LOG_LEVEL: str = "DEBUG" if settings.DEBUG else "INFO"
 
     # Logging config
     version = 1
     disable_existing_loggers = False
-    colors = {'DEBUG': 'green',
-              'INFO': 'white',
-              'WARNING': 'bold_yellow',
-              'ERROR': 'bold_red',
-              'CRITICAL': 'bold_purple'}
+    colors = {
+        "DEBUG": "green",
+        "INFO": "white",
+        "WARNING": "bold_yellow",
+        "ERROR": "bold_red",
+        "CRITICAL": "bold_purple",
+    }
     formatters = {
         "default": {
             "()": "logging.Formatter",
             "fmt": LOG_FORMAT,
-            "datefmt": "%Y-%m-%d %H:%M:%S"
+            "datefmt": "%Y-%m-%d %H:%M:%S",
         },
         "color": {
             "()": "colorlog.ColoredFormatter",
             "fmt": COLOR_LOG_FORMAT,
             "datefmt": "%Y-%m-%d %H:%M:%S",
-            "log_colors": colors
+            "log_colors": colors,
         },
         "access": {
             "()": "uvicorn.logging.AccessFormatter",
@@ -315,7 +318,7 @@ class LogConfig(BaseModel):
             "formatter": "color",
             "class": "logging.FileHandler",
             "filename": "logconfig.log",
-        }
+        },
     }
     loggers = {
         LOGGER_NAME: {"handlers": ["default"], "level": "INFO"},

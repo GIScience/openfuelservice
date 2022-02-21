@@ -26,17 +26,17 @@ async def test_read_brands(
     assert len(data) == 10
     assert isinstance(data, list)
     expected = [
-            "Aston Martin",
-            "Abarth",
-            "Honda",
-            "Alpine",
-            "Dacia",
-            "Jeep",
-            "Alfa Romeo",
-            "Citroën",
-            "Tesla",
-            "Hyundai",
-        ]
+        "Aston Martin",
+        "Abarth",
+        "Honda",
+        "Alpine",
+        "Dacia",
+        "Jeep",
+        "Alfa Romeo",
+        "Citroën",
+        "Tesla",
+        "Hyundai",
+    ]
     expected.sort()
     assert data == expected
 

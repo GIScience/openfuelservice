@@ -21,10 +21,20 @@ from app.core.config import settings
 from app.db.base_class import Base
 from app.db.importer.base_importer import BaseImporter
 from app.db.importer.carfueldata.carfueldata_reader import CarFuelDataReader
+from app.db.importer.envirocar.envirocar_reader import EnvirocarReader
 from app.db.importer.wikipedia.wikipedia_reader import WikipediaReader
 from app.db.session import SessionLocal, engine
 from app.main import app
-from app.models import CarFuelDataCar, WikiCarCategory
+from app.models import (
+    CarFuelDataCar,
+    EnvirocarPhenomenon,
+    EnvirocarSensor,
+    EnvirocarTrack,
+    EnvirocarTrackMeasurement,
+    EnvirocarTrackMeasurementPhenomenon,
+    WikiCar,
+    WikiCarCategory,
+)
 from app.tests.utils.envirocar import (
     create_random_sensor,
     create_random_track,
@@ -356,6 +366,31 @@ def envirocar_mocked_responses() -> Generator[responses.RequestsMock, None, None
 
 
 @pytest.fixture(scope="function")
+def mock_all_envirocar_sensors(
+    db: Session, envirocar_mocked_responses: responses.RequestsMock
+) -> Generator[models.CarFuelDataCar, None, None]:
+    db.query(EnvirocarTrackMeasurementPhenomenon).delete()
+    db.query(EnvirocarTrackMeasurement).delete()
+    db.query(EnvirocarTrack).delete()
+    db.query(EnvirocarSensor).delete()
+    db.query(EnvirocarPhenomenon).delete()
+    db.commit()
+    envirocar_reader: EnvirocarReader = EnvirocarReader(
+        file_or_url=None, envirocar_base_url="https://test.com", threads=None
+    )
+    envirocar_reader.fetch_and_process_data()
+    # Import the data
+    BaseImporter(db=db).import_data(db_objects=envirocar_reader.objects_ordered[1])
+    yield envirocar_reader.objects_ordered[1]
+    db.query(EnvirocarTrackMeasurementPhenomenon).delete()
+    db.query(EnvirocarTrackMeasurement).delete()
+    db.query(EnvirocarTrack).delete()
+    db.query(EnvirocarSensor).delete()
+    db.query(EnvirocarPhenomenon).delete()
+    db.commit()
+
+
+@pytest.fixture(scope="function")
 def mock_wikipedia_responses() -> Generator[responses.RequestsMock, None, None]:
     with responses.RequestsMock() as rsps:
         with open(
@@ -438,7 +473,7 @@ def mock_wikipedia_responses() -> Generator[responses.RequestsMock, None, None]:
 
 @pytest.fixture(scope="function")
 def mock_wikipedia_car_categories(
-    db: Session, mock_wikipedia_responses: Generator[responses.RequestsMock, None, None]
+    db: Session, mock_wikipedia_responses: Generator[WikiCarCategory, None, None]
 ) -> Generator[List[models.WikiCarCategory], None, None]:
     db.query(models.WikiCarCategory).delete()
     db.commit()
@@ -463,6 +498,40 @@ def mock_wikipedia_car_categories(
     wikipedia_reader.fetch_and_process_data()
     BaseImporter(db=db).import_data(db_objects=wikipedia_reader.objects_ordered[0])
     yield wikipedia_reader.objects_ordered[0]
+    db.query(WikiCarCategory).delete()
+    db.commit()
+
+
+@pytest.fixture(scope="function")
+def mock_wikipedia_cars(
+    db: Session, mock_wikipedia_responses: Generator[WikiCar, None, None]
+) -> Generator[List[models.WikiCarCategory], None, None]:
+    db.query(WikiCar).delete()
+    db.query(WikiCarCategory).delete()
+    db.commit()
+    test_car_category = {
+        "car_categories": {
+            "a": {
+                "category_names": [
+                    "Kategorie:Kleinstwagen",
+                    "Kategorie:Leichtfahrzeug",
+                    "Category:Microcars",
+                ],
+                "de": "Kleinstwagen",
+                "en": "mini cars",
+                "single_cars": [],
+                "tank_capacity": 15,
+            }
+        }
+    }
+    wikipedia_reader: WikipediaReader = WikipediaReader(
+        file_or_url=None, threads=None, categories=test_car_category
+    )
+    wikipedia_reader.fetch_and_process_data()
+    BaseImporter(db=db).import_data(db_objects=wikipedia_reader.objects_ordered[0])
+    BaseImporter(db=db).import_data(db_objects=wikipedia_reader.objects_ordered[1])
+    yield wikipedia_reader.objects_ordered[1]
+    db.query(WikiCar).delete()
     db.query(WikiCarCategory).delete()
     db.commit()
 

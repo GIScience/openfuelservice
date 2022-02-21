@@ -2,7 +2,7 @@ import asyncio
 import logging
 import pickle
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Union
 
 import nltk
 import numpy as np
@@ -19,6 +19,8 @@ except Exception:
     logger.warning(
         "Couldn't download nltk Punkt package. If the matching module is not used just ignore."
     )
+
+lock = asyncio.Lock()
 
 
 def clean_up_sentence(sentence: str) -> List:
@@ -70,15 +72,10 @@ class ManufacturerAnnModel:
             logger.warning("Initialized training data initialized but not found.")
             return
         try:
+            await lock.acquire()
             old_training_data: Dict = pickle.load(
                 open(self._old_training_data.absolute(), "rb")
             )
-        except FileNotFoundError as err:
-            logger.warning(
-                "Initialized training data initialized but couldn't be opened."
-            )
-            raise err
-        try:
             self._words = old_training_data["words"]
             self._classes = old_training_data["classes"]
             train_x = old_training_data["train_x"]
@@ -93,15 +90,24 @@ class ManufacturerAnnModel:
             self._tflearn_model.load(
                 f"{settings.UNCOMPRESSED_MATCHING_DATA}/{self.model_name}_model.tflearn"
             )
-        except KeyError as err:
+        except FileNotFoundError as err:
+            logger.error(
+                "Initialized training data initialized but couldn't be opened."
+            )
+            raise err
+        except Exception as err:
             logger.error(
                 f"Error loading the tensorflow files for model: {self.model_name}"
             )
             raise err
+        finally:
+            lock.release()
 
     async def classify(
         self, car_name: str, error_threshold: float = 0.25
     ) -> List[tuple]:
+        if not error_threshold:
+            error_threshold = 0.25
         if not isinstance(self._tflearn_model, tflearn.DNN):
             logger.info("Model not correctly loaded.")
             await self.initialize_model()
@@ -131,17 +137,18 @@ class ManufacturerAnnCollection:
         if model_names is None or not len(model_names):
             logger.warning("Can't initialize matching models. No models found.")
             return
-        model_names = [
-            model_name
-            for model_name in model_names
-            if model_name is not None and len(model_name)
-        ]
-        model_names = [
-            model_name
-            for model_name in model_names
-            if self._models_intents.get(model_name)
-            and self._models_training_data.get(model_name)
-        ]
+        model_names = list(
+            set(
+                [
+                    model_name
+                    for model_name in model_names
+                    if model_name is not None
+                    and len(model_name)
+                    and self._models_intents.get(model_name)
+                    and self._models_training_data.get(model_name)
+                ]
+            )
+        )
         models: List[ManufacturerAnnModel] = [
             ManufacturerAnnModel(
                 model_name=model_name,
@@ -150,7 +157,6 @@ class ManufacturerAnnCollection:
             )
             for model_name in model_names
         ]
-
         tasks = [
             asyncio.ensure_future(
                 model.initialize_model()
@@ -176,17 +182,20 @@ class ManufacturerAnnCollection:
         self,
         model_name: str = None,
         car_name: str = None,
-        error_threshold: float = 0.25,
+        accuracy_threshold: Union[float, None] = 0.25,
     ) -> List[tuple]:
+        if accuracy_threshold is None:
+            accuracy_threshold = 0.25
         if not model_name or not car_name or not len(model_name) or not len(car_name):
             return []
         elif model_name not in self._loaded_models:
             await self._initialize_models([model_name])
         if model_name not in self._loaded_models:
+            logger.debug(f"Couldn't load model for {model_name}.")
             return []
         model: ManufacturerAnnModel = self._loaded_models[model_name]
         # TODO this will make more sense once multiple models need to be searched!
         result: List[tuple] = await model.classify(
-            car_name=car_name, error_threshold=error_threshold
+            car_name=car_name, error_threshold=accuracy_threshold
         )
         return result
