@@ -19,6 +19,7 @@ from sqlalchemy.engine import base
 
 from app.db.base_class import Base
 from app.db.importer.mappings import CarFuelDataHeaderMapping
+from app.misc.data_handling import check_name_for_year
 
 
 class CarFuelDataCar(Base):
@@ -72,19 +73,6 @@ class CarFuelDataCar(Base):
     wiki_hashes = Column(ARRAY(CHAR(length=32)), nullable=True)
     date_of_change = Column(Date, nullable=False)
     year = Column(Integer, nullable=True)
-
-    @staticmethod
-    def _check_name_for_year(car_name: str) -> Union[int, None]:
-        now = datetime.datetime.now()
-        max_year = int(now.year)
-        min_year = 1980
-        while True:
-            if max_year < min_year:
-                return None
-            elif str(max_year) in car_name:
-                return max_year
-            else:
-                max_year -= 1
 
     def set_data(self, data: List, headers: Dict) -> None:
         value: Any
