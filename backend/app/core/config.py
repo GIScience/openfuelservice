@@ -313,12 +313,7 @@ class LogConfig(BaseModel):
             "formatter": "color",
             "class": "logging.StreamHandler",
             "stream": "ext://sys.stdout",
-        },
-        "file": {
-            "formatter": "color",
-            "class": "logging.FileHandler",
-            "filename": "logconfig.log",
-        },
+        }
     }
     loggers = {
         LOGGER_NAME: {"handlers": ["default"], "level": "INFO"},
