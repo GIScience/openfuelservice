@@ -65,7 +65,7 @@ class WikiCar(Base):
     def page_id(self, value: int) -> None:
         self.id = int(value)
 
-    wiki_name = Column(String, nullable=False, index=True)
+    wiki_name = Column(String, nullable=False, index=True, unique=True)
     category_short_eu = Column(
         String, ForeignKey("{}.id".format("wikicarcategory")), nullable=True, index=True
     )
