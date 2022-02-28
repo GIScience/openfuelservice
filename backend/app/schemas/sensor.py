@@ -8,7 +8,7 @@ class SensorBase(BaseModel):
     model: str
     manufacturer: str
     fueltype: str
-    construction_year: int
+    constructionyear: int
     enginedisplacement: int
 
 
@@ -19,7 +19,7 @@ class SensorCreate(SensorBase):
     model: str
     manufacturer: str
     fueltype: str
-    construction_year: int
+    constructionyear: int
     enginedisplacement: int
 
 
