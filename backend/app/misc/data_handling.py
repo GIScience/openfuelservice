@@ -66,8 +66,12 @@ def remove_double_words(string: str, caseless: bool = False) -> str:
     return " ".join(string_words_unique).strip()
 
 
-def check_name_for_year(car_name: str) -> Union[int, None]:
-    if not isinstance(car_name, str) or not any(map(str.isdigit, car_name)):
+def check_name_for_year(car_name: Union[str, None]) -> Union[int, None]:
+    if (
+        not car_name
+        or not isinstance(car_name, str)
+        or not any(map(str.isdigit, car_name))
+    ):
         # Contains no digits
         return None
     current_year: int = datetime.today().year + 1
@@ -208,6 +212,8 @@ def check_brands(short_name: str, wiki_name: str) -> tuple:
 
 
 def check_manufacturer(manufacturer_to_check: str) -> Union[str, None]:
+    if not manufacturer_to_check:
+        return None
     cleaned_manufacturer_to_check: str = manufacturer_to_check.casefold().strip()
     aliases: Dict = settings.CAR_BRANDS.get("aliases", {})
     brands: Dict = settings.CAR_BRANDS.get("brands", {})
