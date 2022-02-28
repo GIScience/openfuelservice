@@ -10,16 +10,30 @@ from app.schemas.track import TrackCreate
 from app.schemas.track_measurement import TrackMeasurementCreate
 
 
-def create_random_sensor(db: Session) -> models.EnvirocarSensor:
+def create_random_sensor(
+    db: Session,
+    sensor_type: str = None,
+    sensor_model: str = None,
+    manufacturer: str = None,
+    fueltype: str = None,
+    constructionyear: int = None,
+    enginedisplacement: int = None,
+) -> models.EnvirocarSensor:
     unique_number = random.randint(1000, 9999)
     sensor_in = SensorCreate(
         id=unique_number,
-        type=f"type_{unique_number}",
-        model=f"model_{unique_number}",
-        manufacturer=f"manufacturer_{unique_number}",
-        fueltype=f"fueltype_{unique_number}",
-        construction_year=unique_number,
-        enginedisplacement=unique_number,
+        type=f"type_{unique_number}" if sensor_type is None else sensor_type,
+        model=f"model_{unique_number}" if sensor_model is None else sensor_model,
+        manufacturer=f"manufacturer_{unique_number}"
+        if manufacturer is None
+        else manufacturer,
+        fueltype=f"fueltype_{unique_number}" if fueltype is None else fueltype,
+        constructionyear=unique_number
+        if constructionyear is None
+        else constructionyear,
+        enginedisplacement=unique_number
+        if enginedisplacement is None
+        else enginedisplacement,
     )
 
     return crud.sensor.create(db=db, obj_in=sensor_in)
