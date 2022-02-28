@@ -1,17 +1,22 @@
+import asyncio
 import json
 import logging
+import multiprocessing
 import time
 import urllib.parse
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set, Tuple, Union
+from typing import Any, Coroutine, Dict, List, Optional, Set, Tuple, Union
 from urllib.parse import parse_qs, urlparse
 
 import geojson
+import tqdm
 from geojson import Feature
 from requests import Request, Response
+from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.db.importer.base_reader import BaseReader
+from app.matching.envirocar_matcher import EnvirocarMatcher
 from app.misc import data_handling
 from app.misc.requests_tools import ThreadedRequests
 from app.models import (
@@ -20,6 +25,7 @@ from app.models import (
     EnvirocarTrack,
     EnvirocarTrackMeasurement,
     EnvirocarTrackMeasurementPhenomenon,
+    WikicarEnvirocar,
 )
 
 logger = logging.getLogger(__name__)
@@ -28,7 +34,8 @@ logger = logging.getLogger(__name__)
 class EnvirocarReader(BaseReader):
     def __init__(
         self,
-        file_or_url: Union[str, Path, None],
+        db: Session,
+        file_or_url: Union[str, Path, None] = None,
         envirocar_base_url: str = "https://envirocar.org/api/stable",
         threads: Union[int, None] = None,
     ):
@@ -37,8 +44,22 @@ class EnvirocarReader(BaseReader):
         self.sensors_url = f"{envirocar_base_url}/sensors"
         self.tracks_url = f"{envirocar_base_url}/tracks"
         self._headers = settings.GLOBAL_HEADERS
-        self._threads = threads
+        if not threads:
+            self._threads = 1
+            if multiprocessing.cpu_count() > 1:
+                self._threads = multiprocessing.cpu_count() - 1
+        else:
+            self._threads = threads
         self._threaded_requests = ThreadedRequests()
+        self._envirocar_matcher: EnvirocarMatcher = EnvirocarMatcher(
+            models_path=settings.UNCOMPRESSED_MATCHING_DATA, db=db
+        )
+
+    @property
+    def matched_sensors(self) -> Union[List, None]:
+        if 1 in self.objects_ordered:
+            return self.objects_ordered.get(1)
+        return None
 
     def get_phenomenons(self) -> List:
         phenomenons: List = []
@@ -277,6 +298,31 @@ class EnvirocarReader(BaseReader):
         logger.info(f"Successfully crawled and processed {len(track_measurements)}")
         return track_measurements, track_measurements_phenomenons
 
+    async def match_sensors_to_wikicar(
+        self, sensors: List[EnvirocarSensor], accuracy: Union[float, None] = None
+    ) -> List[WikicarEnvirocar]:
+        manufacturer_names: List = list(
+            set([sensor.manufacturer for sensor in sensors])
+        )
+        loader_task = self._envirocar_matcher.initialize_models(manufacturer_names)
+        sensor: EnvirocarSensor
+        tasks = [
+            self._envirocar_matcher.match(car=matched_sensor, accuracy=accuracy)
+            # creating task starts coroutine
+            for matched_sensor in sensors
+        ]
+        pbar = tqdm.tqdm(
+            total=len(tasks), position=0, ncols=90, desc=" Matching Sensors to WikiCars"
+        )
+        matches: List[WikicarEnvirocar] = []
+        await loader_task
+        for f in asyncio.as_completed(tasks):
+            value: Union[List[WikicarEnvirocar], None] = await f
+            if value is not None:
+                matches.extend(value)
+            pbar.update()
+        return matches
+
     def _process_data(self, data_file: Union[Path, None]) -> None:
         phenomenons: List = self.get_phenomenons()
         self.objects_ordered[0] = phenomenons
@@ -290,3 +336,11 @@ class EnvirocarReader(BaseReader):
         ) = self.fetch_track_measurements_and_phenomenons(track_ids=track_ids)
         self.objects_ordered[3] = track_measurements
         self.objects_ordered[4] = track_measurements_phenomenons
+        loop = asyncio.get_event_loop()
+        coro: Coroutine[
+            Any, Any, List[WikicarEnvirocar]
+        ] = self.match_sensors_to_wikicar(sensors, accuracy=0.2)
+        wikicar_envirocar_matches: List[WikicarEnvirocar] = loop.run_until_complete(
+            coro
+        )
+        self.objects_ordered[5] = wikicar_envirocar_matches
