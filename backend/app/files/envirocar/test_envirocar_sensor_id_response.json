@@ -11,5 +11,18 @@
       "id": "5fd9d14e05fa792e88dc8b7b",
       "manufacturer": "VW"
     }
+  },
+  "616010fb0bd6756ea3a9aea7": {
+    "type": "car",
+    "properties": {
+      "fuelType": "diesel",
+      "constructionYear": 2009,
+      "created": "2021-10-08T09:35:55Z",
+      "engineDisplacement": 1398,
+      "modified": "2021-10-08T09:35:55Z",
+      "model": "Corsa",
+      "id": "616010fb0bd6756ea3a9aea7",
+      "manufacturer": "OPEL"
+    }
   }
 }

@@ -33,6 +33,23 @@
           "manufacturer": "VW"
         }
       }
+    },
+    {
+      "id": "619b972b7b277d59bd6537fc",
+      "length": 8.224940192430457,
+      "begin": "2021-11-16T19:49:31Z",
+      "end": "2021-11-16T20:04:12Z",
+      "sensor": {
+        "type": "car",
+        "properties": {
+          "engineDisplacement": 1398,
+          "model": "Corsa",
+          "id": "616010fb0bd6756ea3a9aea7",
+          "fuelType": "diesel",
+          "constructionYear": 2009,
+          "manufacturer": "OPEL"
+        }
+      }
     }
   ]
 }
