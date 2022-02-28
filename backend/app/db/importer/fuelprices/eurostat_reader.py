@@ -349,11 +349,11 @@ class EurostatFuelReader(BaseReader):
         )
         all_countries_from_db: List = self._db.query(CountryData).all()
         if not len(all_countries_from_db):
-            logger.warning(
+            logger.error(
                 "Stopped importing fuel prices. No country data found to connect the prices to. Import "
                 "countries first."
             )
-            return
+            raise FileNotFoundError
         sheets = [
             EurostatSheetMapping.PRICES_WITH_TAXES_PER_CTR,
             EurostatSheetMapping.PRICES_WO_TAXES_PER_CTR,
