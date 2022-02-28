@@ -1,7 +1,9 @@
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, Generator, List
 
+import pytest
 import responses
+from sqlalchemy.orm import Session
 
 from app.db.importer.envirocar.envirocar_reader import EnvirocarReader
 from app.models import (
@@ -10,14 +12,24 @@ from app.models import (
     EnvirocarTrack,
     EnvirocarTrackMeasurement,
     EnvirocarTrackMeasurementPhenomenon,
+    WikiCar,
 )
+
+track_ids = [
+    "61d543bef4c3e97fbd560705",
+    "61d543bef4c3e97fbd56072d",
+    "619b972b7b277d59bd6537fc",
+]
 
 
 def test_get_track_measurements_and_phenomenons(
+    db: Session,
     envirocar_mocked_responses: responses.RequestsMock,
 ) -> None:
     envirocar_reader: EnvirocarReader = EnvirocarReader(
-        file_or_url=Path(""), envirocar_base_url="https://test.com", threads=None
+        db=db,
+        file_or_url=Path(""),
+        threads=None,
     )
     track_ids: List = ["61d543bef4c3e97fbd560705", "61d543bef4c3e97fbd56072d"]
     (
@@ -65,14 +77,17 @@ def test_get_track_measurements_and_phenomenons(
 
 
 def test_get_track_ids_and_sensors(
+    db: Session,
     envirocar_mocked_responses: responses.RequestsMock,
 ) -> None:
     envirocar_reader: EnvirocarReader = EnvirocarReader(
-        file_or_url=Path(""), envirocar_base_url="https://test.com", threads=None
+        db=db,
+        file_or_url=Path(""),
+        threads=None,
     )
-    sensors, tracks, track_ids = envirocar_reader.get_track_ids_and_sensors()
+    sensors, tracks, tracks_ids = envirocar_reader.get_track_ids_and_sensors()
     # Check sensors and track_ids response
-    assert len(sensors) == 1
+    assert len(sensors) == 2
     assert isinstance(sensors[0], EnvirocarSensor)
     sensor: EnvirocarSensor = sensors[0]
     assert sensor.id == "5fd9d14e05fa792e88dc8b7b"
@@ -83,25 +98,61 @@ def test_get_track_ids_and_sensors(
     assert sensor.model == "Golf V Plus 1.6"
     assert sensor.type == "car"
 
-    assert len(track_ids) == 2
-    assert [
-        track_id in ["61d543bef4c3e97fbd560705", "61d543bef4c3e97fbd56072d"]
-        for track_id in track_ids
-    ]
+    assert len(tracks_ids) == 3
+    assert [track_id in tracks_ids for track_id in tracks_ids]
 
-    assert len(tracks) == 2
+    assert len(tracks) == 3
     track: EnvirocarTrack
     for track in tracks:
-        assert track.id in ["61d543bef4c3e97fbd560705", "61d543bef4c3e97fbd56072d"]
-        assert track.sensor_id == sensor.id
+        assert track.id in tracks_ids
+        assert track.sensor_id == sensor.id or track.sensor_id == sensors[1].id
         assert track.begin
         assert track.end
         assert track.length
 
 
-def test_get_phenomenons(envirocar_mocked_responses: responses.RequestsMock) -> None:
+def test_get_track_ids_and_sensors_2(
+    db: Session,
+    envirocar_mocked_responses: responses.RequestsMock,
+) -> None:
     envirocar_reader: EnvirocarReader = EnvirocarReader(
-        file_or_url=Path(""), envirocar_base_url="https://test.com", threads=None
+        db=db,
+        file_or_url=Path(""),
+        threads=None,
+    )
+    sensors, tracks, tracks_ids = envirocar_reader.get_track_ids_and_sensors()
+    # Check sensors and track_ids response
+    assert len(sensors) == 2
+    assert isinstance(sensors[1], EnvirocarSensor)
+    sensor: EnvirocarSensor = sensors[1]
+    assert sensor.id == "616010fb0bd6756ea3a9aea7"
+    assert sensor.constructionyear == 2009
+    assert sensor.enginedisplacement == 1398
+    assert sensor.fueltype == "diesel"
+    assert sensor.manufacturer == "OPEL"
+    assert sensor.model == "Corsa"
+    assert sensor.type == "car"
+
+    assert len(tracks_ids) == 3
+    assert [track_id in tracks_ids for track_id in tracks_ids]
+
+    assert len(tracks) == 3
+    track: EnvirocarTrack
+    for track in tracks:
+        assert track.id in tracks_ids
+        assert track.sensor_id == sensor.id or track.sensor_id == sensors[0].id
+        assert track.begin
+        assert track.end
+        assert track.length
+
+
+def test_get_phenomenons(
+    db: Session, envirocar_mocked_responses: responses.RequestsMock
+) -> None:
+    envirocar_reader: EnvirocarReader = EnvirocarReader(
+        db=db,
+        file_or_url=Path(""),
+        threads=None,
     )
 
     phenomenons = envirocar_reader.get_phenomenons()
@@ -113,9 +164,13 @@ def test_get_phenomenons(envirocar_mocked_responses: responses.RequestsMock) -> 
         assert phenomenon.unit
 
 
-def test_get_sensors(envirocar_mocked_responses: responses.RequestsMock) -> None:
+def test_get_sensors(
+    db: Session, envirocar_mocked_responses: responses.RequestsMock
+) -> None:
     envirocar_reader: EnvirocarReader = EnvirocarReader(
-        file_or_url=Path(""), envirocar_base_url="https://test.com", threads=None
+        db=db,
+        file_or_url=Path(""),
+        threads=None,
     )
     sensors = envirocar_reader.get_sensors()
     # Check sensors and track_ids response
@@ -133,18 +188,69 @@ def test_get_sensors(envirocar_mocked_responses: responses.RequestsMock) -> None
         assert sensor.type
 
 
-def test_fetch_and_process_data(
+@pytest.mark.asyncio
+async def test_match_sensors_to_wikicar(
+    db: Session,
+    mock_wikipedia_cars: Generator[WikiCar, None, None],
     envirocar_mocked_responses: responses.RequestsMock,
 ) -> None:
     envirocar_reader: EnvirocarReader = EnvirocarReader(
-        file_or_url=None, envirocar_base_url="https://test.com", threads=None
+        db=db,
+        file_or_url=Path(""),
+        threads=None,
+    )
+    # TODO remove all sensors except one a wikicar is available for.#
+    sensors, tracks, track_ids = envirocar_reader.get_track_ids_and_sensors()
+    # Check sensors and track_ids response
+    assert len(sensors)
+    matched_sensors = await envirocar_reader.match_sensors_to_wikicar(
+        sensors=sensors, accuracy=0.2
+    )
+    assert len(matched_sensors) == 2
+
+
+def test_fetch_and_process_data(
+    db: Session,
+    envirocar_mocked_responses: responses.RequestsMock,
+) -> None:
+    envirocar_reader: EnvirocarReader = EnvirocarReader(
+        db=db,
+        file_or_url=None,
+        threads=None,
     )
     envirocar_reader.fetch_and_process_data()
     # Check sensors and track_ids response
-    assert len(envirocar_reader.objects_ordered) == 5
+    assert len(envirocar_reader.objects_ordered) == 6
     assert (
         sum([len(objects) for objects in envirocar_reader.objects_ordered.values()])
-        == 1247
+        == 1249
+    )
+    for i in range(0, len(envirocar_reader.objects_ordered)):
+        for envirocar_object in envirocar_reader.objects_ordered[i]:
+            assert type(envirocar_object) in [
+                EnvirocarPhenomenon,
+                EnvirocarTrack,
+                EnvirocarSensor,
+                EnvirocarTrackMeasurementPhenomenon,
+                EnvirocarTrackMeasurement,
+            ]
+
+
+def test_match(
+    db: Session,
+    envirocar_mocked_responses: responses.RequestsMock,
+) -> None:
+    envirocar_reader: EnvirocarReader = EnvirocarReader(
+        db=db,
+        file_or_url=None,
+        threads=None,
+    )
+    envirocar_reader.fetch_and_process_data()
+    # Check sensors and track_ids response
+    assert len(envirocar_reader.objects_ordered) == 6
+    assert (
+        sum([len(objects) for objects in envirocar_reader.objects_ordered.values()])
+        == 1249
     )
     for i in range(0, len(envirocar_reader.objects_ordered)):
         for envirocar_object in envirocar_reader.objects_ordered[i]:

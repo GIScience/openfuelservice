@@ -7,9 +7,43 @@ from app.core.config import settings
 from app.db.importer.wikipedia.wikipedia_reader import WikipediaReader
 from app.models import WikiCar, WikiCarCategory
 
+brands: List = ["Abarth", "Nissan", "Zhidou", "VW", "Citroën", "Fiat", "Opel"]
+car_names: List = [
+    "595 Competizione",
+    "Land Glider",
+    "D2",
+    "NV400",
+    "Golf Plus",
+    "Berlingo",
+    "124 Spider (2016)",
+    "Corsa B",
+]
+wiki_names: List = [
+    "Abarth 595 Competizione",
+    "Nissan Land Glider",
+    'Zhidou D2\\"+=',
+    "Nissan NV400",
+    "VW Golf Plus",
+    "Citroën Berlingo",
+    "Fiat 124 Spider (2016)",
+    "Opel Corsa B",
+]
+page_ids: List = [
+    7566964,
+    9459628,
+    68255235,
+    60433178,
+    4459738,
+    7066964,
+    4153628,
+    9628,
+    776964,
+    6964,
+]
+
 
 def test_get_category_data(
-        mock_wikipedia_responses: Generator[responses.RequestsMock, None, None]
+    mock_wikipedia_responses: Generator[responses.RequestsMock, None, None]
 ) -> None:
     test_car_category = {
         "car_categories": {
@@ -47,7 +81,7 @@ def test_get_category_data(
 
 
 def test_get_category_car_data(
-        mock_wikipedia_responses: Generator[responses.RequestsMock, None, None]
+    mock_wikipedia_responses: Generator[responses.RequestsMock, None, None]
 ) -> None:
     test_car_category = {
         "car_categories": {
@@ -74,20 +108,9 @@ def test_get_category_car_data(
         category_db_objects=category_objects
     )
 
-    assert len(wiki_car_objects) == 7
+    assert len(wiki_car_objects) == 8
     car: WikiCar
-    brands: List = ["Abarth", "Nissan", "Zhidou", "VW", "Citroën", "Fiat"]
-    car_names: List = ["595 Competizione", "Land Glider", "D2", "NV400", "Golf Plus", "Berlingo", "124 Spider (2016)"]
-    wiki_names: List = [
-        "Abarth 595 Competizione",
-        "Nissan Land Glider",
-        'Zhidou D2\\"+=',
-        "Nissan NV400",
-        "VW Golf Plus",
-        "Citroën Berlingo",
-        "Fiat 124 Spider (2016)"
-    ]
-    page_ids: List = [7566964, 9459628, 68255235, 60433178, 4459738, 7066964, 4153628, 9628, 776964]
+
     for car in wiki_car_objects:
         assert isinstance(car, WikiCar)
         assert car.brand_name in brands
@@ -102,14 +125,14 @@ def test_get_category_car_data(
 @pytest.mark.parametrize(
     "test_string,expected_result",
     (
-            ("Mercedes 3 GE \\\"'#@;*<>{}`+=~|.!?,'", "3 GE"),
-            ("Mercedes 3 GE;*<>{}`+=~|.!?,", "3 GE"),
-            ("Mercedes +#*'3 +#*'GE", "3 GE"),
-            ("Opel Foobar (22?=)", "Foobar (22)"),
-            ("PSA / Fiat Foobar", "Foobar"),
-            ("Kei-Car", None),
-            ("Foobar", None),
-            (None, None),
+        ("Mercedes 3 GE \\\"'#@;*<>{}`+=~|.!?,'", "3 GE"),
+        ("Mercedes 3 GE;*<>{}`+=~|.!?,", "3 GE"),
+        ("Mercedes +#*'3 +#*'GE", "3 GE"),
+        ("Opel Foobar (22?=)", "Foobar (22)"),
+        ("PSA / Fiat Foobar", "Foobar"),
+        ("Kei-Car", None),
+        ("Foobar", None),
+        (None, None),
     ),
 )
 def test__process_category_member(test_string: str, expected_result: str) -> None:
@@ -170,7 +193,7 @@ def test__process_category_member_vehicles_list(test_string: str) -> None:
 
 
 def test_fetch_and_process_data(
-        mock_wikipedia_responses: Generator[responses.RequestsMock, None, None]
+    mock_wikipedia_responses: Generator[responses.RequestsMock, None, None]
 ) -> None:
     test_car_category = {
         "car_categories": {
@@ -194,11 +217,11 @@ def test_fetch_and_process_data(
     # Check sensors and track_ids response
     assert len(wikipedia_reader.objects_ordered) == 2
     assert (
-            sum([len(objects) for objects in wikipedia_reader.objects_ordered.values()])
-            == 8
+        sum([len(objects) for objects in wikipedia_reader.objects_ordered.values()])
+        == 9
     )
     assert len(wikipedia_reader.objects_ordered[0]) == 1
-    assert len(wikipedia_reader.objects_ordered[1]) == 7
+    assert len(wikipedia_reader.objects_ordered[1]) == 8
     assert isinstance(wikipedia_reader.objects_ordered[0][0], WikiCarCategory)
     wiki_category: WikiCarCategory = wikipedia_reader.objects_ordered[0][0]
     assert wiki_category.category_wiki_names == [
@@ -210,18 +233,7 @@ def test_fetch_and_process_data(
     assert wiki_category.category_name_de == "Kleinstwagen"
     assert wiki_category.category_short_eu == "a"
     assert wiki_category.id == wiki_category.category_short_eu
-    brands: List = ["Abarth", "Nissan", "Zhidou", "VW", "Citroën", "Fiat"]
-    car_names: List = ["595 Competizione", "Land Glider", "D2", "NV400", "Golf Plus", "Berlingo", "124 Spider (2016)"]
-    wiki_names: List = [
-        "Abarth 595 Competizione",
-        "Nissan Land Glider",
-        'Zhidou D2\\"+=',
-        "Nissan NV400",
-        "VW Golf Plus",
-        "Citroën Berlingo",
-        "Fiat 124 Spider (2016)"
-    ]
-    page_ids: List = [7566964, 9459628, 68255235, 60433178, 4459738, 7066964, 4153628, 9628, 776964]
+
     wiki_car: WikiCar
     for wiki_car in wikipedia_reader.objects_ordered[1]:
         assert isinstance(wiki_car, WikiCar)

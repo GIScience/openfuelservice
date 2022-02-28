@@ -1,18 +1,20 @@
 from typing import List
 
+import pytest
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.db.importer.base_importer import BaseImporter
 from app.db.importer.countries.countries_reader import CountryCodesReader
 from app.db.importer.fuelprices.eurostat_reader import EurostatFuelReader
-from app.models import EurostatCountryPrice, EurostatGeneralPrice
+from app.models import CountryData, EurostatCountryPrice, EurostatGeneralPrice
 
 
 def test_eurostat_importer(db: Session) -> None:
     # Clean the database
     db.query(EurostatCountryPrice).delete()
     db.query(EurostatGeneralPrice).delete()
+    db.query(CountryData).delete()
     db.commit()
 
     country_codes_reader: CountryCodesReader = CountryCodesReader(
@@ -45,4 +47,24 @@ def test_eurostat_importer(db: Session) -> None:
     assert len(all_general_prices_in_db) == len(general_price_objects)
     db.query(EurostatCountryPrice).delete()
     db.query(EurostatGeneralPrice).delete()
+    db.query(CountryData).delete()
+    db.commit()
+
+
+def test_eurostat_importer_must_fail(db: Session) -> None:
+    # Clean the database
+    db.query(EurostatCountryPrice).delete()
+    db.query(EurostatGeneralPrice).delete()
+    db.query(CountryData).delete()
+    db.commit()
+
+    eurostat_reader = EurostatFuelReader(
+        settings.EUROSTAT_TEST_FUEL_HISTORY_2005_ONWARDS, db=db
+    )
+    with pytest.raises(FileNotFoundError):
+        eurostat_reader.fetch_and_process_data()
+
+    db.query(EurostatCountryPrice).delete()
+    db.query(EurostatGeneralPrice).delete()
+    db.query(CountryData).delete()
     db.commit()
