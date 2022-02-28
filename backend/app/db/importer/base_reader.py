@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 
 class BaseReader:
-    def __init__(self, file_or_url: Union[str, Path, None]) -> None:
+    def __init__(self, file_or_url: Union[str, Path, None] = None) -> None:
         self._tempfolder: Path = Path(tempfile.mkdtemp())
         self.objects_list: List = []
         self.objects_ordered: Dict = {}
