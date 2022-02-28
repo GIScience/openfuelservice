@@ -42,7 +42,7 @@ def test_download_file_with_name(
         ),
         (
             settings.TEST_ENVIROCAR_PHENOMENONS_RESPONSE,
-            "https://test.com/phenomenons.json",
+            "https://envirocar.org/api/stable/phenomenons.json",
             "phenomenons.json",
         ),
     ),

@@ -30,10 +30,10 @@ def test_threaded_requests(envirocar_mocked_responses: responses.RequestsMock) -
     with open(settings.TEST_ENVIROCAR_TRACKS_RESPONSE) as f:
         tracks_response = json.load(f)
     urls_to_download = [
-        "https://test.com/tracks/?limit=10&page=1",
-        "https://test.com/tracks/?limit=10&page=2",
-        "https://test.com/tracks/?limit=10&page=3",
-        "https://test.com/tracks/?limit=10&page=4",
+        "https://envirocar.org/api/stable/tracks/?limit=10&page=1",
+        "https://envirocar.org/api/stable/tracks/?limit=10&page=2",
+        "https://envirocar.org/api/stable/tracks/?limit=10&page=3",
+        "https://envirocar.org/api/stable/tracks/?limit=10&page=4",
     ]
     for url in urls_to_download:
         envirocar_mocked_responses.add(
