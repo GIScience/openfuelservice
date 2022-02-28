@@ -30,6 +30,8 @@ from app.misc.data_handling import (
         ("azlk", "Moskvitch"),
         ("PSA / Fiat", "Fiat"),
         ("Foobar", None),
+        ("", None),
+        (None, None),
     ),
 )
 def test_check_manufacturer(bare_manufacturer: str, real_manufacturer: str) -> None:
