@@ -2,7 +2,9 @@ import datetime
 import hashlib
 from typing import Any, Dict, List, Union
 
+import numpy
 from geoalchemy2 import WKBElement
+from psycopg2.extensions import AsIs, register_adapter
 from sqlalchemy.ext.declarative import as_declarative, declared_attr
 from sqlalchemy.inspection import inspect
 from sqlalchemy.orm import Session, validates
@@ -66,3 +68,20 @@ class Base:
     @validates("geom")
     def validate_geom(self, _: str, geom: Any) -> Union[WKBElement, None]:
         return json_decoders.json_to_wkb_element(geom)
+
+
+def addapt_numpy_float64(numpy_float64: Any) -> AsIs:
+    return AsIs(numpy_float64)
+
+
+def addapt_numpy_float32(numpy_float32: Any) -> AsIs:
+    return AsIs(numpy_float32)
+
+
+def addapt_numpy_int64(numpy_int64: Any) -> AsIs:
+    return AsIs(numpy_int64)
+
+
+register_adapter(numpy.float64, addapt_numpy_float64)
+register_adapter(numpy.float32, addapt_numpy_float32)
+register_adapter(numpy.int64, addapt_numpy_int64)
