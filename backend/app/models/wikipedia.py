@@ -1,13 +1,14 @@
 from typing import TYPE_CHECKING
 
-from sqlalchemy import ARRAY, Column, ForeignKey, Integer, String
-from sqlalchemy.orm import relationship
+from sqlalchemy import ARRAY, Column, Float, ForeignKey, Integer, String, tuple_
+from sqlalchemy.orm import Session, relationship
 
 from app.db.base_class import Base
 
 if TYPE_CHECKING:
     from .carfueldata import CarFuelDataAverageCategoryStatistics  # noqa: F401
     from .envirocar import EnvirocarAverageCategoryStatistics  # noqa: F401
+    from .envirocar import EnvirocarSensor  # noqa: F401
 
     hybrid_property = property
 else:
@@ -75,6 +76,12 @@ class WikiCar(Base):
     car_name = Column(String, nullable=False, index=True)
     page_language = Column(String, nullable=True)
 
+    envirocars = relationship(
+        "WikicarEnvirocar",
+        uselist=True,
+        back_populates="wikicar"
+    )
+
 
 class WikiCarPageText(Base):
     # WikiCarPageTextModel
@@ -104,3 +111,45 @@ class WikiCarPageText(Base):
         nullable=True,
         index=True,
     )
+
+
+class WikicarEnvirocar(Base):
+    # MatchedWikiEnvirocarModel
+    # wikipedia_envirocar_match_table
+
+    envirocar_sensor_id = Column(
+        String,
+        ForeignKey(
+            "{}.id".format("envirocarsensor"), onupdate="CASCADE", ondelete="CASCADE"
+        ),
+        index=True,
+        primary_key=True,
+    )
+    envirocar = relationship("EnvirocarSensor", back_populates="wiki_cars")
+
+    wikicar_id = Column(
+        Integer,
+        ForeignKey("{}.id".format("wikicar")),
+        index=True,
+        primary_key=True,
+    )
+    wikicar = relationship("WikiCar", back_populates="envirocars")
+
+    matching_accuracy = Column(Float, index=True, nullable=False)
+
+    @classmethod
+    def get_all_by_filter(
+            cls, db: Session, filter_ids: list, id_only: bool = False
+    ) -> list:
+        if id_only:
+            return (
+                db.query(cls.envirocar_sensor_id, cls.wikicar_id)
+                    .filter(tuple_(cls.envirocar_sensor_id, cls.wikicar_id).in_(filter_ids))
+                    .all()
+            )
+        else:
+            return (
+                db.query(cls)
+                    .filter(tuple_(cls.envirocar_sensor_id, cls.wikicar_id).in_(filter_ids))
+                    .all()
+            )

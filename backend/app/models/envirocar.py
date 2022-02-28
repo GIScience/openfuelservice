@@ -3,7 +3,6 @@ from typing import TYPE_CHECKING
 
 from geoalchemy2 import Geometry
 from sqlalchemy import (
-    ARRAY,
     CHAR,
     Column,
     DateTime,
@@ -19,6 +18,7 @@ from app.db.base_class import Base
 
 if TYPE_CHECKING:
     from .wikipedia import WikiCarCategory  # noqa: F401
+    from .wikipedia import WikicarEnvirocar  # noqa: F401
 
     hybrid_property = property
 else:
@@ -81,15 +81,21 @@ class EnvirocarSensor(Base):
 
     id = Column(String, unique=True, primary_key=True, index=True)
     type = Column(String, nullable=False)
-    model = Column(String, nullable=True)
-    manufacturer = Column(String, nullable=True)
+    model = Column(String, nullable=False)
+    manufacturer = Column(String, nullable=False)
     fueltype = Column(String, nullable=False)
 
     constructionyear = Column(Integer, nullable=False)
 
     enginedisplacement = Column(Integer, nullable=True)
 
-    wiki_hashes = Column(ARRAY(CHAR(length=32)), nullable=True)
+    wiki_cars = relationship(
+        "WikicarEnvirocar",
+        uselist=True,
+        back_populates="envirocar",
+        passive_deletes=True,
+    )
+
     tracks = relationship("EnvirocarTrack", back_populates="sensor", lazy="dynamic")
     sensors_statistics = relationship(
         "EnvirocarSensorStatistic",
@@ -106,16 +112,6 @@ class EnvirocarSensor(Base):
     # tracks_features = relationship(
     #     "envirocartrackmeasurement", backref="{}".format("envirocarsensor"), lazy="dynamic",
     # )
-
-
-# TODO Always add the new agencies here to reference the correct cars
-class MatchedWikiEnvirocar(Base):
-    # MatchedWikiEnvirocarModel
-    # wikipedia_envirocar_match_table
-
-    object_hash = Column(CHAR(length=32), primary_key=True, index=True)
-    envirocar_sensor_id = Column(String, nullable=True, index=True)
-    car_hash_id = Column(CHAR(length=32), nullable=False, index=True)
 
 
 class EnvirocarSensorStatistic(Base):

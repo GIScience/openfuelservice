@@ -10,9 +10,8 @@ from .envirocar import (
     EnvirocarTrack,
     EnvirocarTrackMeasurement,
     EnvirocarTrackMeasurementPhenomenon,
-    MatchedWikiEnvirocar,
 )
 from .eurostat import EurostatCountryPrice, EurostatGeneralPrice
 from .item import Item
 from .user import User
-from .wikipedia import WikiCar, WikiCarCategory, WikiCarPageText
+from .wikipedia import WikiCar, WikiCarCategory, WikicarEnvirocar, WikiCarPageText
