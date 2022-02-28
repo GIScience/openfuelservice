@@ -289,6 +289,7 @@ def mock_random_cfd_car(db: Session) -> Generator[models.CarFuelDataCar, None, N
 @pytest.fixture(scope="function")
 def envirocar_mocked_responses() -> Generator[responses.RequestsMock, None, None]:
     with responses.RequestsMock() as rsps:
+        rsps.reset()
         with open(settings.TEST_ENVIROCAR_PHENOMENONS_RESPONSE, mode="r") as f:
             phenomenons_response = json.load(f)
         with open(settings.TEST_ENVIROCAR_TRACKS_RESPONSE, mode="r") as f:
@@ -299,7 +300,7 @@ def envirocar_mocked_responses() -> Generator[responses.RequestsMock, None, None
             sensors_response = json.load(f)
         rsps.add(
             method=responses.GET,
-            url="https://test.com/phenomenons",
+            url="https://envirocar.org/api/stable/phenomenons",
             json=phenomenons_response,
             status=200,
             content_type="application/json",
@@ -307,17 +308,17 @@ def envirocar_mocked_responses() -> Generator[responses.RequestsMock, None, None
 
         rsps.add(
             method=responses.GET,
-            url="https://test.com/sensors",
+            url="https://envirocar.org/api/stable/sensors",
             json=sensors_response,
             status=200,
             headers={
-                "link": "<https://test.com/sensors/?limit=100&page=2>;rel=last;type=application/json"
+                "link": "<https://envirocar.org/api/stable/sensors/?limit=100&page=2>;rel=last;type=application/json"
             },
             content_type="application/json",
         )
         rsps.add(
             method=responses.GET,
-            url="https://test.com/sensors/?limit=100&page=2",
+            url="https://envirocar.org/api/stable/sensors/?limit=100&page=2",
             json=sensors_response,
             status=200,
             content_type="application/json",
@@ -325,17 +326,17 @@ def envirocar_mocked_responses() -> Generator[responses.RequestsMock, None, None
 
         rsps.add(
             method=responses.GET,
-            url="https://test.com/tracks",
+            url="https://envirocar.org/api/stable/tracks",
             json=tracks_response,
             status=200,
             headers={
-                "link": "<https://test.com/tracks/?limit=10&page=2>;rel=last;type=application/json"
+                "link": "<https://envirocar.org/api/stable/tracks/?limit=10&page=2>;rel=last;type=application/json"
             },
             content_type="application/json",
         )
         rsps.add(
             method=responses.GET,
-            url="https://test.com/tracks/?limit=10&page=2",
+            url="https://envirocar.org/api/stable/tracks/?limit=10&page=2",
             json=tracks_response,
             status=200,
             content_type="application/json",
@@ -349,14 +350,14 @@ def envirocar_mocked_responses() -> Generator[responses.RequestsMock, None, None
         )
         rsps.add(
             method=responses.GET,
-            url="https://test.com/tracks/61d543bef4c3e97fbd56072d/measurements",
+            url="https://envirocar.org/api/stable/tracks/61d543bef4c3e97fbd56072d/measurements",
             json=track_61d543bef4c3e97fbd56072d_measurements,
             status=200,
             content_type="application/json",
         )
         rsps.add(
             method=responses.GET,
-            url="https://test.com/tracks/61d543bef4c3e97fbd560705/measurements",
+            url="https://envirocar.org/api/stable/tracks/61d543bef4c3e97fbd560705/measurements",
             json=track_61d543bef4c3e97fbd560705_measurements,
             status=200,
             content_type="application/json",
@@ -376,7 +377,10 @@ def mock_all_envirocar_sensors(
     db.query(EnvirocarPhenomenon).delete()
     db.commit()
     envirocar_reader: EnvirocarReader = EnvirocarReader(
-        file_or_url=None, envirocar_base_url="https://test.com", threads=None
+        file_or_url=None,
+        envirocar_base_url="https://envirocar.org/api/stable",
+        threads=None,
+        db=db,
     )
     envirocar_reader.fetch_and_process_data()
     # Import the data
@@ -504,7 +508,7 @@ def mock_wikipedia_car_categories(
 
 @pytest.fixture(scope="function")
 def mock_wikipedia_cars(
-    db: Session, mock_wikipedia_responses: Generator[WikiCar, None, None]
+    db: Session, mock_wikipedia_responses: Generator[responses.RequestsMock, None, None]
 ) -> Generator[List[models.WikiCarCategory], None, None]:
     db.query(WikiCar).delete()
     db.query(WikiCarCategory).delete()
@@ -530,6 +534,7 @@ def mock_wikipedia_cars(
     wikipedia_reader.fetch_and_process_data()
     BaseImporter(db=db).import_data(db_objects=wikipedia_reader.objects_ordered[0])
     BaseImporter(db=db).import_data(db_objects=wikipedia_reader.objects_ordered[1])
+    mock_wikipedia_responses.reset()  # type: ignore
     yield wikipedia_reader.objects_ordered[1]
     db.query(WikiCar).delete()
     db.query(WikiCarCategory).delete()
@@ -543,7 +548,7 @@ def json_download_mock() -> Generator[responses.RequestsMock, None, None]:
             phenomenons_response = json.load(f)
         rsps.add(
             method=responses.GET,
-            url="https://test.com/phenomenons.json",
+            url="https://envirocar.org/api/stable/phenomenons.json",
             json=phenomenons_response,
             status=200,
             content_type="application/json",
