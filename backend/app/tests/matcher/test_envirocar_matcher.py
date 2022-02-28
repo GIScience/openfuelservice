@@ -1,12 +1,13 @@
 import logging
-from typing import Dict, Generator, Set
+from typing import Dict, Generator, List, Set, Union
 
 import pytest
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.matching.envirocar_matcher import EnvirocarMatcher
-from app.models import WikiCar
+from app.models import EnvirocarSensor, WikiCar, WikicarEnvirocar
+from app.tests.utils.envirocar import create_random_sensor
 
 logger = logging.getLogger(settings.PROJECT_NAME)
 
@@ -146,23 +147,41 @@ async def test_match(
     db: Session,
     mock_wikipedia_cars: Generator[WikiCar, None, None],
 ) -> None:
+    db.query(WikicarEnvirocar).delete()
+    db.query(EnvirocarSensor).delete()
+    db.commit()
+
     envirocar_matcher: EnvirocarMatcher = EnvirocarMatcher(
         models_path=settings.UNCOMPRESSED_MATCHING_DATA, db=db
     )
-    matched_envirocar_data = await envirocar_matcher.match(
-        manufacturer=manufacturer, car=model, accuracy=accuracy
+    mock_sensor: EnvirocarSensor = create_random_sensor(
+        db=db, manufacturer=manufacturer, sensor_model=model
     )
-    assert len(matched_envirocar_data) == 1
-    matching_accuracy: float = matched_envirocar_data[0][1]
-    assert matching_accuracy >= accuracy
-    matched_car: WikiCar = matched_envirocar_data[0][0][0]
-    assert matched_car.brand_name == expected_result["brand_name"]
-    assert matched_car.car_name == expected_result["car_name"]
-    assert matched_car.category_short_eu == expected_result["category_short_eu"]
-    assert matched_car.id == expected_result["id"]
-    assert matched_car.page_id == expected_result["page_id"]
-    assert matched_car.page_language == expected_result["page_language"]
-    assert matched_car.wiki_name == expected_result["wiki_name"]
+    wikicar_envirocar_matches: Union[
+        List[WikicarEnvirocar], None
+    ] = await envirocar_matcher.match(car=mock_sensor, accuracy=accuracy)
+    assert wikicar_envirocar_matches is not None and len(wikicar_envirocar_matches) == 1
+    wikicar_envirocar_match: WikicarEnvirocar = wikicar_envirocar_matches[0]
+    db.add(wikicar_envirocar_match)
+    db.commit()
+    wiki_car = wikicar_envirocar_match.wikicar
+    envirocar_sensor: EnvirocarSensor = wikicar_envirocar_match.envirocar
+
+    assert envirocar_sensor == mock_sensor
+
+    assert wikicar_envirocar_match.matching_accuracy >= accuracy
+    assert wikicar_envirocar_match.wikicar_id == expected_result["id"]
+    assert wikicar_envirocar_match.envirocar_sensor_id == mock_sensor.id
+
+    assert wiki_car.brand_name == expected_result["brand_name"]
+    assert wiki_car.car_name == expected_result["car_name"]
+    assert wiki_car.category_short_eu == expected_result["category_short_eu"]
+    assert wiki_car.page_id == expected_result["page_id"]
+    assert wiki_car.page_language == expected_result["page_language"]
+    assert wiki_car.wiki_name == expected_result["wiki_name"]
+
+    db.delete(wikicar_envirocar_match)
+    db.commit()
 
 
 @pytest.mark.parametrize(

@@ -1,4 +1,4 @@
-from typing import List, Set, Union
+from typing import Any, List, Set, Union
 
 from sqlalchemy.orm import Session
 
@@ -8,7 +8,7 @@ from app.misc.data_handling import (
     create_permutations,
     get_brand_aliases,
 )
-from app.models import WikiCar
+from app.models import EnvirocarSensor, WikiCar
 
 
 class BaseMatcher(ManufacturerAnnCollection):
@@ -39,8 +39,10 @@ class BaseMatcher(ManufacturerAnnCollection):
                 )
         return set(permutations)
 
-    def get_wikicars_by_name(self, wiki_name: str) -> Union[List[WikiCar], None]:
-        return self._db.query(WikiCar).filter(WikiCar.wiki_name == wiki_name).all()
+    def get_wikicar_by_name(self, wiki_name: str) -> Union[WikiCar, None]:
+        return self._db.query(WikiCar).filter(WikiCar.wiki_name == wiki_name).first()
 
-    async def match(self, manufacturer: str, car: str, accuracy: float = 0.99) -> List:
+    async def match(
+        self, car: Union[EnvirocarSensor], accuracy: float = 0.99
+    ) -> Union[List[Any], None]:
         pass

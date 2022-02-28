@@ -10,6 +10,7 @@ import tensorflow as tf
 import tflearn
 
 from app.core.config import settings
+from app.misc.data_handling import check_manufacturer
 
 logger = logging.getLogger(__name__)
 
@@ -72,7 +73,6 @@ class ManufacturerAnnModel:
             logger.warning("Initialized training data initialized but not found.")
             return
         try:
-            await lock.acquire()
             old_training_data: Dict = pickle.load(
                 open(self._old_training_data.absolute(), "rb")
             )
@@ -100,8 +100,6 @@ class ManufacturerAnnModel:
                 f"Error loading the tensorflow files for model: {self.model_name}"
             )
             raise err
-        finally:
-            lock.release()
 
     async def classify(
         self, car_name: str, error_threshold: float = 0.25
@@ -196,20 +194,22 @@ class ManufacturerAnnCollection:
         self,
         model_name: str = None,
         car_name: str = None,
-        accuracy_threshold: Union[float, None] = 0.25,
+        accuracy: Union[float, None] = 0.25,
     ) -> List[tuple]:
-        if accuracy_threshold is None:
-            accuracy_threshold = 0.25
+        if accuracy is None:
+            accuracy = 0.25
         if not model_name or not car_name or not len(model_name) or not len(car_name):
             return []
         elif model_name not in self._loaded_models:
-            await self._initialize_models([model_name])
+            await self.initialize_models([model_name])
         if model_name not in self._loaded_models:
             logger.debug(f"Couldn't load model for {model_name}.")
             return []
-        model: ManufacturerAnnModel = self._loaded_models[model_name]
         # TODO this will make more sense once multiple models need to be searched!
-        result: List[tuple] = await model.classify(
-            car_name=car_name, error_threshold=accuracy_threshold
+        result: List[tuple] = await self._loaded_models[model_name].classify(
+            car_name=car_name, error_threshold=accuracy
         )
+        if not len(result):
+            return []
+        result = [tuple(sorted(result, key=lambda i: i[1], reverse=True)[0])]
         return result
