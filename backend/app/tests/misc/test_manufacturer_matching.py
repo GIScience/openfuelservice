@@ -55,7 +55,7 @@ async def test__initialize_models(
         models_path=settings.UNCOMPRESSED_MATCHING_DATA
     )
     assert len(model_collection._loaded_models) == 0
-    await model_collection._initialize_models(model_names)
+    await model_collection.initialize_models(model_names)
     assert model_collection._models_path == Path(settings.UNCOMPRESSED_MATCHING_DATA)
     assert len(model_collection._models_training_data) == 52
     assert len(model_collection._models_intents) == 52
@@ -72,7 +72,7 @@ async def test__initialize_models(
 @pytest.mark.asyncio
 async def test__initialize_models_must_be_empty() -> None:
     model_collection = ManufacturerAnnCollection(models_path="foo")
-    await model_collection._initialize_models(["foo"])
+    await model_collection.initialize_models(["foo"])
     assert len(model_collection._models_training_data) == 0
     assert len(model_collection._models_intents) == 0
     assert len(model_collection._loaded_models) == 0
@@ -108,9 +108,9 @@ async def test_classify(
         models_path=settings.UNCOMPRESSED_MATCHING_DATA
     )
     assert len(model_collection._loaded_models) == 0
-    await model_collection._initialize_models(model_names)
+    await model_collection.initialize_models(model_names)
     result: List[tuple] = await model_collection.classify(
-        model_name=manufacturer, car_name=car_name, accuracy_threshold=min_certainty
+        model_name=manufacturer, car_name=car_name, accuracy=min_certainty
     )
     assert len(result) == 1
     assert result[0][0] == expected_result
@@ -140,7 +140,7 @@ async def test_classify_must_fail(
         models_path=settings.UNCOMPRESSED_MATCHING_DATA
     )
     assert len(model_collection._loaded_models) == 0
-    await model_collection._initialize_models(model_names)
+    await model_collection.initialize_models(model_names)
     result: List[tuple] = await model_collection.classify(
         model_name=model_names[0] if model_names else None, car_name=car_name
     )

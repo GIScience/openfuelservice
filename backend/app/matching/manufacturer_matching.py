@@ -132,41 +132,55 @@ class ManufacturerAnnCollection:
         self._models_training_data: Dict[str, Path] = {}
         self._load_models()
 
-    async def _initialize_models(self, model_names: List) -> None:
-        logger.info(f"Initializing matching models for model names: {model_names}.")
-        if model_names is None or not len(model_names):
-            logger.warning("Can't initialize matching models. No models found.")
-            return
-        model_names = list(
-            set(
-                [
-                    model_name
-                    for model_name in model_names
-                    if model_name is not None
-                    and len(model_name)
-                    and self._models_intents.get(model_name)
-                    and self._models_training_data.get(model_name)
-                ]
+    async def initialize_models(self, model_names: List) -> None:
+        try:
+            await lock.acquire()
+            logger.info(f"Initializing matching models for model names: {model_names}.")
+            if model_names is None or not len(model_names):
+                logger.warning("Can't initialize matching models. No models found.")
+                return
+            model_names = list(
+                set([check_manufacturer(model_name) for model_name in model_names])
             )
-        )
-        models: List[ManufacturerAnnModel] = [
-            ManufacturerAnnModel(
-                model_name=model_name,
-                old_intents=self._models_intents[model_name],
-                old_training_data=self._models_training_data[model_name],
+            model_names = list(
+                set(
+                    [model_name for model_name in model_names if model_name is not None]
+                )
             )
-            for model_name in model_names
-        ]
-        tasks = [
-            asyncio.ensure_future(
-                model.initialize_model()
-            )  # creating task starts coroutine
-            for model in models
-        ]
-        await asyncio.gather(*tasks)
-        model: ManufacturerAnnModel
-        for model in models:
-            self._loaded_models[model.model_name] = model
+
+            model_names = list(
+                set(
+                    [
+                        model_name
+                        for model_name in model_names
+                        if model_name is not None
+                        and len(model_name)
+                        and self._models_intents.get(model_name)
+                        and self._models_training_data.get(model_name)
+                        and model_name not in self._loaded_models
+                    ]
+                )
+            )
+            models: List[ManufacturerAnnModel] = [
+                ManufacturerAnnModel(
+                    model_name=model_name,
+                    old_intents=self._models_intents[model_name],
+                    old_training_data=self._models_training_data[model_name],
+                )
+                for model_name in model_names
+            ]
+            tasks = [
+                asyncio.ensure_future(
+                    model.initialize_model()
+                )  # creating task starts coroutine
+                for model in models
+            ]
+            await asyncio.gather(*tasks)
+            model: ManufacturerAnnModel
+            for model in models:
+                self._loaded_models[model.model_name] = model
+        finally:
+            lock.release()
 
     def _load_models(self) -> None:
         training_files: List = list(self._models_path.glob("*_tf_training_data"))
