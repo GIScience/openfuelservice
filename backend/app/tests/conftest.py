@@ -542,6 +542,158 @@ def mock_wikipedia_cars(
 
 
 @pytest.fixture(scope="function")
+def mock_all_responses() -> Generator[responses.RequestsMock, None, None]:
+    with responses.RequestsMock() as rsps:
+        with open(
+            settings.TEST_WIKIPEDIA_KATEGORIE_KLEINSTWAGEN_RESPONSE, mode="r"
+        ) as f:
+            kategorie_kleinstwagen_response = json.load(f)
+        with open(
+            settings.TEST_WIKIPEDIA_KATEGORIE_KLEINSTWAGEN_INFO_RESPONSE, mode="r"
+        ) as f:
+            kategorie_kleinstwagen_info_response = json.load(f)
+        with open(
+            settings.TEST_WIKIPEDIA_KATEGORIE_LEICHTFAHRZEUGE_RESPONSE, mode="r"
+        ) as f:
+            kategorie_leichtfahrzeuge_response = json.load(f)
+        with open(
+            settings.TEST_WIKIPEDIA_KATEGORIE_LEICHTFAHRZEUGE_INFO_RESPONSE, mode="r"
+        ) as f:
+            kategorie_leichtfahrzeuge_info_response = json.load(f)
+        with open(settings.TEST_WIKIPEDIA_CATEGORY_MICROCARS_RESPONSE, mode="r") as f:
+            kategorie_microcars_response = json.load(f)
+        with open(
+            settings.TEST_WIKIPEDIA_CATEGORY_MICROCARS_INFO_RESPONSE, mode="r"
+        ) as f:
+            kategorie_microcars_info_response = json.load(f)
+        with open(settings.TEST_ENVIROCAR_PHENOMENONS_RESPONSE, mode="r") as f:
+            phenomenons_response = json.load(f)
+        with open(settings.TEST_ENVIROCAR_TRACKS_RESPONSE, mode="r") as f:
+            tracks_response = json.load(f)
+        with open(settings.TEST_ENVIROCAR_TRACK_MEASUREMENT_RESPONSE, mode="r") as f:
+            track_measurement_response: Dict = json.load(f)
+        with open(settings.TEST_ENVIROCAR_SENSORS_RESPONSE, mode="r") as f:
+            sensors_response = json.load(f)
+        rsps.add(
+            method=responses.GET,
+            url="https://de.wikipedia.org/w/api.php?action=query&list=categorymembers&cmtitle=Kategorie%3AKleinst"
+            "wagen&cmlimit=500&format=json&redirects=1",
+            json=kategorie_kleinstwagen_response,
+            status=200,
+            content_type="application/json",
+        )
+        rsps.add(
+            method=responses.GET,
+            url="https://de.wikipedia.org/w/api.php?action=query&prop=info&titles=Kategorie%3AKleinstwagen&inprop="
+            "protection%7Ctalkid%7Cwatched%7Cwatchers%7Cvisitingwatchers%7Cnotificationtimestamp%7Csubjectid%7"
+            "Curl%7Creadable%7Cpreload%7Cdisplaytitle&format=json&redirects=1",
+            json=kategorie_kleinstwagen_info_response,
+            status=200,
+            content_type="application/json",
+        )
+        rsps.add(
+            method=responses.GET,
+            url="https://de.wikipedia.org/w/api.php?action=query&list=categorymembers&cmtitle=Kategorie%3A"
+            "Leichtfahrzeug&cmlimit=500&format=json&redirects=1",
+            json=kategorie_leichtfahrzeuge_response,
+            status=200,
+            content_type="application/json",
+        )
+        rsps.add(
+            method=responses.GET,
+            url="https://de.wikipedia.org/w/api.php?action=query&prop=info&titles=Kategorie%3ALeichtfahrzeug&inprop"
+            "=protection%7Ctalkid%7Cwatched%7Cwatchers%7Cvisitingwatchers%7Cnotificationtimestamp%7Csubjectid%"
+            "7Curl%7Creadable%7Cpreload%7Cdisplaytitle&format=json&redirects=1",
+            json=kategorie_leichtfahrzeuge_info_response,
+            status=200,
+            content_type="application/json",
+        )
+        rsps.add(
+            method=responses.GET,
+            url="https://en.wikipedia.org/w/api.php?action=query&list=categorymembers&cmtitle=Category%3AMicrocars"
+            "&cmlimit=500&format=json&redirects=1",
+            json=kategorie_microcars_response,
+            status=200,
+            content_type="application/json",
+        )
+        rsps.add(
+            method=responses.GET,
+            url="https://en.wikipedia.org/w/api.php?action=query&prop=info&titles=Category%3AMicrocars&inprop="
+            "protection%7Ctalkid%7Cwatched%7Cwatchers%7Cvisitingwatchers%7Cnotificationtimestamp%7Csubjectid%7Curl"
+            "%7Creadable%7Cpreload%7Cdisplaytitle&format=json&redirects=1",
+            json=kategorie_microcars_info_response,
+            status=200,
+            content_type="application/json",
+        )
+        rsps.add(
+            method=responses.GET,
+            url="https://envirocar.org/api/stable/phenomenons",
+            json=phenomenons_response,
+            status=200,
+            content_type="application/json",
+        )
+
+        rsps.add(
+            method=responses.GET,
+            url="https://envirocar.org/api/stable/sensors",
+            json=sensors_response,
+            status=200,
+            headers={
+                "link": "<https://envirocar.org/api/stable/sensors/?limit=100&page=2>;rel=last;type=application/json"
+            },
+            content_type="application/json",
+        )
+        rsps.add(
+            method=responses.GET,
+            url="https://envirocar.org/api/stable/sensors/?limit=100&page=2",
+            json=sensors_response,
+            status=200,
+            content_type="application/json",
+        )
+
+        rsps.add(
+            method=responses.GET,
+            url="https://envirocar.org/api/stable/tracks",
+            json=tracks_response,
+            status=200,
+            headers={
+                "link": "<https://envirocar.org/api/stable/tracks/?limit=10&page=2>;rel=last;type=application/json"
+            },
+            content_type="application/json",
+        )
+        rsps.add(
+            method=responses.GET,
+            url="https://envirocar.org/api/stable/tracks/?limit=10&page=2",
+            json=tracks_response,
+            status=200,
+            content_type="application/json",
+        )
+
+        track_61d543bef4c3e97fbd56072d_measurements = track_measurement_response.get(
+            "61d543bef4c3e97fbd56072d"
+        )
+        track_61d543bef4c3e97fbd560705_measurements = track_measurement_response.get(
+            "61d543bef4c3e97fbd560705"
+        )
+        rsps.add(
+            method=responses.GET,
+            url="https://envirocar.org/api/stable/tracks/61d543bef4c3e97fbd56072d/measurements",
+            json=track_61d543bef4c3e97fbd56072d_measurements,
+            status=200,
+            content_type="application/json",
+        )
+        rsps.add(
+            method=responses.GET,
+            url="https://envirocar.org/api/stable/tracks/61d543bef4c3e97fbd560705/measurements",
+            json=track_61d543bef4c3e97fbd560705_measurements,
+            status=200,
+            content_type="application/json",
+        )
+        yield rsps
+        rsps.reset()
+
+
+@pytest.fixture(scope="function")
 def json_download_mock() -> Generator[responses.RequestsMock, None, None]:
     with responses.RequestsMock() as rsps:
         with open(settings.TEST_ENVIROCAR_PHENOMENONS_RESPONSE, mode="r") as f:
