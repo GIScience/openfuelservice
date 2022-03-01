@@ -70,7 +70,3 @@ def test_true_linestring_length(
 ) -> None:
     test: Union[float, None] = linestring_length_in_meter(linestring=test_geometry)
     assert test == expected_result
-
-
-def test_convert_wgs_to_utm_epsg() -> None:
-    pass
