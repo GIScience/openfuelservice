@@ -224,16 +224,16 @@ def alembic_runner(
 
 
 @pytest.fixture(scope="function")
-def random_sensor_1(db: Session) -> Generator[models.EnvirocarSensor, None, None]:
-    sensor: models.EnvirocarSensor = create_random_sensor(db=db)
+def random_sensor_1(db: Session) -> Generator[EnvirocarSensor, None, None]:
+    sensor: EnvirocarSensor = create_random_sensor(db=db)
     yield sensor
     crud.envirocar_sensor.remove(db=db, id=sensor.id)
 
 
 @pytest.fixture(scope="function")
-def random_track_1(db: Session) -> Generator[models.EnvirocarTrack, None, None]:
-    sensor: models.EnvirocarSensor = create_random_sensor(db=db)
-    track: models.EnvirocarTrack = create_random_track(db=db, sensor=sensor)
+def random_track_1(db: Session) -> Generator[EnvirocarTrack, None, None]:
+    sensor: EnvirocarSensor = create_random_sensor(db=db)
+    track: EnvirocarTrack = create_random_track(db=db, sensor=sensor)
     yield track
     crud.envirocar_track.remove(db=db, id=track.id)
     crud.envirocar_sensor.remove(db=db, id=sensor.id)
@@ -242,12 +242,12 @@ def random_track_1(db: Session) -> Generator[models.EnvirocarTrack, None, None]:
 @pytest.fixture(scope="function")
 def random_track_measurement_1(
     db: Session,
-) -> Generator[models.EnvirocarTrackMeasurement, None, None]:
-    sensor: models.EnvirocarSensor = create_random_sensor(db=db)
-    track: models.EnvirocarTrack = create_random_track(db=db, sensor=sensor)
+) -> Generator[EnvirocarTrackMeasurement, None, None]:
+    sensor: EnvirocarSensor = create_random_sensor(db=db)
+    track: EnvirocarTrack = create_random_track(db=db, sensor=sensor)
     # TODO
-    track_measurement: models.EnvirocarTrackMeasurement = (
-        create_random_track_measurement(db=db, track=track)
+    track_measurement: EnvirocarTrackMeasurement = create_random_track_measurement(
+        db=db, track=track
     )
     yield track_measurement
     crud.envirocar_track_measurement.remove(db=db, id=track.id)
@@ -256,8 +256,8 @@ def random_track_measurement_1(
 
 
 @pytest.fixture(scope="function")
-def mock_cfd_cars(db: Session) -> Generator[List[models.CarFuelDataCar], None, None]:
-    db.query(models.CarFuelDataCar).delete()
+def mock_cfd_cars(db: Session) -> Generator[List[CarFuelDataCar], None, None]:
+    db.query(CarFuelDataCar).delete()
     db.commit()
     cfd_reader_test: CarFuelDataReader = CarFuelDataReader(
         settings.CARFUELDATA_TEST_PATH_OR_URL
@@ -271,8 +271,8 @@ def mock_cfd_cars(db: Session) -> Generator[List[models.CarFuelDataCar], None, N
 
 
 @pytest.fixture(scope="function")
-def mock_random_cfd_car(db: Session) -> Generator[models.CarFuelDataCar, None, None]:
-    db.query(models.CarFuelDataCar).delete()
+def mock_random_cfd_car(db: Session) -> Generator[CarFuelDataCar, None, None]:
+    db.query(CarFuelDataCar).delete()
     db.commit()
     random_cfd_car: CarFuelDataCar = CarFuelDataCar(
         manufacturer=random_lower_string(),
@@ -369,7 +369,7 @@ def envirocar_mocked_responses() -> Generator[responses.RequestsMock, None, None
 @pytest.fixture(scope="function")
 def mock_all_envirocar_sensors(
     db: Session, envirocar_mocked_responses: responses.RequestsMock
-) -> Generator[models.CarFuelDataCar, None, None]:
+) -> Generator[CarFuelDataCar, None, None]:
     db.query(EnvirocarTrackMeasurementPhenomenon).delete()
     db.query(EnvirocarTrackMeasurement).delete()
     db.query(EnvirocarTrack).delete()
@@ -478,8 +478,8 @@ def mock_wikipedia_responses() -> Generator[responses.RequestsMock, None, None]:
 @pytest.fixture(scope="function")
 def mock_wikipedia_car_categories(
     db: Session, mock_wikipedia_responses: Generator[WikiCarCategory, None, None]
-) -> Generator[List[models.WikiCarCategory], None, None]:
-    db.query(models.WikiCarCategory).delete()
+) -> Generator[List[WikiCarCategory], None, None]:
+    db.query(WikiCarCategory).delete()
     db.commit()
     test_car_category = {
         "car_categories": {
@@ -509,7 +509,7 @@ def mock_wikipedia_car_categories(
 @pytest.fixture(scope="function")
 def mock_wikipedia_cars(
     db: Session, mock_wikipedia_responses: Generator[responses.RequestsMock, None, None]
-) -> Generator[List[models.WikiCarCategory], None, None]:
+) -> Generator[List[WikiCarCategory], None, None]:
     db.query(WikiCar).delete()
     db.query(WikiCarCategory).delete()
     db.commit()
