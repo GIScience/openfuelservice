@@ -7,4 +7,4 @@ class CRUDEnvirocarTrack(CRUDBase[EnvirocarTrack, TrackCreate, TrackUpdate]):
     pass
 
 
-track = CRUDEnvirocarTrack(EnvirocarTrack)
+envirocar_track = CRUDEnvirocarTrack(EnvirocarTrack)

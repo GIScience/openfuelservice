@@ -9,4 +9,4 @@ class CRUDEnvirocarTrackMeasurement(
     pass
 
 
-track_measurement = CRUDEnvirocarTrackMeasurement(EnvirocarTrackMeasurement)
+envirocar_track_measurement = CRUDEnvirocarTrackMeasurement(EnvirocarTrackMeasurement)

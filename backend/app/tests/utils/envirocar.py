@@ -36,7 +36,7 @@ def create_random_sensor(
         else enginedisplacement,
     )
 
-    return crud.sensor.create(db=db, obj_in=sensor_in)
+    return crud.envirocar_sensor.create(db=db, obj_in=sensor_in)
 
 
 def create_random_track(
@@ -55,7 +55,7 @@ def create_random_track(
         end=datetime.datetime.now() + +datetime.timedelta(hours=1),
         geom=track_geometry,
     )
-    item = crud.track.create(db=db, obj_in=track_in)
+    item = crud.envirocar_track.create(db=db, obj_in=track_in)
 
     return item
 
@@ -71,6 +71,6 @@ def create_random_track_measurement(
         track_id=track.id,
         time=datetime.datetime.now(),
     )
-    item = crud.track_measurement.create(db=db, obj_in=track_in)
+    item = crud.envirocar_track_measurement.create(db=db, obj_in=track_in)
 
     return item

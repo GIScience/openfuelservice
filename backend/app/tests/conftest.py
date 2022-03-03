@@ -227,7 +227,7 @@ def alembic_runner(
 def random_sensor_1(db: Session) -> Generator[models.EnvirocarSensor, None, None]:
     sensor: models.EnvirocarSensor = create_random_sensor(db=db)
     yield sensor
-    crud.sensor.remove(db=db, id=sensor.id)
+    crud.envirocar_sensor.remove(db=db, id=sensor.id)
 
 
 @pytest.fixture(scope="function")
@@ -235,8 +235,8 @@ def random_track_1(db: Session) -> Generator[models.EnvirocarTrack, None, None]:
     sensor: models.EnvirocarSensor = create_random_sensor(db=db)
     track: models.EnvirocarTrack = create_random_track(db=db, sensor=sensor)
     yield track
-    crud.track.remove(db=db, id=track.id)
-    crud.sensor.remove(db=db, id=sensor.id)
+    crud.envirocar_track.remove(db=db, id=track.id)
+    crud.envirocar_sensor.remove(db=db, id=sensor.id)
 
 
 @pytest.fixture(scope="function")
@@ -250,9 +250,9 @@ def random_track_measurement_1(
         create_random_track_measurement(db=db, track=track)
     )
     yield track_measurement
-    crud.track_measurement.remove(db=db, id=track.id)
-    crud.track.remove(db=db, id=track.id)
-    crud.sensor.remove(db=db, id=sensor.id)
+    crud.envirocar_track_measurement.remove(db=db, id=track.id)
+    crud.envirocar_track.remove(db=db, id=track.id)
+    crud.envirocar_sensor.remove(db=db, id=sensor.id)
 
 
 @pytest.fixture(scope="function")
