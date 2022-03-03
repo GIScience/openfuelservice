@@ -5,7 +5,7 @@ from typing import Dict
 from sqlalchemy.orm import Session
 
 from app import crud, models
-from app.schemas.sensor import SensorCreate
+from app.schemas.envirocar_sensor import SensorCreate
 from app.schemas.track import TrackCreate
 from app.schemas.track_measurement import TrackMeasurementCreate
 
