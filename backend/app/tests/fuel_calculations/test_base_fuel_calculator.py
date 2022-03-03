@@ -1,3 +1,5 @@
+from typing import Generator, List, Tuple
+
 import pytest
 from shapely.geometry import LineString, shape
 
@@ -43,11 +45,11 @@ def test_base_fuel_calculator(
         manual_fuel_consumption=manual_fuel_consumption,
         request_id=request_id,
     )
-    assert test.geometry == geometry
-    assert test.tank_size == tank_size
-    assert test.driving_style == driving_style
-    assert test.manual_fuel_consumption == manual_fuel_consumption
-    assert test.request_id == request_id
-    assert test.route_length == expected_route_length
-    assert len(test.categories) == 0
-    assert not test.fuel_models
+    assert test._geometry == geometry
+    assert test._tank_size == tank_size
+    assert test._driving_style == driving_style
+    assert test._manual_fuel_consumption == manual_fuel_consumption
+    assert test._request_id == request_id
+    assert test._route_length == expected_route_length
+    assert len(test._categories) == 0
+    assert not test._fuel_models

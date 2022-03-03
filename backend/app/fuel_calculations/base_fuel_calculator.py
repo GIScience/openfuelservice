@@ -16,21 +16,21 @@ class BaseFuelCalculator:
         request_id: Union[str, None] = None,
     ):
         """Initializes the basic calculation object."""
-        self.geometry: LineString = geometry
+        self._geometry: LineString = geometry
 
-        self.tank_size: Union[int, None] = tank_size
-        self.driving_style: DrivingStyles = driving_style
-        self.manual_fuel_consumption: Union[float, None] = manual_fuel_consumption
-        self.request_id: Union[str, None] = request_id
+        self._tank_size: Union[int, None] = tank_size
+        self._driving_style: DrivingStyles = driving_style
+        self._manual_fuel_consumption: Union[float, None] = manual_fuel_consumption
+        self._request_id: Union[str, None] = request_id
 
-        self.categories: List = []
+        self._categories: List = []
         # self.price_models: Union[
         #     EurostatGeneralPrice, EurostatCountryPrice
         # ] = parse_price_model(self.geom)
-        self.route_length: Union[float, None] = linestring_length_in_meter(
-            linestring=self.geometry
+        self._route_length: Union[float, None] = linestring_length_in_meter(
+            linestring=self._geometry
         )
-        self.fuel_models = None
+        self._fuel_models = None
 
     def calculate_cost(self) -> None:
         pass
