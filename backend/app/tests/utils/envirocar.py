@@ -1,37 +1,64 @@
 import datetime
 import random
-from typing import Dict
+from enum import Enum
+from typing import Dict, Union, List
 
 from sqlalchemy.orm import Session
 
-from app import crud, models
+from app import crud
+from app.db.importer.mappings import FuelMappings
+from app.models import CarFuelDataCar, EnvirocarSensor, EnvirocarTrackMeasurement, EnvirocarTrack
 from app.schemas.envirocar_sensor import SensorCreate
 from app.schemas.track import TrackCreate
 from app.schemas.track_measurement import TrackMeasurementCreate
 
 
+def create_sensors_by_cfd(db: Session, cfd_cars: List[CarFuelDataCar]) -> List[EnvirocarSensor]:
+    cfd_car: CarFuelDataCar
+    random_ids: List = random.sample(range(1, len(cfd_cars) + 1), len(cfd_cars))  # type: ignore
+    sensors: List = []
+    for cfd_car in cfd_cars:
+        unique_id = random_ids.pop()
+        fuel_type: Union[Enum, None] = FuelMappings.from_value(cfd_car.fuel_type)
+        if fuel_type is None or cfd_car.engine_capacity is None:
+            pass
+        sensor_in = SensorCreate(
+            id=unique_id,
+            type=f"type_{unique_id}",
+            model=cfd_car.model,
+            manufacturer=cfd_car.manufacturer,
+            fueltype=fuel_type.name.lower(),
+            constructionyear=cfd_car.year,
+            enginedisplacement=0 if fuel_type == FuelMappings.ELECTRIC or cfd_car.engine_capacity is None else cfd_car.engine_capacity,
+        )
+        sensors.append(sensor_in)
+
+    return crud.envirocar_sensor.create_many(db=db, objs_in=sensors)
+
+
 def create_random_sensor(
-    db: Session,
-    sensor_type: str = None,
-    sensor_model: str = None,
-    manufacturer: str = None,
-    fueltype: str = None,
-    constructionyear: int = None,
-    enginedisplacement: int = None,
-) -> models.EnvirocarSensor:
-    unique_number = random.randint(1000, 9999)
+        db: Session,
+        unique_id: int = random.randint(1000, 9999),
+        sensor_type: str = None,
+        sensor_model: str = None,
+        manufacturer: str = None,
+        fueltype: str = None,
+        constructionyear: int = None,
+        enginedisplacement: int = None,
+) -> EnvirocarSensor:
+    fuel_type: Union[Enum, None] = FuelMappings.from_value(fueltype)
     sensor_in = SensorCreate(
-        id=unique_number,
-        type=f"type_{unique_number}" if sensor_type is None else sensor_type,
-        model=f"model_{unique_number}" if sensor_model is None else sensor_model,
-        manufacturer=f"manufacturer_{unique_number}"
+        id=unique_id,
+        type=f"type_{unique_id}" if sensor_type is None else sensor_type,
+        model=f"model_{unique_id}" if sensor_model is None else sensor_model,
+        manufacturer=f"manufacturer_{unique_id}"
         if manufacturer is None
         else manufacturer,
-        fueltype=f"fueltype_{unique_number}" if fueltype is None else fueltype,
-        constructionyear=unique_number
+        fueltype=f"fueltype_{unique_id}" if fuel_type is None else fuel_type.name.lower(),
+        constructionyear=unique_id
         if constructionyear is None
         else constructionyear,
-        enginedisplacement=unique_number
+        enginedisplacement=unique_id
         if enginedisplacement is None
         else enginedisplacement,
     )
@@ -40,8 +67,8 @@ def create_random_sensor(
 
 
 def create_random_track(
-    db: Session, sensor: models.EnvirocarSensor
-) -> models.EnvirocarTrack:
+        db: Session, sensor: EnvirocarSensor
+) -> EnvirocarTrack:
     unique_number = random.randint(1000, 9999)
     track_geometry: Dict = {
         "type": "LineString",
@@ -61,8 +88,8 @@ def create_random_track(
 
 
 def create_random_track_measurement(
-    db: Session, track: models.EnvirocarTrack
-) -> models.EnvirocarTrackMeasurement:
+        db: Session, track: EnvirocarTrack
+) -> EnvirocarTrackMeasurement:
     unique_number = random.randint(1000, 9999)
     track_measurement_geometry: Dict = {"type": "Point", "coordinates": [30, 10]}
     track_in = TrackMeasurementCreate(
