@@ -79,7 +79,9 @@ class WikiCar(Base):
     envirocars = relationship(
         "WikicarEnvirocar",
         uselist=True,
-        back_populates="wikicar"
+        back_populates="wikicar",
+        cascade="all, delete",
+        passive_deletes=True,
     )
 
 
@@ -129,7 +131,7 @@ class WikicarEnvirocar(Base):
 
     wikicar_id = Column(
         Integer,
-        ForeignKey("{}.id".format("wikicar")),
+        ForeignKey("{}.id".format("wikicar"), onupdate="CASCADE", ondelete="CASCADE"),
         index=True,
         primary_key=True,
     )
@@ -139,17 +141,17 @@ class WikicarEnvirocar(Base):
 
     @classmethod
     def get_all_by_filter(
-            cls, db: Session, filter_ids: list, id_only: bool = False
+        cls, db: Session, filter_ids: list, id_only: bool = False
     ) -> list:
         if id_only:
             return (
                 db.query(cls.envirocar_sensor_id, cls.wikicar_id)
-                    .filter(tuple_(cls.envirocar_sensor_id, cls.wikicar_id).in_(filter_ids))
-                    .all()
+                .filter(tuple_(cls.envirocar_sensor_id, cls.wikicar_id).in_(filter_ids))
+                .all()
             )
         else:
             return (
                 db.query(cls)
-                    .filter(tuple_(cls.envirocar_sensor_id, cls.wikicar_id).in_(filter_ids))
-                    .all()
+                .filter(tuple_(cls.envirocar_sensor_id, cls.wikicar_id).in_(filter_ids))
+                .all()
             )

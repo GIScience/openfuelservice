@@ -6,6 +6,7 @@ from .envirocar import (
     EnvirocarAverageVehicleTypeStatistic,
     EnvirocarPhenomenon,
     EnvirocarSensor,
+    EnvirocarSensorRawStatistic,
     EnvirocarSensorStatistic,
     EnvirocarTrack,
     EnvirocarTrackMeasurement,

@@ -1,8 +1,9 @@
 import logging
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Dict
 
 from geoalchemy2 import Geometry
 from sqlalchemy import (
+    ARRAY,
     CHAR,
     Column,
     DateTime,
@@ -45,14 +46,18 @@ class EnvirocarPhenomenon(Base):
 
     sensor_statistics = relationship(
         "EnvirocarSensorStatistic",
-        backref="{}".format("envirocarphenomenon"),
+        back_populates="phenomenon",
         lazy="dynamic",
+        uselist=True,
     )
-    track_measurement_phenomenon = relationship(
+
+    track_measurement_phenomenons = relationship(
         "EnvirocarTrackMeasurementPhenomenon",
-        backref="{}".format("envirocarphenomenon"),
+        back_populates="phenomenon",
         lazy="dynamic",
+        uselist=True,
     )
+
     # track_statistics = relationship(
     #     "EnvirocarTrackStatistic",
     #     backref="{}".format("envirocarphenomenon"),
@@ -96,12 +101,22 @@ class EnvirocarSensor(Base):
         passive_deletes=True,
     )
 
-    tracks = relationship("EnvirocarTrack", back_populates="sensor", lazy="dynamic")
-    sensors_statistics = relationship(
-        "EnvirocarSensorStatistic",
-        backref="{}".format("envirocarsensor"),
+    tracks = relationship(
+        "EnvirocarTrack",
+        back_populates="sensor",
         lazy="dynamic",
+        cascade="all, delete",
+        passive_deletes=True,
     )
+    sensor_statistics = relationship(
+        "EnvirocarSensorStatistic",
+        back_populates="envirocar",
+        lazy="dynamic",
+        uselist=True,
+        cascade="all, delete",
+        passive_deletes=True,
+    )
+
     # TODO override with hybrid_property and a corresponding query.
     # on the other hand EnvirocarSensorStatistic delivers this already.
     # tracks_measurements = relationship(
@@ -118,18 +133,32 @@ class EnvirocarSensorStatistic(Base):
     # EnvirocarSensorStatisticModel
     # sensors_statistics
 
+    def __init__(self, **entries: Dict):
+        entries.pop("unit")
+        self.__dict__.update(entries)
+
     id = Column(
         String,
-        ForeignKey("{}.id".format("envirocarsensor")),
+        ForeignKey(
+            "{}.id".format("envirocarsensor"), onupdate="CASCADE", ondelete="CASCADE"
+        ),
         index=True,
         primary_key=True,
     )
-    phenomenon_unit = Column(
+    envirocar = relationship(
+        "EnvirocarSensor",
+        back_populates="sensor_statistics",
+        uselist=True,
+    )
+
+    name = Column(
         String,
         ForeignKey("{}.id".format("envirocarphenomenon")),
         index=True,
         primary_key=True,
     )
+    phenomenon = relationship("EnvirocarPhenomenon", back_populates="sensor_statistics")
+
     max = Column(Float(asdecimal=True), nullable=True)
     avg = Column(Float(asdecimal=True), nullable=True)
     min = Column(Float(asdecimal=True), nullable=True)
@@ -140,12 +169,40 @@ class EnvirocarSensorStatistic(Base):
     sensors = Column(Integer, nullable=True)
 
 
+class EnvirocarSensorRawStatistic(Base):
+    # EnvirocarSensorStatisticModel
+    # sensors_statistics
+
+    id = Column(
+        String,
+        # ForeignKey("{}.id".format("envirocarsensor"), onupdate="CASCADE", ondelete="CASCADE"),
+        index=True,
+        primary_key=True,
+    )
+    acceleration_values_ordered = Column(
+        ARRAY(Float), server_default="{}", nullable=False
+    )
+    kmh_values_ordered = Column(ARRAY(Float), server_default="{}", nullable=False)
+    consumption_values_ordered = Column(
+        ARRAY(Float), server_default="{}", nullable=False
+    )
+    co2_values_ordered = Column(ARRAY(Float), server_default="{}", nullable=False)
+
+    # Now some statistics --> numb = number of  … used for the statistics
+    measurements = Column(Integer, nullable=True)
+    tracks = Column(Integer, nullable=True)
+
+
 class EnvirocarTrack(Base):
     # EnvirocarTrackModel
     # tracks
 
     id = Column(String, unique=True, primary_key=True, index=True)
-    sensor_id = Column(String, ForeignKey("envirocarsensor.id"), nullable=False)
+    sensor_id = Column(
+        String,
+        ForeignKey("envirocarsensor.id", onupdate="CASCADE", ondelete="CASCADE"),
+        nullable=False,
+    )
     sensor = relationship("EnvirocarSensor", back_populates="tracks")
     length = Column(Float(asdecimal=True))
     begin = Column(DateTime, nullable=False, index=True)
@@ -157,8 +214,9 @@ class EnvirocarTrack(Base):
     # )
     track_measurements = relationship(
         "EnvirocarTrackMeasurement",
-        backref="{}".format("envirocartrack"),
-        lazy="dynamic",
+        back_populates="track",
+        cascade="all, delete",
+        passive_deletes=True,
     )
 
 
@@ -198,9 +256,18 @@ class EnvirocarTrackMeasurement(Base):
 
     track_id = Column(
         String,
-        ForeignKey("{}.id".format("envirocartrack")),
+        ForeignKey(
+            "{}.id".format("envirocartrack"), onupdate="CASCADE", ondelete="CASCADE"
+        ),
         nullable=False,
         index=True,
+    )
+
+    track = relationship(
+        "EnvirocarTrack",
+        back_populates="track_measurements",
+        cascade="all, delete",
+        passive_deletes=True,
     )
 
     time = Column(DateTime, nullable=False, index=True)
@@ -209,7 +276,11 @@ class EnvirocarTrackMeasurement(Base):
 class EnvirocarTrackMeasurementPhenomenon(Base):
     id = Column(
         String,
-        ForeignKey("{}.id".format("envirocartrackmeasurement")),
+        ForeignKey(
+            "{}.id".format("envirocartrackmeasurement"),
+            onupdate="CASCADE",
+            ondelete="CASCADE",
+        ),
         primary_key=True,
         unique=False,
     )
@@ -219,6 +290,10 @@ class EnvirocarTrackMeasurementPhenomenon(Base):
         primary_key=True,
         index=True,
     )
+    phenomenon = relationship(
+        "EnvirocarPhenomenon", back_populates="track_measurement_phenomenons"
+    )
+
     unit = Column(String, nullable=False)
     value = Column(Float(asdecimal=True), nullable=True)
 
