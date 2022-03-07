@@ -1,8 +1,7 @@
-import datetime
 import json
 import logging
 import pathlib
-from typing import AsyncGenerator, Dict, Generator, List
+from typing import AsyncGenerator, Dict, Generator, List, Tuple
 
 import pytest
 import pytest_alembic
@@ -39,6 +38,7 @@ from app.tests.utils.envirocar import (
     create_random_sensor,
     create_random_track,
     create_random_track_measurement,
+    create_sensors_by_cfd,
 )
 from app.tests.utils.user import authentication_token_from_email
 from app.tests.utils.utils import (
@@ -95,15 +95,15 @@ def db(alembic_runner: MigrationContext) -> Generator:
     try:
         alembic_runner.migrate_up_to("head")
     except exc.ProgrammingError:
-        Base.metadata.drop_all(bind=engine)
+        Base.metadata.drop_all(bind=engine)  # type: ignore
     finally:
         alembic_runner.migrate_up_to("head")
     try:
         alembic_runner.migrate_down_to("base")
     except exc.ProgrammingError:
-        Base.metadata.create_all(bind=engine)
+        Base.metadata.create_all(bind=engine)  # type: ignore
     finally:
-        Base.metadata.drop_all(bind=engine)
+        Base.metadata.drop_all(bind=engine)  # type: ignore
         alembic_runner.migrate_up_to("head")
     yield SessionLocal()
     # if container_id and client:
@@ -266,22 +266,6 @@ def mock_cfd_cars(db: Session) -> Generator[List[CarFuelDataCar], None, None]:
     BaseImporter(db=db).import_data(db_objects=cfd_reader_test.objects_list)
 
     yield cfd_reader_test.objects_list
-    db.query(CarFuelDataCar).delete()
-    db.commit()
-
-
-@pytest.fixture(scope="function")
-def mock_random_cfd_car(db: Session) -> Generator[CarFuelDataCar, None, None]:
-    db.query(CarFuelDataCar).delete()
-    db.commit()
-    random_cfd_car: CarFuelDataCar = CarFuelDataCar(
-        manufacturer=random_lower_string(),
-        model=random_lower_string(),
-        fuel_type="Carbon",
-        date_of_change=datetime.date.today(),
-    )
-    BaseImporter(db=db).import_data(db_objects=[random_cfd_car])
-    yield random_cfd_car
     db.query(CarFuelDataCar).delete()
     db.commit()
 
@@ -574,6 +558,9 @@ def mock_all_responses() -> Generator[responses.RequestsMock, None, None]:
             track_measurement_response: Dict = json.load(f)
         with open(settings.TEST_ENVIROCAR_SENSORS_RESPONSE, mode="r") as f:
             sensors_response = json.load(f)
+        with open(settings.TEST_ENVIROCAR_SENSORS_STATISTICS_RESPONSE, mode="r") as f:
+            sensors_statistics_response = json.load(f)
+
         rsps.add(
             method=responses.GET,
             url="https://de.wikipedia.org/w/api.php?action=query&list=categorymembers&cmtitle=Kategorie%3AKleinst"
@@ -651,6 +638,29 @@ def mock_all_responses() -> Generator[responses.RequestsMock, None, None]:
             content_type="application/json",
         )
 
+        sensor_statistics_5fd9d14e05fa792e88dc8b7b = sensors_statistics_response.get(
+            "5fd9d14e05fa792e88dc8b7b"
+        )
+        sensor_statistics_616010fb0bd6756ea3a9aea7 = sensors_statistics_response.get(
+            "616010fb0bd6756ea3a9aea7"
+        )
+
+        rsps.add(
+            method=responses.GET,
+            url="https://envirocar.org/api/stable/sensors/5fd9d14e05fa792e88dc8b7b/statistics",
+            json=sensor_statistics_5fd9d14e05fa792e88dc8b7b,
+            status=200,
+            content_type="application/json",
+        )
+
+        rsps.add(
+            method=responses.GET,
+            url="https://envirocar.org/api/stable/sensors/616010fb0bd6756ea3a9aea7/statistics",
+            json=sensor_statistics_616010fb0bd6756ea3a9aea7,
+            status=200,
+            content_type="application/json",
+        )
+
         rsps.add(
             method=responses.GET,
             url="https://envirocar.org/api/stable/tracks",
@@ -691,6 +701,25 @@ def mock_all_responses() -> Generator[responses.RequestsMock, None, None]:
         )
         yield rsps
         rsps.reset()
+
+
+@pytest.fixture(scope="function")
+def mock_all_matched_fast(
+    db: Session, mock_cfd_cars: Generator[List[CarFuelDataCar], None, None]
+) -> Generator[
+    Tuple[List[EnvirocarSensor], Generator[List[CarFuelDataCar], None, None]],
+    None,
+    None,
+]:
+    db.query(EnvirocarSensor).delete()
+    db.commit()
+
+    mock_cfd_car: CarFuelDataCar
+    envirocar_sensor: List[EnvirocarSensor] = create_sensors_by_cfd(db=db, cfd_cars=mock_cfd_cars)  # type: ignore
+    yield envirocar_sensor, mock_cfd_cars
+
+    db.query(EnvirocarSensor).delete()
+    db.commit()
 
 
 @pytest.fixture(scope="function")
