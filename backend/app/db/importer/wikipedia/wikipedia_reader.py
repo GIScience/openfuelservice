@@ -45,10 +45,10 @@ class WikipediaReader(BaseReader):
             category_names: List = categories[category]["category_names"]
             category_objects.append(
                 WikiCarCategory(
-                    category_name_de=categories[category]["de"],
-                    category_name_en=categories[category]["en"],
-                    id=category,
-                    category_wiki_names=category_names,
+                    category_name_de=categories[category]["de"],  # type: ignore
+                    category_name_en=categories[category]["en"],  # type: ignore
+                    id=category,  # type: ignore
+                    category_wiki_names=category_names,  # type: ignore
                 )
             )
         return category_objects
@@ -108,19 +108,19 @@ class WikipediaReader(BaseReader):
                 car_name=revised_member_name
             )
             if model_brand and model_name:
-                return WikiCar(brand_name=model_brand, car_name=model_name)
+                return WikiCar(brand_name=model_brand, car_name=model_name)  # type: ignore
 
             model_brand, model_name = check_brand_aliases(
                 short_name=short_name, car_name=revised_member_name
             )
             if model_brand and model_name:
-                return WikiCar(brand_name=model_brand, car_name=model_name)
+                return WikiCar(brand_name=model_brand, car_name=model_name)  # type: ignore
 
             model_brand, model_name = check_brands(
                 short_name=short_name, wiki_name=revised_member_name
             )
             if model_brand and model_name:
-                return WikiCar(brand_name=model_brand, car_name=model_name)
+                return WikiCar(brand_name=model_brand, car_name=model_name)  # type: ignore
             elif len(short_name) > 1:
                 short_name = short_name[:-1]
             else:
