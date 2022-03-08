@@ -1,5 +1,3 @@
-from typing import Generator, List, Tuple
-
 import pytest
 from shapely.geometry import LineString, shape
 
