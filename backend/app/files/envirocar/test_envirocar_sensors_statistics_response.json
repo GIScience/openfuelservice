@@ -1,0 +1,582 @@
+{
+  "5fd9d14e05fa792e88dc8b7b": {
+    "statistics": [
+      {
+        "max": 178.42149454240132,
+        "avg": 1.0662470309712637,
+        "min": -1.1671335200746966,
+        "measurements": 396,
+        "tracks": 2,
+        "users": 1,
+        "sensors": 1,
+        "phenomenon": {
+          "name": "Maximum Acceleration",
+          "unit": "m/s\u00b2"
+        }
+      },
+      {
+        "max": 3.7416100338489757,
+        "avg": 0.33225430909988546,
+        "min": -1.3466607495612906,
+        "measurements": 412,
+        "tracks": 4,
+        "users": 1,
+        "sensors": 1,
+        "phenomenon": {
+          "name": "Maximum GPS Acceleration",
+          "unit": "m/s\u00b2"
+        }
+      },
+      {
+        "max": 0.5775005775005776,
+        "avg": -0.6508253865641926,
+        "min": -3.8138825324180012,
+        "measurements": 396,
+        "tracks": 2,
+        "users": 1,
+        "sensors": 1,
+        "phenomenon": {
+          "name": "Minimum Acceleration",
+          "unit": "m/s\u00b2"
+        }
+      },
+      {
+        "max": 2759.378463551402,
+        "avg": 1571.2352362020747,
+        "min": 0.0,
+        "measurements": 556,
+        "tracks": 3,
+        "users": 1,
+        "sensors": 1,
+        "phenomenon": {
+          "name": "Rpm",
+          "unit": "u/min"
+        }
+      },
+      {
+        "max": 18.391921907816354,
+        "avg": 2.1146807109666943,
+        "min": 0.0,
+        "measurements": 556,
+        "tracks": 3,
+        "users": 1,
+        "sensors": 1,
+        "phenomenon": {
+          "name": "Consumption",
+          "unit": "l/h"
+        }
+      },
+      {
+        "max": 81.10256651043892,
+        "avg": 27.52336730520059,
+        "min": 18.000000536441803,
+        "measurements": 556,
+        "tracks": 3,
+        "users": 1,
+        "sensors": 1,
+        "phenomenon": {
+          "name": "Throttle Position",
+          "unit": "%"
+        }
+      },
+      {
+        "max": 55.94975910373633,
+        "avg": 6.433034946153264,
+        "min": 0.0,
+        "measurements": 556,
+        "tracks": 3,
+        "users": 1,
+        "sensors": 1,
+        "phenomenon": {
+          "name": "MAF",
+          "unit": "l/s"
+        }
+      },
+      {
+        "max": 73.71183985681336,
+        "avg": 14.85960567543596,
+        "min": 0.0,
+        "measurements": 556,
+        "tracks": 3,
+        "users": 1,
+        "sensors": 1,
+        "phenomenon": {
+          "name": "Engine Load",
+          "unit": "%"
+        }
+      },
+      {
+        "max": 43.22101648336843,
+        "avg": 4.969499670771731,
+        "min": 0.0,
+        "measurements": 556,
+        "tracks": 3,
+        "users": 1,
+        "sensors": 1,
+        "phenomenon": {
+          "name": "CO2",
+          "unit": "kg/h"
+        }
+      },
+      {
+        "max": 26.000000193715096,
+        "avg": 13.861280486437831,
+        "min": 6.999999915249646,
+        "measurements": 556,
+        "tracks": 3,
+        "users": 1,
+        "sensors": 1,
+        "phenomenon": {
+          "name": "Intake Temperature",
+          "unit": "c"
+        }
+      },
+      {
+        "max": 99.00000295042992,
+        "avg": 3.1445659802454897,
+        "min": 0.7,
+        "measurements": 590,
+        "tracks": 7,
+        "users": 1,
+        "sensors": 1,
+        "phenomenon": {
+          "name": "GPS HDOP",
+          "unit": "precision"
+        }
+      },
+      {
+        "max": 99.00000295042992,
+        "avg": 3.637514748777661,
+        "min": 0.9999999701976776,
+        "measurements": 590,
+        "tracks": 7,
+        "users": 1,
+        "sensors": 1,
+        "phenomenon": {
+          "name": "GPS VDOP",
+          "unit": "precision"
+        }
+      },
+      {
+        "max": 1114.9419082828717,
+        "avg": 6.739132298058482,
+        "min": 1.6742515304898304,
+        "measurements": 590,
+        "tracks": 7,
+        "users": 1,
+        "sensors": 1,
+        "phenomenon": {
+          "name": "CO2 Emission (GPS-based)",
+          "unit": "kg/h"
+        }
+      },
+      {
+        "max": 140.00000417232513,
+        "avg": 4.8338019176974685,
+        "min": 1.3000000193715096,
+        "measurements": 590,
+        "tracks": 7,
+        "users": 1,
+        "sensors": 1,
+        "phenomenon": {
+          "name": "GPS PDOP",
+          "unit": "precision"
+        }
+      },
+      {
+        "max": 112.15720265286973,
+        "avg": 4.661256188334962,
+        "min": 1.9999999403953552,
+        "measurements": 590,
+        "tracks": 7,
+        "users": 1,
+        "sensors": 1,
+        "phenomenon": {
+          "name": "GPS Accuracy",
+          "unit": "%"
+        }
+      },
+      {
+        "max": 57.90064668917489,
+        "avg": 27.212816116759758,
+        "min": 0.0,
+        "measurements": 590,
+        "tracks": 7,
+        "users": 1,
+        "sensors": 1,
+        "phenomenon": {
+          "name": "GPS Speed",
+          "unit": "km/h"
+        }
+      },
+      {
+        "max": 0.8305878828517823,
+        "avg": -0.3208386099610019,
+        "min": -3.2703116517762507,
+        "measurements": 412,
+        "tracks": 4,
+        "users": 1,
+        "sensors": 1,
+        "phenomenon": {
+          "name": "Minimum GPS Acceleration",
+          "unit": "m/s\u00b2"
+        }
+      },
+      {
+        "max": 102.0,
+        "avg": 45.433845996716826,
+        "min": 18.0,
+        "measurements": 556,
+        "tracks": 3,
+        "users": 1,
+        "sensors": 1,
+        "phenomenon": {
+          "name": "Intake Pressure",
+          "unit": "kPa"
+        }
+      },
+      {
+        "max": 255.0000075995922,
+        "avg": 30.254225126296372,
+        "min": 0.0,
+        "measurements": 556,
+        "tracks": 3,
+        "users": 1,
+        "sensors": 1,
+        "phenomenon": {
+          "name": "Speed",
+          "unit": "km/h"
+        }
+      },
+      {
+        "max": 474.44336522675394,
+        "avg": 2.867715871514247,
+        "min": 0.7124474597829066,
+        "measurements": 590,
+        "tracks": 7,
+        "users": 1,
+        "sensors": 1,
+        "phenomenon": {
+          "name": "Consumption (GPS-based)",
+          "unit": "l/h"
+        }
+      },
+      {
+        "max": 233.63754330693905,
+        "avg": 125.38291865990963,
+        "min": 0.0,
+        "measurements": 590,
+        "tracks": 7,
+        "users": 1,
+        "sensors": 1,
+        "phenomenon": {
+          "name": "GPS Altitude",
+          "unit": "m"
+        }
+      },
+      {
+        "max": 359.1805643047812,
+        "avg": 209.06934072817057,
+        "min": -237.77957041737318,
+        "measurements": 580,
+        "tracks": 7,
+        "users": 1,
+        "sensors": 1,
+        "phenomenon": {
+          "name": "GPS Bearing",
+          "unit": "deg"
+        }
+      }
+    ]
+  },
+  "616010fb0bd6756ea3a9aea7": {
+    "statistics": [
+      {
+        "max": 178.42149454240132,
+        "avg": 1.0662470309712637,
+        "min": -1.1671335200746966,
+        "measurements": 396,
+        "tracks": 2,
+        "users": 1,
+        "sensors": 1,
+        "phenomenon": {
+          "name": "Maximum Acceleration",
+          "unit": "m/s\u00b2"
+        }
+      },
+      {
+        "max": 3.7416100338489757,
+        "avg": 0.33225430909988546,
+        "min": -1.3466607495612906,
+        "measurements": 412,
+        "tracks": 4,
+        "users": 1,
+        "sensors": 1,
+        "phenomenon": {
+          "name": "Maximum GPS Acceleration",
+          "unit": "m/s\u00b2"
+        }
+      },
+      {
+        "max": 0.5775005775005776,
+        "avg": -0.6508253865641926,
+        "min": -3.8138825324180012,
+        "measurements": 396,
+        "tracks": 2,
+        "users": 1,
+        "sensors": 1,
+        "phenomenon": {
+          "name": "Minimum Acceleration",
+          "unit": "m/s\u00b2"
+        }
+      },
+      {
+        "max": 2759.378463551402,
+        "avg": 1571.2352362020747,
+        "min": 0.0,
+        "measurements": 556,
+        "tracks": 3,
+        "users": 1,
+        "sensors": 1,
+        "phenomenon": {
+          "name": "Rpm",
+          "unit": "u/min"
+        }
+      },
+      {
+        "max": 18.391921907816354,
+        "avg": 2.1146807109666943,
+        "min": 0.0,
+        "measurements": 556,
+        "tracks": 3,
+        "users": 1,
+        "sensors": 1,
+        "phenomenon": {
+          "name": "Consumption",
+          "unit": "l/h"
+        }
+      },
+      {
+        "max": 81.10256651043892,
+        "avg": 27.52336730520059,
+        "min": 18.000000536441803,
+        "measurements": 556,
+        "tracks": 3,
+        "users": 1,
+        "sensors": 1,
+        "phenomenon": {
+          "name": "Throttle Position",
+          "unit": "%"
+        }
+      },
+      {
+        "max": 55.94975910373633,
+        "avg": 6.433034946153264,
+        "min": 0.0,
+        "measurements": 556,
+        "tracks": 3,
+        "users": 1,
+        "sensors": 1,
+        "phenomenon": {
+          "name": "MAF",
+          "unit": "l/s"
+        }
+      },
+      {
+        "max": 73.71183985681336,
+        "avg": 14.85960567543596,
+        "min": 0.0,
+        "measurements": 556,
+        "tracks": 3,
+        "users": 1,
+        "sensors": 1,
+        "phenomenon": {
+          "name": "Engine Load",
+          "unit": "%"
+        }
+      },
+      {
+        "max": 43.22101648336843,
+        "avg": 4.969499670771731,
+        "min": 0.0,
+        "measurements": 556,
+        "tracks": 3,
+        "users": 1,
+        "sensors": 1,
+        "phenomenon": {
+          "name": "CO2",
+          "unit": "kg/h"
+        }
+      },
+      {
+        "max": 26.000000193715096,
+        "avg": 13.861280486437831,
+        "min": 6.999999915249646,
+        "measurements": 556,
+        "tracks": 3,
+        "users": 1,
+        "sensors": 1,
+        "phenomenon": {
+          "name": "Intake Temperature",
+          "unit": "c"
+        }
+      },
+      {
+        "max": 99.00000295042992,
+        "avg": 3.1445659802454897,
+        "min": 0.7,
+        "measurements": 590,
+        "tracks": 7,
+        "users": 1,
+        "sensors": 1,
+        "phenomenon": {
+          "name": "GPS HDOP",
+          "unit": "precision"
+        }
+      },
+      {
+        "max": 99.00000295042992,
+        "avg": 3.637514748777661,
+        "min": 0.9999999701976776,
+        "measurements": 590,
+        "tracks": 7,
+        "users": 1,
+        "sensors": 1,
+        "phenomenon": {
+          "name": "GPS VDOP",
+          "unit": "precision"
+        }
+      },
+      {
+        "max": 1114.9419082828717,
+        "avg": 6.739132298058482,
+        "min": 1.6742515304898304,
+        "measurements": 590,
+        "tracks": 7,
+        "users": 1,
+        "sensors": 1,
+        "phenomenon": {
+          "name": "CO2 Emission (GPS-based)",
+          "unit": "kg/h"
+        }
+      },
+      {
+        "max": 140.00000417232513,
+        "avg": 4.8338019176974685,
+        "min": 1.3000000193715096,
+        "measurements": 590,
+        "tracks": 7,
+        "users": 1,
+        "sensors": 1,
+        "phenomenon": {
+          "name": "GPS PDOP",
+          "unit": "precision"
+        }
+      },
+      {
+        "max": 112.15720265286973,
+        "avg": 4.661256188334962,
+        "min": 1.9999999403953552,
+        "measurements": 590,
+        "tracks": 7,
+        "users": 1,
+        "sensors": 1,
+        "phenomenon": {
+          "name": "GPS Accuracy",
+          "unit": "%"
+        }
+      },
+      {
+        "max": 57.90064668917489,
+        "avg": 27.212816116759758,
+        "min": 0.0,
+        "measurements": 590,
+        "tracks": 7,
+        "users": 1,
+        "sensors": 1,
+        "phenomenon": {
+          "name": "GPS Speed",
+          "unit": "km/h"
+        }
+      },
+      {
+        "max": 0.8305878828517823,
+        "avg": -0.3208386099610019,
+        "min": -3.2703116517762507,
+        "measurements": 412,
+        "tracks": 4,
+        "users": 1,
+        "sensors": 1,
+        "phenomenon": {
+          "name": "Minimum GPS Acceleration",
+          "unit": "m/s\u00b2"
+        }
+      },
+      {
+        "max": 102.0,
+        "avg": 45.433845996716826,
+        "min": 18.0,
+        "measurements": 556,
+        "tracks": 3,
+        "users": 1,
+        "sensors": 1,
+        "phenomenon": {
+          "name": "Intake Pressure",
+          "unit": "kPa"
+        }
+      },
+      {
+        "max": 255.0000075995922,
+        "avg": 30.254225126296372,
+        "min": 0.0,
+        "measurements": 556,
+        "tracks": 3,
+        "users": 1,
+        "sensors": 1,
+        "phenomenon": {
+          "name": "Speed",
+          "unit": "km/h"
+        }
+      },
+      {
+        "max": 474.44336522675394,
+        "avg": 2.867715871514247,
+        "min": 0.7124474597829066,
+        "measurements": 590,
+        "tracks": 7,
+        "users": 1,
+        "sensors": 1,
+        "phenomenon": {
+          "name": "Consumption (GPS-based)",
+          "unit": "l/h"
+        }
+      },
+      {
+        "max": 233.63754330693905,
+        "avg": 125.38291865990963,
+        "min": 0.0,
+        "measurements": 590,
+        "tracks": 7,
+        "users": 1,
+        "sensors": 1,
+        "phenomenon": {
+          "name": "GPS Altitude",
+          "unit": "m"
+        }
+      },
+      {
+        "max": 359.1805643047812,
+        "avg": 209.06934072817057,
+        "min": -237.77957041737318,
+        "measurements": 580,
+        "tracks": 7,
+        "users": 1,
+        "sensors": 1,
+        "phenomenon": {
+          "name": "GPS Bearing",
+          "unit": "deg"
+        }
+      }
+    ]
+  }
+}

@@ -9,6 +9,7 @@ from app.db.importer.envirocar.envirocar_reader import EnvirocarReader
 from app.models import (
     EnvirocarPhenomenon,
     EnvirocarSensor,
+    EnvirocarSensorStatistic,
     EnvirocarTrack,
     EnvirocarTrackMeasurement,
     EnvirocarTrackMeasurementPhenomenon,
@@ -188,6 +189,31 @@ def test_get_sensors(
         assert sensor.type
 
 
+def test_get_sensor_statistics(
+    db: Session, mock_all_responses: responses.RequestsMock
+) -> None:
+    envirocar_reader: EnvirocarReader = EnvirocarReader(
+        db=db,
+        file_or_url=Path(""),
+        threads=None,
+    )
+    sensors, tracks, track_ids = envirocar_reader.get_track_ids_and_sensors()
+    sensor_ids: List = [sensor.id for sensor in sensors]
+    sensors_statistics = envirocar_reader.get_sensor_statistics(sensor_ids)
+    assert len(sensors_statistics) == 44
+    sensor_statistic: EnvirocarSensorStatistic
+    for sensor_statistic in sensors_statistics:
+        assert isinstance(sensor_statistic, EnvirocarSensorStatistic)
+        assert sensor_statistic.id
+        assert any(sensor.id == sensor_statistic.id for sensor in sensors)
+        assert sensor_statistic.min >= 0
+        assert sensor_statistic.avg >= 0
+        assert sensor_statistic.max >= 0
+        assert sensor_statistic.measurements > 0
+        assert sensor_statistic.sensors == 1
+        assert sensor_statistic.tracks > 0
+
+
 @pytest.mark.asyncio
 async def test_match_sensors_to_wikicar(
     db: Session,
@@ -220,7 +246,7 @@ def test_fetch_and_process_data(
     )
     envirocar_reader.fetch_and_process_data()
     # Check sensors and track_ids response
-    assert len(envirocar_reader.objects_ordered) == 6
+    assert len(envirocar_reader.objects_ordered) == 7
     assert (
         sum([len(objects) for objects in envirocar_reader.objects_ordered.values()])
         == 1249

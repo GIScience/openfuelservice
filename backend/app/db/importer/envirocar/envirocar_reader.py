@@ -4,6 +4,7 @@ import logging
 import multiprocessing
 import time
 import urllib.parse
+from decimal import Decimal
 from pathlib import Path
 from typing import Any, Coroutine, Dict, List, Optional, Set, Tuple, Union
 from urllib.parse import parse_qs, urlparse
@@ -22,6 +23,7 @@ from app.misc.requests_tools import ThreadedRequests
 from app.models import (
     EnvirocarPhenomenon,
     EnvirocarSensor,
+    EnvirocarSensorStatistic,
     EnvirocarTrack,
     EnvirocarTrackMeasurement,
     EnvirocarTrackMeasurementPhenomenon,
@@ -54,67 +56,6 @@ class EnvirocarReader(BaseReader):
         self._envirocar_matcher: EnvirocarMatcher = EnvirocarMatcher(
             models_path=settings.UNCOMPRESSED_MATCHING_DATA, db=db
         )
-
-    @property
-    def matched_sensors(self) -> Union[List, None]:
-        if 1 in self.objects_ordered:
-            return self.objects_ordered.get(1)
-        return None
-
-    def get_phenomenons(self) -> List:
-        phenomenons: List = []
-        start_time = time.time()
-        try:
-            responses = self.__crawl_urls(
-                urls_to_crawl=[self.phenomenons_url],
-                description=" Download Phenomenons",
-                download_unit=" Phenomenons",
-            )
-            response: Dict
-            for response in responses:
-                content = response["phenomenons"] if "phenomenons" in response else None
-                object_data: Dict
-                phenomenons.extend(
-                    [EnvirocarPhenomenon(**object_data) for object_data in content]
-                )
-        except Exception as err:
-            logger.error(f"Error fetching envirocar phenomenons with error {err}")
-            raise err
-        finally:
-            end_time = time.time()
-            logger.info(
-                f"{len(phenomenons)} Phenomenons crawled in {end_time - start_time} Seconds"
-            )
-            return phenomenons
-
-    def get_sensors(self) -> List:
-        sensors: List = []
-        start_time = time.time()
-        try:
-            responses: List = self.__crawl_urls(
-                urls_to_crawl=[self.sensors_url],
-                description=" Get Sensors",
-                download_unit=" Sensors",
-            )
-            for response in responses:
-                content: List = response["sensors"] if "sensors" in response else None
-                data: Dict
-                object_data: Dict
-                sensors.extend(
-                    [
-                        EnvirocarSensor(**data_handling.flatten_dictionary(data))
-                        for data in content
-                    ]
-                )
-        except Exception as err:
-            logger.error(f"Error fetching envirocar phenomenons with error {err}")
-            raise err
-        finally:
-            end_time = time.time()
-            logger.info(
-                f"{len(sensors)} Sensors crawled in {end_time - start_time} Seconds"
-            )
-        return sensors
 
     def __crawl_urls(
         self,
@@ -177,6 +118,67 @@ class EnvirocarReader(BaseReader):
             response_objects.append(response.json())
         return response_objects
 
+    @property
+    def matched_sensors(self) -> Union[List, None]:
+        if 1 in self.objects_ordered:
+            return self.objects_ordered.get(1)
+        return None
+
+    def get_phenomenons(self) -> List:
+        phenomenons: List = []
+        start_time = time.time()
+        try:
+            responses = self.__crawl_urls(
+                urls_to_crawl=[self.phenomenons_url],
+                description=" Download Phenomenons",
+                download_unit=" Phenomenons",
+            )
+            response: Dict
+            for response in responses:
+                content = response["phenomenons"] if "phenomenons" in response else None
+                object_data: Dict
+                phenomenons.extend(
+                    [EnvirocarPhenomenon(**object_data) for object_data in content]
+                )
+        except Exception as err:
+            logger.error(f"Error fetching envirocar phenomenons with error {err}")
+            raise err
+        finally:
+            end_time = time.time()
+            logger.info(
+                f"{len(phenomenons)} Phenomenons crawled in {end_time - start_time} Seconds"
+            )
+            return phenomenons
+
+    def get_sensors(self) -> List:
+        sensors: List = []
+        start_time = time.time()
+        try:
+            responses: List = self.__crawl_urls(
+                urls_to_crawl=[self.sensors_url],
+                description=" Get Sensors",
+                download_unit=" Sensors",
+            )
+            for response in responses:
+                content: List = response["sensors"] if "sensors" in response else None
+                data: Dict
+                object_data: Dict
+                sensors.extend(
+                    [
+                        EnvirocarSensor(**data_handling.flatten_dictionary(data))
+                        for data in content
+                    ]
+                )
+        except Exception as err:
+            logger.error(f"Error fetching envirocar phenomenons with error {err}")
+            raise err
+        finally:
+            end_time = time.time()
+            logger.info(
+                f"{len(sensors)} Sensors crawled in {end_time - start_time} Seconds"
+            )
+        return sensors
+
     def get_track_ids_and_sensors(
         self,
     ) -> Tuple[List[EnvirocarSensor], List[EnvirocarTrack], List[int]]:
@@ -210,9 +212,9 @@ class EnvirocarReader(BaseReader):
             ):
                 continue
             sensor_object = EnvirocarSensor(
-                **data_handling.flatten_dictionary(track.pop("sensor"))
+                **data_handling.flatten_dictionary(track.pop("sensor"))  # type: ignore
             )
-            track_object: EnvirocarTrack = EnvirocarTrack(**track)
+            track_object: EnvirocarTrack = EnvirocarTrack(**track)  # type: ignore
             track_ids.add(track_object.id)
             if sensor_object.id not in sensor_ids:
                 sensors_return.append(sensor_object)
@@ -223,6 +225,64 @@ class EnvirocarReader(BaseReader):
             f"Successfully crawled {len(sensors_return)} sensors and {len(track_ids)} tracks."
         )
         return sensors_return, tracks_return, list(track_ids)
+
+    def get_sensor_statistics(
+        self, sensor_ids: List[str]
+    ) -> List[EnvirocarSensorStatistic]:
+        sensors_statistics: List = []
+        start_time = time.time()
+        try:
+            sensor_id: str
+            for sensor_id in sensor_ids:
+                responses: List = self.__crawl_urls(
+                    urls_to_crawl=[f"{self.sensors_url}/{sensor_id}/statistics"],
+                    description=" Get Sensor statistics",
+                    download_unit=" Sensor Statistics",
+                )
+                if len(responses) != 1:
+                    logger.warning(
+                        f"Couldn't download sensor statistics for sensor: {sensor_id}"
+                    )
+                    continue
+                response = responses[0]
+                content: List = (
+                    response["statistics"] if "statistics" in response else None
+                )
+                if content is None:
+                    continue
+                data: Dict
+                statistics: List[EnvirocarSensorStatistic] = [
+                    EnvirocarSensorStatistic(**data_handling.flatten_dictionary(data))
+                    for data in content
+                ]
+                statistic: EnvirocarSensorStatistic
+                for statistic in statistics:
+                    statistic.id = sensor_id
+                    statistic.min = Decimal(
+                        0
+                        if statistic.min is None or statistic.min < 0
+                        else statistic.min
+                    )
+                    statistic.avg = Decimal(
+                        0
+                        if statistic.avg is None or statistic.avg < 0
+                        else statistic.avg
+                    )
+                    statistic.max = Decimal(
+                        0
+                        if statistic.max is None or statistic.max < 0
+                        else statistic.max
+                    )
+                sensors_statistics.extend(statistics)
+        except Exception as err:
+            logger.error(f"Error fetching envirocar phenomenons with error {err}")
+            raise err
+        finally:
+            end_time = time.time()
+            logger.info(
+                f"{len(sensors_statistics)} Sensors crawled in {end_time - start_time} Seconds"
+            )
+        return sensors_statistics
 
     @staticmethod
     def process_track_measurements(track_measurement_input: Dict) -> Tuple[List, List]:
@@ -326,7 +386,6 @@ class EnvirocarReader(BaseReader):
     def _process_data(self, data_file: Union[Path, None]) -> None:
         phenomenons: List = self.get_phenomenons()
         self.objects_ordered[0] = phenomenons
-        # sensors: List = self.get_sensors()
         sensors, tracks, track_ids = self.get_track_ids_and_sensors()
         self.objects_ordered[1] = sensors
         self.objects_ordered[2] = tracks
@@ -344,3 +403,6 @@ class EnvirocarReader(BaseReader):
             coro
         )
         self.objects_ordered[5] = wikicar_envirocar_matches
+        self.objects_ordered[6] = self.get_sensor_statistics(
+            [sensor.id for sensor in sensors]
+        )

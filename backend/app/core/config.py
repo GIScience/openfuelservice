@@ -180,6 +180,9 @@ class Settings(BaseSettings):
     TEST_ENVIROCAR_SENSORS_RESPONSE: str = (
         f"{FILE_FOLDER}/envirocar/test_envirocar_sensors_response.json"
     )
+    TEST_ENVIROCAR_SENSORS_STATISTICS_RESPONSE: str = (
+        f"{FILE_FOLDER}/envirocar/test_envirocar_sensors_statistics_response.json"
+    )
     TEST_ENVIROCAR_TRACK_ID_RESPONSE: str = (
         f"{FILE_FOLDER}/envirocar/test_envirocar_track_id_response.json"
     )

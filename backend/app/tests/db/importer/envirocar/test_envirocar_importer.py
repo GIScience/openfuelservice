@@ -8,6 +8,7 @@ from app.db.importer.envirocar.envirocar_reader import EnvirocarReader
 from app.models import (
     EnvirocarPhenomenon,
     EnvirocarSensor,
+    EnvirocarSensorStatistic,
     EnvirocarTrack,
     EnvirocarTrackMeasurement,
     EnvirocarTrackMeasurementPhenomenon,
@@ -19,19 +20,16 @@ from app.models import (
 def test_envirocar_importer(
     db: Session,
     mock_wikipedia_cars: Generator[WikiCar, None, None],
-    envirocar_mocked_responses: responses.RequestsMock,
+    mock_all_responses: responses.RequestsMock,
 ) -> None:
     # Clean the database
-    db.query(WikicarEnvirocar).delete()
-    db.query(EnvirocarTrackMeasurementPhenomenon).delete()
-    db.query(EnvirocarTrackMeasurement).delete()
-    db.query(EnvirocarTrack).delete()
     db.query(EnvirocarSensor).delete()
     db.query(EnvirocarPhenomenon).delete()
     db.commit()
 
     unique_ids_phenomenons = []
     unique_ids_sensors = []
+    unique_ids_sensor_statistics = []
     unique_ids_tracks = []
     unique_ids_track_measurements = []
     unique_ids_track_measurements_phenomenons = []
@@ -106,6 +104,17 @@ def test_envirocar_importer(
                     ]
                 )
             )
+        elif index == 6:
+            sensor_statistic: EnvirocarSensorStatistic
+            unique_ids_sensor_statistics = list(
+                set(
+                    [
+                        sensor_statistic.id
+                        for sensor_statistic in object_collection
+                        if type(sensor_statistic) == EnvirocarSensorStatistic
+                    ]
+                )
+            )
     phenomenons_in_db: List = EnvirocarPhenomenon.get_all_by_filter(
         db=db, filter_ids=unique_ids_phenomenons, id_only=True
     )
@@ -126,10 +135,14 @@ def test_envirocar_importer(
     wikicar_envirocars_in_db = WikicarEnvirocar.get_all_by_filter(
         db=db, filter_ids=unique_ids_wikicar_envirocar, id_only=True
     )
+    sensor_statistics_in_db = EnvirocarSensorStatistic.get_all_by_filter(
+        db=db, filter_ids=unique_ids_sensor_statistics, id_only=True
+    )
     assert len(phenomenons_in_db)
     assert len(sensors_in_db)
     assert len(tracks_in_db)
     assert len(track_measurements_in_db)
+    assert len(sensor_statistics_in_db)
     assert len(unique_ids_phenomenons) == len(phenomenons_in_db)
     assert len(unique_ids_sensors) == len(sensors_in_db)
     assert len(unique_ids_tracks) == len(tracks_in_db)
@@ -138,10 +151,12 @@ def test_envirocar_importer(
         track_measurement_phenomenons_in_db
     )
     assert len(unique_ids_wikicar_envirocar) == len(wikicar_envirocars_in_db)
-    db.query(WikicarEnvirocar).delete()
-    db.query(EnvirocarTrackMeasurementPhenomenon).delete()
-    db.query(EnvirocarTrackMeasurement).delete()
-    db.query(EnvirocarTrack).delete()
+    assert len(unique_ids_sensor_statistics) == len(sensor_statistics_in_db)
     db.query(EnvirocarSensor).delete()
     db.query(EnvirocarPhenomenon).delete()
     db.commit()
+
+    assert len(db.query(WikicarEnvirocar).all()) <= 0
+    assert len(db.query(EnvirocarTrackMeasurementPhenomenon).all()) <= 0
+    assert len(db.query(EnvirocarTrackMeasurement).all()) <= 0
+    assert len(db.query(EnvirocarTrack).all()) <= 0
