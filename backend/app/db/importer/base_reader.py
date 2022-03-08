@@ -15,6 +15,7 @@ class BaseReader:
     def __init__(self, file_or_url: Union[str, Path, None] = None) -> None:
         self._tempfolder: Path = Path(tempfile.mkdtemp())
         self.objects_list: List = []
+        # Todo make getter and setter for every input
         self.objects_ordered: Dict = {}
         self._file_or_url: Union[Path, str, None] = file_or_url
         self.name = "BaseReader"
