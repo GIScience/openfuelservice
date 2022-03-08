@@ -88,7 +88,7 @@ class CarFuelDataHeaderMapping(BaseMapping):
 class FuelMappings(BaseMapping):
     DIESEL: str = "diesel"
     DIESEL_ELECTRIC: tuple = ("diesel electric", "electricity / diesel")
-    GASOLINE: tuple = ("gasoline", "Petrol", "gas")
+    GASOLINE: tuple = ("gasoline", "Petrol", "gas", "petrol / lpg")
     GASOLINE_ELECTRIC: tuple = (
         "gasoline_electric",
         "electricity / petrol",
