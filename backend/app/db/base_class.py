@@ -29,7 +29,7 @@ class Base:
         cls, db: Session, filter_ids: list, id_only: bool = False
     ) -> list:
         if id_only:
-            return db.query(cls.id).filter(cls.id.in_(filter_ids)).all()
+            return db.query(cls.id).filter(cls.id.in_(filter_ids)).distinct().all()
         else:
             return db.query(cls).filter(cls.id.in_(filter_ids)).all()
 
