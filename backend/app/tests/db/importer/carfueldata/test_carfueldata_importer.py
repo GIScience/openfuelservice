@@ -35,5 +35,5 @@ def test_cfd_importer(db: Session) -> None:
     for cfd_car in cfd_reader_test.objects_list:
         assert cfd_car.id in unique_ids_db if cfd_car.id is not None else True
 
-    CarFuelDataCar.__table__.delete().where(CarFuelDataCar.id.in_([unique_ids_db]))
+    CarFuelDataCar.__table__.delete().where(CarFuelDataCar.id.in_([unique_ids_db]))  # type: ignore
     db.commit()

@@ -88,9 +88,9 @@ class EnvirocarMatcher(BaseMatcher):
                 continue
             wikicar_envirocar_matches.append(
                 WikicarEnvirocar(
-                    envirocar_sensor_id=car.id,
-                    wikicar_id=wiki_car[0].id,
-                    matching_accuracy=wiki_car[1],
+                    envirocar_sensor_id=car.id,  # type: ignore
+                    wikicar_id=wiki_car[0].id,  # type: ignore
+                    matching_accuracy=wiki_car[1],  # type: ignore
                 )
             )
             wikicar_ids.add(wiki_car[0].id)
