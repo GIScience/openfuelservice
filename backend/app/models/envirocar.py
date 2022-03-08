@@ -159,14 +159,14 @@ class EnvirocarSensorStatistic(Base):
     )
     phenomenon = relationship("EnvirocarPhenomenon", back_populates="sensor_statistics")
 
-    max = Column(Float(asdecimal=True), nullable=True)
-    avg = Column(Float(asdecimal=True), nullable=True)
-    min = Column(Float(asdecimal=True), nullable=True)
+    max = Column(Float(asdecimal=True), default=0)
+    avg = Column(Float(asdecimal=True), default=0)
+    min = Column(Float(asdecimal=True), default=0)
     # Now some statistics --> numb = number of  … used for the statistics
-    measurements = Column(Integer, nullable=True)
-    tracks = Column(Integer, nullable=True)
-    users = Column(Integer, nullable=True)
-    sensors = Column(Integer, nullable=True)
+    measurements = Column(Integer, default=0)
+    tracks = Column(Integer, default=0)
+    users = Column(Integer, default=0)
+    sensors = Column(Integer, default=0)
 
 
 class EnvirocarSensorRawStatistic(Base):

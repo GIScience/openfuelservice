@@ -1,8 +1,8 @@
 """Base Models
 
-Revision ID: dbb36fb8d545
+Revision ID: cf9d3ee08572
 Revises:
-Create Date: 2022-03-07 09:45:38.624776
+Create Date: 2022-03-07 11:41:41.608630
 
 """
 import sqlalchemy as sa
@@ -11,7 +11,7 @@ from geoalchemy2.types import Geometry
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision = "dbb36fb8d545"
+revision = "cf9d3ee08572"
 down_revision = None
 branch_labels = None
 depends_on = None
