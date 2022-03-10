@@ -50,6 +50,23 @@
           "manufacturer": "OPEL"
         }
       }
+    },
+    {
+      "id": "5839944de4b0a979d46b768a",
+      "length": 29.513948772308883,
+      "begin": "2016-11-24T16:19:11Z",
+      "end": "2016-11-24T16:55:51Z",
+      "sensor": {
+        "type": "car",
+        "properties": {
+          "engineDisplacement": 1800,
+          "model": "Avensis",
+          "id": "574e78cbe4b09078f97bbb4a",
+          "fuelType": "gasoline",
+          "constructionYear": 2011,
+          "manufacturer": "Toyota"
+        }
+      }
     }
   ]
 }

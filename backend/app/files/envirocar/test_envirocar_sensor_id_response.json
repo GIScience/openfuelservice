@@ -24,5 +24,31 @@
       "id": "616010fb0bd6756ea3a9aea7",
       "manufacturer": "OPEL"
     }
+  },
+  "52430807e4b0d7bdddd710d3": {
+    "type": "car",
+    "properties": {
+      "fuelType": "gasoline",
+      "constructionYear": 2012,
+      "created": "2013-09-25T15:57:59Z",
+      "engineDisplacement": 999,
+      "modified": "2013-09-25T15:57:59Z",
+      "model": "Up",
+      "id": "52430807e4b0d7bdddd710d3",
+      "manufacturer": "VW"
+    }
+  },
+  "574e78cbe4b09078f97bbb4a": {
+    "type": "car",
+    "properties": {
+      "fuelType": "gasoline",
+      "constructionYear": 2011,
+      "created": "2016-06-01T05:55:23Z",
+      "engineDisplacement": 1800,
+      "modified": "2016-06-01T05:55:23Z",
+      "model": "Avensis",
+      "id": "574e78cbe4b09078f97bbb4a",
+      "manufacturer": "Toyota"
+    }
   }
 }
