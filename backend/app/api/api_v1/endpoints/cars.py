@@ -1,65 +1,64 @@
-from typing import Any, Dict, List
+from typing import Any, List, Union
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app import schemas
 from app.api import deps
+from app.fuel_calculations.carfueldata_fuel_calculator import CarFuelDataFuelCalculator
 from app.models import CarFuelDataCar
+from app.schemas import FuelRequestCars
 
 router = APIRouter()
 
 
-@router.get(
-    "/{brand}", response_model=schemas.Cars, description="Return cars by brand."
-)
-async def read_car_by_brand(brand: str, db: Session = Depends(deps.get_db)) -> Any:
+@router.get("/", response_model=schemas.Cars, description="Return all cars.")
+async def read_cars(db: Session = Depends(deps.get_db)) -> Any:
     """Request the available models for fuel calculations."""
-    results = (
-        db.query(CarFuelDataCar).filter(CarFuelDataCar.manufacturer.like(brand)).all()
-    )
+    results = db.query(CarFuelDataCar).all()
     if not results:
-        raise HTTPException(status_code=404, detail=f"No cars found for brand: {brand}")
+        raise HTTPException(status_code=404, detail="No cars found in database.")
     return {"data": results}
 
 
 @router.get(
-    "/{brand}/sorted",
-    response_model=schemas.CarsSorted,
-    description="Return cars by brand ordered after Model and year.",
+    "/{vehicle_id}",
+    response_model=schemas.CarResponse,
+    description="Return a car by id.",
 )
-async def read_car_by_brand_sorted(
-    brand: str, db: Session = Depends(deps.get_db)
+async def read_car_by_id(vehicle_id: str, db: Session = Depends(deps.get_db)) -> Any:
+    """Request the available models for fuel calculations."""
+    result = db.query(CarFuelDataCar).filter(CarFuelDataCar.id == vehicle_id).first()
+    if not result:
+        raise HTTPException(
+            status_code=404, detail=f"No car found for id: {vehicle_id}"
+        )
+    return {"data": result}
+
+
+@router.post(
+    "/fuel",
+    response_model=schemas.FuelResponse,
+    description="Return emission and cost calculations by car id.",
+)
+async def calculate_emissions_and_cost_by_id(
+    request_in: FuelRequestCars,
+    db: Session = Depends(deps.get_db),
 ) -> Any:
     """Request the available models for fuel calculations."""
-    results: Dict = {"ids": []}
-    database_entries: List = db.query(CarFuelDataCar).filter(
-        CarFuelDataCar.manufacturer.like(brand)
-    ).all()
-    if not database_entries:
-        raise HTTPException(status_code=404, detail=f"No cars found for brand: {brand}")
-    entry: CarFuelDataCar
-    for entry in database_entries:
-        database_entries.remove(entry)
-        if entry.model not in results:
-            results[entry.model] = {}
-            results[entry.model]["ids"] = []
-        if entry.year not in results[entry.model]:
-            results[entry.model][entry.year] = {}
-            results[entry.model][entry.year]["cars"] = []
-            results[entry.model][entry.year]["ids"] = []
-        results[entry.model][entry.year]["cars"].append(
-            {
-                "id": entry.id,
-                "manufacturer": entry.manufacturer,
-                "model": entry.model,
-                "description": entry.description,
-                "fuel_type": entry.fuel_type,
-                "year": entry.year,
-            }
+    cars: List[CarFuelDataCar] = CarFuelDataCar.get_all_by_filter(
+        db=db, filter_ids=request_in.car_ids, id_only=False
+    )
+    if not cars:
+        raise HTTPException(
+            status_code=404, detail=f"No car found for IDs: {request_in.car_ids}"
         )
-        results["ids"].append(entry.id)
-        results[entry.model]["ids"].append(entry.id)
-        results[entry.model][entry.year]["ids"].append(entry.id)
+    result: Union[int, None] = CarFuelDataFuelCalculator(
+        carfueldata_car_ids=[car.id for car in cars], kwargs=dict(request_in)
+    ).calculate_cost()
 
-    return {"data": results}
+    if not result:
+        raise HTTPException(
+            status_code=404, detail=f"No car found for IDs: {request_in.car_ids}"
+        )
+    return {"data": result}
