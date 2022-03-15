@@ -1,4 +1,6 @@
+from .crud_envirocar_phenomenon import envirocar_phenomenon
 from .crud_envirocar_sensor import envirocar_sensor
+from .crud_envirocar_sensor_statistic import envirocar_sensor_statistic
 from .crud_envirocar_track import envirocar_track
 from .crud_envirocar_track_measurement import envirocar_track_measurement
 from .crud_item import item
