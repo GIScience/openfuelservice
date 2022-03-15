@@ -134,7 +134,7 @@ class EnvirocarSensorStatistic(Base):
     # sensors_statistics
 
     def __init__(self, **entries: Dict):
-        entries.pop("unit")
+        entries.pop("unit") if "unit" in entries else None
         self.__dict__.update(entries)
 
     id = Column(
@@ -148,7 +148,6 @@ class EnvirocarSensorStatistic(Base):
     envirocar = relationship(
         "EnvirocarSensor",
         back_populates="sensor_statistics",
-        uselist=True,
     )
 
     name = Column(
