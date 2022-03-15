@@ -8,11 +8,15 @@ from app import crud
 from app.db.importer.mappings import FuelMappings
 from app.models import (
     CarFuelDataCar,
+    EnvirocarPhenomenon,
     EnvirocarSensor,
+    EnvirocarSensorStatistic,
     EnvirocarTrack,
     EnvirocarTrackMeasurement,
 )
+from app.schemas.envirocar_phenomenon import PhenomenonCreate
 from app.schemas.envirocar_sensor import SensorCreate
+from app.schemas.envirocar_sensor_statistic import EnvirocarSensorStatisticCreate
 from app.schemas.track import TrackCreate
 from app.schemas.track_measurement import TrackMeasurementCreate
 
@@ -46,7 +50,7 @@ def create_sensors_by_cfd(
 
 def create_random_sensor(
     db: Session,
-    unique_id: int = random.randint(1000, 9999),
+    unique_id: int = random.randint(0, 999999),
     sensor_type: str = None,
     sensor_model: str = None,
     manufacturer: str = None,
@@ -107,3 +111,68 @@ def create_random_track_measurement(
     item = crud.envirocar_track_measurement.create(db=db, obj_in=track_in)
 
     return item
+
+
+def create_mock_phenomenon_consumption(db: Session) -> EnvirocarPhenomenon:
+    consumption_phenomenon: PhenomenonCreate = PhenomenonCreate(
+        name="Consumption", unit="l/h"
+    )
+    consumption_item = crud.envirocar_phenomenon.create(
+        db=db, obj_in=consumption_phenomenon
+    )
+    return consumption_item
+
+
+def create_mock_phenomenon_co2(db: Session) -> EnvirocarPhenomenon:
+    co2_phenomenon: PhenomenonCreate = PhenomenonCreate(name="CO2", unit="kg/h")
+    co2_item = crud.envirocar_phenomenon.create(db=db, obj_in=co2_phenomenon)
+    return co2_item
+
+
+def create_mock_phenomenon_speed(db: Session) -> EnvirocarPhenomenon:
+    speed_phenomenon: PhenomenonCreate = PhenomenonCreate(name="Speed", unit="km/h")
+    speed_item = crud.envirocar_phenomenon.create(db=db, obj_in=speed_phenomenon)
+    return speed_item
+
+
+def create_random_sensor_statistic(
+    db: Session, sensor: EnvirocarSensor, phenomenon: EnvirocarPhenomenon
+) -> EnvirocarSensorStatistic:
+    if phenomenon.name == "Speed":
+        statistic: EnvirocarSensorStatisticCreate = EnvirocarSensorStatisticCreate(
+            id=sensor.id,
+            name=phenomenon.name,
+            max=172.99999516643584,
+            avg=66.62193832723219,
+            min=0.0,
+            measurements=1,
+            tracks=1,
+            users=1,
+            sensors=1,
+        )
+    elif phenomenon.name == "CO2":
+        statistic = EnvirocarSensorStatisticCreate(
+            id=sensor.id,
+            name=phenomenon.name,
+            max=60.623542133993936,
+            avg=10.771562785624361,
+            min=0.961608943162674,
+            measurements=1,
+            tracks=1,
+            users=1,
+            sensors=1,
+        )
+    else:
+        statistic = EnvirocarSensorStatisticCreate(
+            id=sensor.id,
+            name=phenomenon.name,
+            max=25.797251971912313,
+            avg=4.583643738563468,
+            min=0.40919529496283996,
+            measurements=1,
+            tracks=1,
+            users=1,
+            sensors=1,
+        )
+    statistic_item = crud.envirocar_sensor_statistic.create(db=db, obj_in=statistic)
+    return statistic_item
