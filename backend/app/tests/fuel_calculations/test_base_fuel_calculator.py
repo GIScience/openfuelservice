@@ -1,7 +1,10 @@
 import pytest
 from shapely.geometry import LineString, shape
+from sqlalchemy.orm import Session
 
+from app.core.config import settings
 from app.fuel_calculations.base_fuel_calculator import BaseFuelCalculator
+from app.schemas import ORSFeatureCollection
 from app.schemas.fuel import DrivingStyles
 
 
@@ -24,11 +27,22 @@ from app.schemas.fuel import DrivingStyles
             "foo123",
             567.6399544896653,
         ),
+        (
+            ORSFeatureCollection.parse_obj(
+                settings.OPENROUTESERVICE_EXAMPLE_REQUEST_HEIDELBERG
+            ),
+            10,
+            DrivingStyles.moderate,
+            4.5,
+            "foo123",
+            567.6399544896653,
+        ),
         ("foo", 10, DrivingStyles.moderate, 4.5, "foo123", None),
         (None, None, None, None, None, None),
     ],
 )
 def test_base_fuel_calculator(
+    db: Session,
     geometry: LineString,
     tank_size: int,
     driving_style: DrivingStyles,
@@ -37,6 +51,8 @@ def test_base_fuel_calculator(
     expected_route_length: float,
 ) -> None:
     test = BaseFuelCalculator(
+        db=db,
+        envirocar_car_ids=[],
         geometry=geometry,
         tank_size=tank_size,
         driving_style=driving_style,
@@ -48,6 +64,4 @@ def test_base_fuel_calculator(
     assert test._driving_style == driving_style
     assert test._manual_fuel_consumption == manual_fuel_consumption
     assert test._request_id == request_id
-    assert test._route_length == expected_route_length
-    assert len(test._categories) == 0
-    assert not test._fuel_models
+    assert test._fuel_model
