@@ -43,7 +43,7 @@ page_ids: List = [
 
 
 def test_get_category_data(
-    mock_wikipedia_responses: Generator[responses.RequestsMock, None, None]
+    mock_all_responses: Generator[responses.RequestsMock, None, None]
 ) -> None:
     test_car_category = {
         "car_categories": {
@@ -81,7 +81,7 @@ def test_get_category_data(
 
 
 def test_get_category_car_data(
-    mock_wikipedia_responses: Generator[responses.RequestsMock, None, None]
+    mock_all_responses: Generator[responses.RequestsMock, None, None]
 ) -> None:
     test_car_category = {
         "car_categories": {
@@ -193,7 +193,7 @@ def test__process_category_member_vehicles_list(test_string: str) -> None:
 
 
 def test_fetch_and_process_data(
-    mock_wikipedia_responses: Generator[responses.RequestsMock, None, None]
+    mock_all_responses: Generator[responses.RequestsMock, None, None]
 ) -> None:
     test_car_category = {
         "car_categories": {

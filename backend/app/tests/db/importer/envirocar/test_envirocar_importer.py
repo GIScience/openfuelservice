@@ -1,4 +1,4 @@
-from typing import Generator, List
+from typing import List, Tuple
 
 import responses
 from sqlalchemy.orm import Session
@@ -13,13 +13,14 @@ from app.models import (
     EnvirocarTrackMeasurement,
     EnvirocarTrackMeasurementPhenomenon,
     WikiCar,
+    WikiCarCategory,
     WikicarEnvirocar,
 )
 
 
 def test_envirocar_importer(
     db: Session,
-    mock_wikipedia_cars: Generator[WikiCar, None, None],
+    mock_wikipedia_objects: Tuple[List[WikiCarCategory], List[WikiCar]],
     mock_all_responses: responses.RequestsMock,
 ) -> None:
     # Clean the database

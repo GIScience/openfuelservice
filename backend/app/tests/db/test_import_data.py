@@ -1,6 +1,3 @@
-from typing import Generator
-
-import responses
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
@@ -24,7 +21,6 @@ from app.models import (
 
 def test_import_all_data(
     db: Session,
-    mock_all_responses: Generator[responses.RequestsMock, None, None],
 ) -> None:
     db.query(CarFuelDataCar).delete()
     db.query(EnvirocarTrackMeasurementPhenomenon).delete()

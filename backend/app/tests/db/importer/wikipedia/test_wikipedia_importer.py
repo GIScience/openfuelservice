@@ -1,22 +1,13 @@
-from typing import Generator, List, Set
+from typing import List, Set
 
-import responses
 from sqlalchemy.orm import Session
 
 from app.db.importer.base_importer import BaseImporter
 from app.db.importer.wikipedia.wikipedia_reader import WikipediaReader
-from app.models import WikiCar, WikiCarCategory, WikiCarPageText
+from app.models import WikiCar, WikiCarCategory
 
 
-def test_wikipedia_importer(
-    db: Session, mock_wikipedia_responses: Generator[responses.RequestsMock, None, None]
-) -> None:
-    # Clean the database
-    db.query(WikiCar).delete()
-    db.query(WikiCarPageText).delete()
-    db.query(WikiCarCategory).delete()
-    db.commit()
-
+def test_wikipedia_importer(db: Session) -> None:
     test_car_category = {
         "car_categories": {
             "a": {
@@ -81,7 +72,6 @@ def test_wikipedia_importer(
         for category_in_db in wiki_categories_in_db:
             if category_in_db.id == category.id:
                 compare_counter += 1
-                assert category_in_db == category
                 assert category_in_db.category_name_de == category.category_name_de
                 assert category_in_db.category_name_en == category.category_name_en
                 assert (
@@ -98,13 +88,10 @@ def test_wikipedia_importer(
     car: WikiCar
     for car in wikipedia_reader.objects_ordered[1]:
         car_in_db: WikiCar
-        if car not in wiki_cars_in_db:
-            continue
         for car_in_db in wiki_cars_in_db:
             assert car_in_db in wiki_cars_via_reference
             if car_in_db.id == car.id:
                 compare_counter += 1
-                assert car_in_db == car
                 assert car_in_db.page_id == car.page_id
                 assert car_in_db.car_name == car.car_name
                 assert car_in_db.wiki_name == car.wiki_name
@@ -115,9 +102,7 @@ def test_wikipedia_importer(
     assert compare_counter == len(wiki_cars_in_db)
     assert len(wiki_categories_via_reference) == 1
     assert wiki_categories_in_db[0] == wiki_categories_via_reference.pop()
-
-    # Clean the database
-    db.query(WikiCar).delete()
-    db.query(WikiCarPageText).delete()
-    db.query(WikiCarCategory).delete()
+    for index, object_collection in reversed(wikipedia_reader.objects_ordered.items()):
+        for db_object in object_collection:
+            db.delete(db_object)
     db.commit()

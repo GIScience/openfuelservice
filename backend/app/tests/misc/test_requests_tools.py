@@ -26,7 +26,7 @@ def test_initialize_session() -> None:
     assert session.headers.get("From") == settings.GLOBAL_HEADERS.get("From")
 
 
-def test_threaded_requests(envirocar_mocked_responses: responses.RequestsMock) -> None:
+def test_threaded_requests(mock_all_responses: responses.RequestsMock) -> None:
     with open(settings.TEST_ENVIROCAR_TRACKS_RESPONSE) as f:
         tracks_response = json.load(f)
     urls_to_download = [
@@ -36,7 +36,7 @@ def test_threaded_requests(envirocar_mocked_responses: responses.RequestsMock) -
         "https://envirocar.org/api/stable/tracks/?limit=10&page=4",
     ]
     for url in urls_to_download:
-        envirocar_mocked_responses.add(
+        mock_all_responses.add(
             method=GET,
             url=url,
             json=tracks_response,

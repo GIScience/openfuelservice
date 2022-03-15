@@ -1,4 +1,4 @@
-from typing import Dict, Generator, List
+from typing import Dict, Generator, List, Tuple
 
 import pytest
 import responses
@@ -6,7 +6,7 @@ from httpx import AsyncClient
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
-from app.models import WikiCarCategory
+from app.models import WikiCar, WikiCarCategory
 from app.schemas.category import Category
 
 
@@ -14,8 +14,8 @@ from app.schemas.category import Category
 async def test_read_categories(
     async_client: AsyncClient,
     db: Session,
-    mock_wikipedia_responses: Generator[responses.RequestsMock, None, None],
-    mock_wikipedia_car_categories: Generator[List[WikiCarCategory], None, None],
+    mock_all_responses: Generator[responses.RequestsMock, None, None],
+    mock_wikipedia_objects: Tuple[List[WikiCarCategory], List[WikiCar]],
 ) -> None:
     response = await async_client.get(
         f"{settings.API_V1_STR}/categories/",
@@ -26,13 +26,19 @@ async def test_read_categories(
     data = content["data"]
     assert len(data) == 1
     assert isinstance(data, list)
-    mock_category: WikiCarCategory = mock_wikipedia_car_categories[0]  # type: ignore
     category: Dict
     for category in data:
         wiki_car_category_orm: Category = Category.parse_obj(category)
-        assert wiki_car_category_orm.id == mock_category.id
-        assert (
-            wiki_car_category_orm.category_short_eu == mock_category.category_short_eu
-        )
-        assert wiki_car_category_orm.category_name_en == mock_category.category_name_en
-        assert wiki_car_category_orm.category_name_de == mock_category.category_name_de
+        present: bool = False
+        wikicar_category: WikiCarCategory
+        for wikicar_category in mock_wikipedia_objects[0]:
+            if (
+                wiki_car_category_orm.category_short_eu
+                == wikicar_category.category_short_eu
+                and wiki_car_category_orm.category_name_en
+                == wikicar_category.category_name_en
+                and wiki_car_category_orm.category_name_de
+                == wikicar_category.category_name_de
+            ):
+                present = True
+        assert present

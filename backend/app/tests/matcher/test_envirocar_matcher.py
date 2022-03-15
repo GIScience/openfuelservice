@@ -4,6 +4,7 @@ from typing import Dict, Generator, List, Set, Union
 import pytest
 from sqlalchemy.orm import Session
 
+from app import crud
 from app.core.config import settings
 from app.matching.envirocar_matcher import EnvirocarMatcher
 from app.models import EnvirocarSensor, WikiCar, WikicarEnvirocar
@@ -12,9 +13,7 @@ from app.tests.utils.envirocar import create_random_sensor
 logger = logging.getLogger(settings.PROJECT_NAME)
 
 
-def test_envirocar_matcher_initialization(
-    db: Session, mock_wikipedia_cars: Generator[WikiCar, None, None]
-) -> None:
+def test_envirocar_matcher_initialization(db: Session) -> None:
     envirocar_matcher: EnvirocarMatcher = EnvirocarMatcher(
         models_path=settings.UNCOMPRESSED_MATCHING_DATA, db=db
     )
@@ -145,12 +144,8 @@ async def test_match(
     accuracy: float,
     expected_result: Dict,
     db: Session,
-    mock_wikipedia_cars: Generator[WikiCar, None, None],
+    mock_wikipedia_objects: Generator[WikiCar, None, None],
 ) -> None:
-    db.query(WikicarEnvirocar).delete()
-    db.query(EnvirocarSensor).delete()
-    db.commit()
-
     envirocar_matcher: EnvirocarMatcher = EnvirocarMatcher(
         models_path=settings.UNCOMPRESSED_MATCHING_DATA, db=db
     )
@@ -180,7 +175,7 @@ async def test_match(
     assert wiki_car.page_language == expected_result["page_language"]
     assert wiki_car.wiki_name == expected_result["wiki_name"]
 
-    db.delete(wikicar_envirocar_match)
+    crud.envirocar_sensor.remove(db=db, id=mock_sensor.id)
     db.commit()
 
 

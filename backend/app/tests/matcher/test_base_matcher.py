@@ -1,15 +1,15 @@
-from typing import Generator, Union
+from typing import List, Tuple, Union
 
 import pytest
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.matching.base_matcher import BaseMatcher
-from app.models import WikiCar
+from app.models import WikiCar, WikiCarCategory
 
 
 def test_base_matcher_initialization(
-    db: Session, mock_wikipedia_cars: Generator[WikiCar, None, None]
+    db: Session, mock_wikipedia_objects: Tuple[List[WikiCarCategory], List[WikiCar]]
 ) -> None:
     base_matcher: BaseMatcher = BaseMatcher(  # type: ignore
         models_path=settings.UNCOMPRESSED_MATCHING_DATA, db=db
@@ -18,22 +18,22 @@ def test_base_matcher_initialization(
 
 
 def test_base_matcher_get_wikicar_by_name(
-    db: Session, mock_wikipedia_cars: Generator[WikiCar, None, None]
+    db: Session, mock_wikipedia_objects: Tuple[List[WikiCarCategory], List[WikiCar]]
 ) -> None:
     base_matcher: BaseMatcher = BaseMatcher(  # type: ignore
         models_path=settings.UNCOMPRESSED_MATCHING_DATA, db=db
     )
     assert base_matcher._db == db
-    assert len(list(mock_wikipedia_cars))
-    mock_wikipedia_car: WikiCar
-    for mock_wikipedia_car in mock_wikipedia_cars:
-        assert isinstance(mock_wikipedia_car, WikiCar)
+    assert len(list(mock_wikipedia_objects[1]))
+    wiki_car: WikiCar
+    for wiki_car in mock_wikipedia_objects[1]:
+        assert isinstance(wiki_car, WikiCar)
         wiki_car_by_name: Union[WikiCar, None] = base_matcher.get_wikicar_by_name(
-            mock_wikipedia_car.wiki_name
+            wiki_car.wiki_name
         )
         assert wiki_car_by_name
         assert isinstance(wiki_car_by_name, WikiCar)
-        assert wiki_car_by_name.wiki_name == mock_wikipedia_car.wiki_name
+        assert wiki_car_by_name.wiki_name == wiki_car.wiki_name
 
 
 @pytest.mark.parametrize(

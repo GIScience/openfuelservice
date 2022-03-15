@@ -28,14 +28,18 @@ from app.models import (
     CarFuelDataCar,
     EnvirocarPhenomenon,
     EnvirocarSensor,
+    EnvirocarSensorStatistic,
     EnvirocarTrack,
     EnvirocarTrackMeasurement,
-    EnvirocarTrackMeasurementPhenomenon,
     WikiCar,
     WikiCarCategory,
 )
 from app.tests.utils.envirocar import (
+    create_mock_phenomenon_co2,
+    create_mock_phenomenon_consumption,
+    create_mock_phenomenon_speed,
     create_random_sensor,
+    create_random_sensor_statistic,
     create_random_track,
     create_random_track_measurement,
     create_sensors_by_cfd,
@@ -223,14 +227,34 @@ def alembic_runner(
         yield runner
 
 
-@pytest.fixture(scope="function")
-def random_sensor_1(db: Session) -> Generator[EnvirocarSensor, None, None]:
-    sensor: EnvirocarSensor = create_random_sensor(db=db)
+@pytest.fixture(scope="session")
+def random_sensor_gasoline_1(db: Session) -> Generator[EnvirocarSensor, None, None]:
+    sensor: EnvirocarSensor = create_random_sensor(
+        db=db, unique_id=654321, fueltype="gasoline"
+    )
     yield sensor
     crud.envirocar_sensor.remove(db=db, id=sensor.id)
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="session")
+def random_sensor_gasoline_2(db: Session) -> Generator[EnvirocarSensor, None, None]:
+    sensor: EnvirocarSensor = create_random_sensor(
+        db=db, unique_id=1234567, fueltype="gasoline"
+    )
+    yield sensor
+    crud.envirocar_sensor.remove(db=db, id=sensor.id)
+
+
+@pytest.fixture(scope="session")
+def random_sensor_diesel_1(db: Session) -> Generator[EnvirocarSensor, None, None]:
+    sensor: EnvirocarSensor = create_random_sensor(
+        db=db, unique_id=6666666, fueltype="diesel"
+    )
+    yield sensor
+    crud.envirocar_sensor.remove(db=db, id=sensor.id)
+
+
+@pytest.fixture(scope="session")
 def random_track_1(db: Session) -> Generator[EnvirocarTrack, None, None]:
     sensor: EnvirocarSensor = create_random_sensor(db=db)
     track: EnvirocarTrack = create_random_track(db=db, sensor=sensor)
@@ -239,7 +263,7 @@ def random_track_1(db: Session) -> Generator[EnvirocarTrack, None, None]:
     crud.envirocar_sensor.remove(db=db, id=sensor.id)
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="session")
 def random_track_measurement_1(
     db: Session,
 ) -> Generator[EnvirocarTrackMeasurement, None, None]:
@@ -255,277 +279,7 @@ def random_track_measurement_1(
     crud.envirocar_sensor.remove(db=db, id=sensor.id)
 
 
-@pytest.fixture(scope="function")
-def mock_cfd_cars(db: Session) -> Generator[List[CarFuelDataCar], None, None]:
-    db.query(CarFuelDataCar).delete()
-    db.commit()
-    cfd_reader_test: CarFuelDataReader = CarFuelDataReader(
-        settings.CARFUELDATA_TEST_PATH_OR_URL
-    )
-    cfd_reader_test.fetch_and_process_data()
-    BaseImporter(db=db).import_data(db_objects=cfd_reader_test.objects_list)
-
-    yield cfd_reader_test.objects_list
-    db.query(CarFuelDataCar).delete()
-    db.commit()
-
-
-@pytest.fixture(scope="function")
-def envirocar_mocked_responses() -> Generator[responses.RequestsMock, None, None]:
-    with responses.RequestsMock() as rsps:
-        rsps.reset()
-        with open(settings.TEST_ENVIROCAR_PHENOMENONS_RESPONSE, mode="r") as f:
-            phenomenons_response = json.load(f)
-        with open(settings.TEST_ENVIROCAR_TRACKS_RESPONSE, mode="r") as f:
-            tracks_response = json.load(f)
-        with open(settings.TEST_ENVIROCAR_TRACK_MEASUREMENT_RESPONSE, mode="r") as f:
-            track_measurement_response: Dict = json.load(f)
-        with open(settings.TEST_ENVIROCAR_SENSORS_RESPONSE, mode="r") as f:
-            sensors_response = json.load(f)
-        rsps.add(
-            method=responses.GET,
-            url="https://envirocar.org/api/stable/phenomenons",
-            json=phenomenons_response,
-            status=200,
-            content_type="application/json",
-        )
-
-        rsps.add(
-            method=responses.GET,
-            url="https://envirocar.org/api/stable/sensors",
-            json=sensors_response,
-            status=200,
-            headers={
-                "link": "<https://envirocar.org/api/stable/sensors/?limit=100&page=2>;rel=last;type=application/json"
-            },
-            content_type="application/json",
-        )
-        rsps.add(
-            method=responses.GET,
-            url="https://envirocar.org/api/stable/sensors/?limit=100&page=2",
-            json=sensors_response,
-            status=200,
-            content_type="application/json",
-        )
-
-        rsps.add(
-            method=responses.GET,
-            url="https://envirocar.org/api/stable/tracks",
-            json=tracks_response,
-            status=200,
-            headers={
-                "link": "<https://envirocar.org/api/stable/tracks/?limit=10&page=2>;rel=last;type=application/json"
-            },
-            content_type="application/json",
-        )
-        rsps.add(
-            method=responses.GET,
-            url="https://envirocar.org/api/stable/tracks/?limit=10&page=2",
-            json=tracks_response,
-            status=200,
-            content_type="application/json",
-        )
-
-        track_61d543bef4c3e97fbd56072d_measurements = track_measurement_response.get(
-            "61d543bef4c3e97fbd56072d"
-        )
-        track_61d543bef4c3e97fbd560705_measurements = track_measurement_response.get(
-            "61d543bef4c3e97fbd560705"
-        )
-        rsps.add(
-            method=responses.GET,
-            url="https://envirocar.org/api/stable/tracks/61d543bef4c3e97fbd56072d/measurements",
-            json=track_61d543bef4c3e97fbd56072d_measurements,
-            status=200,
-            content_type="application/json",
-        )
-        rsps.add(
-            method=responses.GET,
-            url="https://envirocar.org/api/stable/tracks/61d543bef4c3e97fbd560705/measurements",
-            json=track_61d543bef4c3e97fbd560705_measurements,
-            status=200,
-            content_type="application/json",
-        )
-        yield rsps
-        rsps.reset()
-
-
-@pytest.fixture(scope="function")
-def mock_all_envirocar_sensors(
-    db: Session, envirocar_mocked_responses: responses.RequestsMock
-) -> Generator[CarFuelDataCar, None, None]:
-    db.query(EnvirocarTrackMeasurementPhenomenon).delete()
-    db.query(EnvirocarTrackMeasurement).delete()
-    db.query(EnvirocarTrack).delete()
-    db.query(EnvirocarSensor).delete()
-    db.query(EnvirocarPhenomenon).delete()
-    db.commit()
-    envirocar_reader: EnvirocarReader = EnvirocarReader(
-        file_or_url=None,
-        envirocar_base_url="https://envirocar.org/api/stable",
-        threads=None,
-        db=db,
-    )
-    envirocar_reader.fetch_and_process_data()
-    # Import the data
-    BaseImporter(db=db).import_data(db_objects=envirocar_reader.objects_ordered[1])
-    yield envirocar_reader.objects_ordered[1]
-    db.query(EnvirocarTrackMeasurementPhenomenon).delete()
-    db.query(EnvirocarTrackMeasurement).delete()
-    db.query(EnvirocarTrack).delete()
-    db.query(EnvirocarSensor).delete()
-    db.query(EnvirocarPhenomenon).delete()
-    db.commit()
-
-
-@pytest.fixture(scope="function")
-def mock_wikipedia_responses() -> Generator[responses.RequestsMock, None, None]:
-    with responses.RequestsMock() as rsps:
-        with open(
-            settings.TEST_WIKIPEDIA_KATEGORIE_KLEINSTWAGEN_RESPONSE, mode="r"
-        ) as f:
-            kategorie_kleinstwagen_response = json.load(f)
-        with open(
-            settings.TEST_WIKIPEDIA_KATEGORIE_KLEINSTWAGEN_INFO_RESPONSE, mode="r"
-        ) as f:
-            kategorie_kleinstwagen_info_response = json.load(f)
-        with open(
-            settings.TEST_WIKIPEDIA_KATEGORIE_LEICHTFAHRZEUGE_RESPONSE, mode="r"
-        ) as f:
-            kategorie_leichtfahrzeuge_response = json.load(f)
-        with open(
-            settings.TEST_WIKIPEDIA_KATEGORIE_LEICHTFAHRZEUGE_INFO_RESPONSE, mode="r"
-        ) as f:
-            kategorie_leichtfahrzeuge_info_response = json.load(f)
-        with open(settings.TEST_WIKIPEDIA_CATEGORY_MICROCARS_RESPONSE, mode="r") as f:
-            kategorie_microcars_response = json.load(f)
-        with open(
-            settings.TEST_WIKIPEDIA_CATEGORY_MICROCARS_INFO_RESPONSE, mode="r"
-        ) as f:
-            kategorie_microcars_info_response = json.load(f)
-        rsps.add(
-            method=responses.GET,
-            url="https://de.wikipedia.org/w/api.php?action=query&list=categorymembers&cmtitle=Kategorie%3AKleinst"
-            "wagen&cmlimit=500&format=json&redirects=1",
-            json=kategorie_kleinstwagen_response,
-            status=200,
-            content_type="application/json",
-        )
-        rsps.add(
-            method=responses.GET,
-            url="https://de.wikipedia.org/w/api.php?action=query&prop=info&titles=Kategorie%3AKleinstwagen&inprop="
-            "protection%7Ctalkid%7Cwatched%7Cwatchers%7Cvisitingwatchers%7Cnotificationtimestamp%7Csubjectid%7"
-            "Curl%7Creadable%7Cpreload%7Cdisplaytitle&format=json&redirects=1",
-            json=kategorie_kleinstwagen_info_response,
-            status=200,
-            content_type="application/json",
-        )
-        rsps.add(
-            method=responses.GET,
-            url="https://de.wikipedia.org/w/api.php?action=query&list=categorymembers&cmtitle=Kategorie%3A"
-            "Leichtfahrzeug&cmlimit=500&format=json&redirects=1",
-            json=kategorie_leichtfahrzeuge_response,
-            status=200,
-            content_type="application/json",
-        )
-        rsps.add(
-            method=responses.GET,
-            url="https://de.wikipedia.org/w/api.php?action=query&prop=info&titles=Kategorie%3ALeichtfahrzeug&inprop"
-            "=protection%7Ctalkid%7Cwatched%7Cwatchers%7Cvisitingwatchers%7Cnotificationtimestamp%7Csubjectid%"
-            "7Curl%7Creadable%7Cpreload%7Cdisplaytitle&format=json&redirects=1",
-            json=kategorie_leichtfahrzeuge_info_response,
-            status=200,
-            content_type="application/json",
-        )
-        rsps.add(
-            method=responses.GET,
-            url="https://en.wikipedia.org/w/api.php?action=query&list=categorymembers&cmtitle=Category%3AMicrocars"
-            "&cmlimit=500&format=json&redirects=1",
-            json=kategorie_microcars_response,
-            status=200,
-            content_type="application/json",
-        )
-        rsps.add(
-            method=responses.GET,
-            url="https://en.wikipedia.org/w/api.php?action=query&prop=info&titles=Category%3AMicrocars&inprop="
-            "protection%7Ctalkid%7Cwatched%7Cwatchers%7Cvisitingwatchers%7Cnotificationtimestamp%7Csubjectid%7Curl"
-            "%7Creadable%7Cpreload%7Cdisplaytitle&format=json&redirects=1",
-            json=kategorie_microcars_info_response,
-            status=200,
-            content_type="application/json",
-        )
-
-        yield rsps
-        rsps.reset()
-
-
-@pytest.fixture(scope="function")
-def mock_wikipedia_car_categories(
-    db: Session, mock_wikipedia_responses: Generator[WikiCarCategory, None, None]
-) -> Generator[List[WikiCarCategory], None, None]:
-    db.query(WikiCarCategory).delete()
-    db.commit()
-    test_car_category = {
-        "car_categories": {
-            "a": {
-                "category_names": [
-                    "Kategorie:Kleinstwagen",
-                    "Kategorie:Leichtfahrzeug",
-                    "Category:Microcars",
-                ],
-                "de": "Kleinstwagen",
-                "en": "mini cars",
-                "single_cars": [],
-                "tank_capacity": 15,
-            }
-        }
-    }
-    wikipedia_reader: WikipediaReader = WikipediaReader(
-        file_or_url=None, threads=None, categories=test_car_category
-    )
-    wikipedia_reader.fetch_and_process_data()
-    BaseImporter(db=db).import_data(db_objects=wikipedia_reader.objects_ordered[0])
-    yield wikipedia_reader.objects_ordered[0]
-    db.query(WikiCarCategory).delete()
-    db.commit()
-
-
-@pytest.fixture(scope="function")
-def mock_wikipedia_cars(
-    db: Session, mock_wikipedia_responses: Generator[responses.RequestsMock, None, None]
-) -> Generator[List[WikiCarCategory], None, None]:
-    db.query(WikiCar).delete()
-    db.query(WikiCarCategory).delete()
-    db.commit()
-    test_car_category = {
-        "car_categories": {
-            "a": {
-                "category_names": [
-                    "Kategorie:Kleinstwagen",
-                    "Kategorie:Leichtfahrzeug",
-                    "Category:Microcars",
-                ],
-                "de": "Kleinstwagen",
-                "en": "mini cars",
-                "single_cars": [],
-                "tank_capacity": 15,
-            }
-        }
-    }
-    wikipedia_reader: WikipediaReader = WikipediaReader(
-        file_or_url=None, threads=None, categories=test_car_category
-    )
-    wikipedia_reader.fetch_and_process_data()
-    BaseImporter(db=db).import_data(db_objects=wikipedia_reader.objects_ordered[0])
-    BaseImporter(db=db).import_data(db_objects=wikipedia_reader.objects_ordered[1])
-    mock_wikipedia_responses.reset()  # type: ignore
-    yield wikipedia_reader.objects_ordered[1]
-    db.query(WikiCar).delete()
-    db.query(WikiCarCategory).delete()
-    db.commit()
-
-
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="session", autouse=True)
 def mock_all_responses() -> Generator[responses.RequestsMock, None, None]:
     with responses.RequestsMock() as rsps:
         with open(
@@ -644,6 +398,9 @@ def mock_all_responses() -> Generator[responses.RequestsMock, None, None]:
         sensor_statistics_616010fb0bd6756ea3a9aea7 = sensors_statistics_response.get(
             "616010fb0bd6756ea3a9aea7"
         )
+        sensor_statistics_574e78cbe4b09078f97bbb4a = sensors_statistics_response.get(
+            "574e78cbe4b09078f97bbb4a"
+        )
 
         rsps.add(
             method=responses.GET,
@@ -657,6 +414,14 @@ def mock_all_responses() -> Generator[responses.RequestsMock, None, None]:
             method=responses.GET,
             url="https://envirocar.org/api/stable/sensors/616010fb0bd6756ea3a9aea7/statistics",
             json=sensor_statistics_616010fb0bd6756ea3a9aea7,
+            status=200,
+            content_type="application/json",
+        )
+
+        rsps.add(
+            method=responses.GET,
+            url="https://envirocar.org/api/stable/sensors/574e78cbe4b09078f97bbb4a/statistics",
+            json=sensor_statistics_574e78cbe4b09078f97bbb4a,
             status=200,
             content_type="application/json",
         )
@@ -703,6 +468,60 @@ def mock_all_responses() -> Generator[responses.RequestsMock, None, None]:
         rsps.reset()
 
 
+@pytest.fixture(scope="session")
+def mock_cfd_cars(db: Session) -> Generator[List[CarFuelDataCar], None, None]:
+    cfd_reader_test: CarFuelDataReader = CarFuelDataReader(
+        settings.CARFUELDATA_TEST_PATH_OR_URL
+    )
+    cfd_reader_test.fetch_and_process_data()
+    BaseImporter(db=db).import_data(db_objects=cfd_reader_test.objects_list)
+
+    yield cfd_reader_test.objects_list
+
+    for db_object in cfd_reader_test.objects_list:
+        if db_object.id is None:
+            continue
+        db.delete(db_object)
+    db.commit()
+
+
+@pytest.fixture(scope="module")
+def mock_wikipedia_objects(
+    db: Session, mock_all_responses: Generator[responses.RequestsMock, None, None]
+) -> Generator[Tuple[List[WikiCarCategory], List[WikiCar]], None, None]:
+    test_car_category = {
+        "car_categories": {
+            "a": {
+                "category_names": [
+                    "Kategorie:Kleinstwagen",
+                    "Kategorie:Leichtfahrzeug",
+                    "Category:Microcars",
+                ],
+                "de": "Kleinstwagen",
+                "en": "mini cars",
+                "single_cars": [],
+                "tank_capacity": 15,
+            }
+        }
+    }
+    wikipedia_reader: WikipediaReader = WikipediaReader(
+        file_or_url=None, threads=None, categories=test_car_category
+    )
+    wikipedia_reader.fetch_and_process_data()
+    for index, db_objects in wikipedia_reader.objects_ordered.items():
+        BaseImporter(db=db).import_data(db_objects=db_objects)
+    yield wikipedia_reader.objects_ordered[0], wikipedia_reader.objects_ordered[1]
+
+    wikicar: WikiCar
+    for wikicar in wikipedia_reader.objects_ordered[1]:
+        db.delete(wikicar)
+    db.commit()
+    wikicar_category: WikiCarCategory
+    for wikicar_category in wikipedia_reader.objects_ordered[0]:
+        db.delete(wikicar_category)
+    db.commit()
+
+
 @pytest.fixture(scope="function")
 def mock_all_matched_fast(
     db: Session, mock_cfd_cars: Generator[List[CarFuelDataCar], None, None]
@@ -715,11 +534,208 @@ def mock_all_matched_fast(
     db.commit()
 
     mock_cfd_car: CarFuelDataCar
-    envirocar_sensor: List[EnvirocarSensor] = create_sensors_by_cfd(db=db, cfd_cars=mock_cfd_cars)  # type: ignore
-    yield envirocar_sensor, mock_cfd_cars
+    envirocar_sensors: List[EnvirocarSensor] = create_sensors_by_cfd(db=db, cfd_cars=mock_cfd_cars)  # type: ignore
+    # TODO wikicarenvirocar matches hier erstellen. maybe just take the two mock sensors with driving stats.
+    yield envirocar_sensors, mock_cfd_cars
 
-    db.query(EnvirocarSensor).delete()
+    for db_object in envirocar_sensors:
+        db.delete(db_object)
     db.commit()
+
+
+@pytest.fixture(scope="module")
+def mock_all_envirocar_sensors(
+    db: Session,
+    mock_wikipedia_objects: Tuple[List[WikiCarCategory], List[WikiCar]],
+    mock_all_responses: responses.RequestsMock,
+) -> Generator[Dict, None, None]:
+    envirocar_reader: EnvirocarReader = EnvirocarReader(
+        file_or_url=None,
+        envirocar_base_url="https://envirocar.org/api/stable",
+        threads=None,
+        db=db,
+    )
+    envirocar_reader.fetch_and_process_data()
+    # Import the data
+    for index, db_objects in envirocar_reader.objects_ordered.items():
+        BaseImporter(db=db).import_data(db_objects=db_objects)
+    yield envirocar_reader.objects_ordered
+    for index, db_objects in reversed(envirocar_reader.objects_ordered.items()):
+        for db_object in db_objects:
+            db.delete(db_object)
+        db.commit()
+
+
+@pytest.fixture(scope="session")
+def mock_envirocar_speed_phenomenon(
+    db: Session,
+) -> Generator[EnvirocarPhenomenon, None, None]:
+    speed_mock: EnvirocarPhenomenon = create_mock_phenomenon_speed(db=db)
+    yield speed_mock
+    crud.envirocar_phenomenon.remove(db=db, id=speed_mock.id)
+
+
+@pytest.fixture(scope="session")
+def mock_envirocar_co2_phenomenon(
+    db: Session,
+) -> Generator[EnvirocarPhenomenon, None, None]:
+    co2_mock: EnvirocarPhenomenon = create_mock_phenomenon_co2(db=db)
+    yield co2_mock
+    crud.envirocar_phenomenon.remove(db=db, id=co2_mock.id)
+
+
+@pytest.fixture(scope="session")
+def mock_envirocar_consumption_phenomenon(
+    db: Session,
+) -> Generator[EnvirocarPhenomenon, None, None]:
+    consumption_mock: EnvirocarPhenomenon = create_mock_phenomenon_consumption(db=db)
+    yield consumption_mock
+    crud.envirocar_phenomenon.remove(db=db, id=consumption_mock.id)
+
+
+@pytest.fixture(scope="session")
+def mock_sensor_statistics_gasoline_co2_1(
+    db: Session,
+    random_sensor_gasoline_1: EnvirocarSensor,
+    mock_envirocar_co2_phenomenon: EnvirocarPhenomenon,
+) -> Generator[EnvirocarSensorStatistic, None, None]:
+    statistic_mock: EnvirocarSensorStatistic = create_random_sensor_statistic(
+        db=db, sensor=random_sensor_gasoline_1, phenomenon=mock_envirocar_co2_phenomenon
+    )
+    yield statistic_mock
+    crud.envirocar_sensor_statistic.remove(
+        db=db, id=(statistic_mock.id, statistic_mock.name)
+    )
+
+
+@pytest.fixture(scope="session")
+def mock_sensor_statistics_gasoline_co2_2(
+    db: Session,
+    random_sensor_gasoline_2: EnvirocarSensor,
+    mock_envirocar_co2_phenomenon: EnvirocarPhenomenon,
+) -> Generator[EnvirocarSensorStatistic, None, None]:
+    statistic_mock: EnvirocarSensorStatistic = create_random_sensor_statistic(
+        db=db, sensor=random_sensor_gasoline_2, phenomenon=mock_envirocar_co2_phenomenon
+    )
+    yield statistic_mock
+    crud.envirocar_sensor_statistic.remove(
+        db=db, id=(statistic_mock.id, statistic_mock.name)
+    )
+
+
+@pytest.fixture(scope="session")
+def mock_sensor_statistics_diesel_co2_1(
+    db: Session,
+    random_sensor_diesel_1: EnvirocarSensor,
+    mock_envirocar_co2_phenomenon: EnvirocarPhenomenon,
+) -> Generator[EnvirocarSensorStatistic, None, None]:
+    statistic_mock: EnvirocarSensorStatistic = create_random_sensor_statistic(
+        db=db, sensor=random_sensor_diesel_1, phenomenon=mock_envirocar_co2_phenomenon
+    )
+    yield statistic_mock
+    crud.envirocar_sensor_statistic.remove(
+        db=db, id=(statistic_mock.id, statistic_mock.name)
+    )
+
+
+@pytest.fixture(scope="session")
+def mock_sensor_statistics_gasoline_speed_1(
+    db: Session,
+    random_sensor_gasoline_1: EnvirocarSensor,
+    mock_envirocar_speed_phenomenon: EnvirocarPhenomenon,
+) -> Generator[EnvirocarSensorStatistic, None, None]:
+    statistic_mock: EnvirocarSensorStatistic = create_random_sensor_statistic(
+        db=db,
+        sensor=random_sensor_gasoline_1,
+        phenomenon=mock_envirocar_speed_phenomenon,
+    )
+    yield statistic_mock
+    crud.envirocar_sensor_statistic.remove(
+        db=db, id=(statistic_mock.id, statistic_mock.name)
+    )
+
+
+@pytest.fixture(scope="session")
+def mock_sensor_statistics_gasoline_speed_2(
+    db: Session,
+    random_sensor_gasoline_2: EnvirocarSensor,
+    mock_envirocar_speed_phenomenon: EnvirocarPhenomenon,
+) -> Generator[EnvirocarSensorStatistic, None, None]:
+    statistic_mock: EnvirocarSensorStatistic = create_random_sensor_statistic(
+        db=db,
+        sensor=random_sensor_gasoline_2,
+        phenomenon=mock_envirocar_speed_phenomenon,
+    )
+    yield statistic_mock
+    crud.envirocar_sensor_statistic.remove(
+        db=db, id=(statistic_mock.id, statistic_mock.name)
+    )
+
+
+@pytest.fixture(scope="session")
+def mock_sensor_statistics_diesel_speed_1(
+    db: Session,
+    random_sensor_diesel_1: EnvirocarSensor,
+    mock_envirocar_speed_phenomenon: EnvirocarPhenomenon,
+) -> Generator[EnvirocarSensorStatistic, None, None]:
+    statistic_mock: EnvirocarSensorStatistic = create_random_sensor_statistic(
+        db=db, sensor=random_sensor_diesel_1, phenomenon=mock_envirocar_speed_phenomenon
+    )
+    yield statistic_mock
+    crud.envirocar_sensor_statistic.remove(
+        db=db, id=(statistic_mock.id, statistic_mock.name)
+    )
+
+
+@pytest.fixture(scope="session")
+def mock_sensor_statistics_gasoline_consumption_1(
+    db: Session,
+    random_sensor_gasoline_1: EnvirocarSensor,
+    mock_envirocar_consumption_phenomenon: EnvirocarPhenomenon,
+) -> Generator[EnvirocarSensorStatistic, None, None]:
+    statistic_mock: EnvirocarSensorStatistic = create_random_sensor_statistic(
+        db=db,
+        sensor=random_sensor_gasoline_1,
+        phenomenon=mock_envirocar_consumption_phenomenon,
+    )
+    yield statistic_mock
+    crud.envirocar_sensor_statistic.remove(
+        db=db, id=(statistic_mock.id, statistic_mock.name)
+    )
+
+
+@pytest.fixture(scope="session")
+def mock_sensor_statistics_gasoline_consumption_2(
+    db: Session,
+    random_sensor_gasoline_2: EnvirocarSensor,
+    mock_envirocar_consumption_phenomenon: EnvirocarPhenomenon,
+) -> Generator[EnvirocarSensorStatistic, None, None]:
+    statistic_mock: EnvirocarSensorStatistic = create_random_sensor_statistic(
+        db=db,
+        sensor=random_sensor_gasoline_2,
+        phenomenon=mock_envirocar_consumption_phenomenon,
+    )
+    yield statistic_mock
+    crud.envirocar_sensor_statistic.remove(
+        db=db, id=(statistic_mock.id, statistic_mock.name)
+    )
+
+
+@pytest.fixture(scope="session")
+def mock_sensor_statistics_diesel_consumption_1(
+    db: Session,
+    random_sensor_diesel_1: EnvirocarSensor,
+    mock_envirocar_consumption_phenomenon: EnvirocarPhenomenon,
+) -> Generator[EnvirocarSensorStatistic, None, None]:
+    statistic_mock: EnvirocarSensorStatistic = create_random_sensor_statistic(
+        db=db,
+        sensor=random_sensor_diesel_1,
+        phenomenon=mock_envirocar_consumption_phenomenon,
+    )
+    yield statistic_mock
+    crud.envirocar_sensor_statistic.remove(
+        db=db, id=(statistic_mock.id, statistic_mock.name)
+    )
 
 
 @pytest.fixture(scope="function")
