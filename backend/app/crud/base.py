@@ -39,6 +39,21 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         db.refresh(db_obj)
         return db_obj
 
+    def create_many(
+        self, db: Session, *, objs_in: List[CreateSchemaType]
+    ) -> List[ModelType]:
+        obj_in: CreateSchemaType
+        db_models: List = []
+        for obj_in in objs_in:
+            obj_in_data = jsonable_encoder(obj_in)
+            db_obj = self.model(**obj_in_data)  # type: ignore
+            db_models.append(db_obj)
+        db.add_all(db_models)
+        db.commit()
+        for db_model in db_models:
+            db.refresh(db_model)
+        return db_models
+
     def update(
         self,
         db: Session,
@@ -59,7 +74,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         db.refresh(db_obj)
         return db_obj
 
-    def remove(self, db: Session, *, id: Union[str, int]) -> Optional[ModelType]:
+    def remove(self, db: Session, *, id: Union[str, int, tuple]) -> Optional[ModelType]:
         obj: Optional[ModelType] = db.query(self.model).get(id)
         db.delete(obj)
         db.commit()
