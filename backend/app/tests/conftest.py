@@ -543,7 +543,7 @@ def mock_all_matched_fast(
     db.commit()
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="function")
 def mock_all_envirocar_sensors(
     db: Session,
     mock_wikipedia_objects: Tuple[List[WikiCarCategory], List[WikiCar]],
