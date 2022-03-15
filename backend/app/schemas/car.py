@@ -18,6 +18,10 @@ class Car(BaseModel):
         orm_mode = True
 
 
+class CarResponse(SchemaBase):
+    data: Car
+
+
 class Cars(SchemaBase):
     data: List[Car]
 
