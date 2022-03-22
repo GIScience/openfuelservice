@@ -2,7 +2,7 @@ from typing import List
 
 from pydantic import BaseModel
 
-from app.schemas.schema_base import SchemaBase
+from app.schemas.schema_base import ReturnSchemaBase
 
 
 class Category(BaseModel):
@@ -15,5 +15,5 @@ class Category(BaseModel):
         orm_mode = True
 
 
-class Categories(SchemaBase):
+class Categories(ReturnSchemaBase):
     data: List[Category]

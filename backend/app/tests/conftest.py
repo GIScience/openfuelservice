@@ -1,6 +1,7 @@
 import json
 import logging
 import pathlib
+import random
 from typing import AsyncGenerator, Dict, Generator, List, Tuple
 
 import pytest
@@ -37,6 +38,7 @@ from app.models import (
 from app.tests.utils.envirocar import (
     create_mock_phenomenon_co2,
     create_mock_phenomenon_consumption,
+    create_mock_phenomenon_engine_load,
     create_mock_phenomenon_speed,
     create_random_sensor,
     create_random_sensor_statistic,
@@ -227,7 +229,7 @@ def alembic_runner(
         yield runner
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 def random_sensor_gasoline_1(db: Session) -> Generator[EnvirocarSensor, None, None]:
     sensor: EnvirocarSensor = create_random_sensor(
         db=db, unique_id=654321, fueltype="gasoline"
@@ -236,7 +238,7 @@ def random_sensor_gasoline_1(db: Session) -> Generator[EnvirocarSensor, None, No
     crud.envirocar_sensor.remove(db=db, id=sensor.id)
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 def random_sensor_gasoline_2(db: Session) -> Generator[EnvirocarSensor, None, None]:
     sensor: EnvirocarSensor = create_random_sensor(
         db=db, unique_id=1234567, fueltype="gasoline"
@@ -245,7 +247,7 @@ def random_sensor_gasoline_2(db: Session) -> Generator[EnvirocarSensor, None, No
     crud.envirocar_sensor.remove(db=db, id=sensor.id)
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 def random_sensor_diesel_1(db: Session) -> Generator[EnvirocarSensor, None, None]:
     sensor: EnvirocarSensor = create_random_sensor(
         db=db, unique_id=6666666, fueltype="diesel"
@@ -254,7 +256,7 @@ def random_sensor_diesel_1(db: Session) -> Generator[EnvirocarSensor, None, None
     crud.envirocar_sensor.remove(db=db, id=sensor.id)
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 def random_track_1(db: Session) -> Generator[EnvirocarTrack, None, None]:
     sensor: EnvirocarSensor = create_random_sensor(db=db)
     track: EnvirocarTrack = create_random_track(db=db, sensor=sensor)
@@ -263,7 +265,7 @@ def random_track_1(db: Session) -> Generator[EnvirocarTrack, None, None]:
     crud.envirocar_sensor.remove(db=db, id=sensor.id)
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 def random_track_measurement_1(
     db: Session,
 ) -> Generator[EnvirocarTrackMeasurement, None, None]:
@@ -543,10 +545,11 @@ def mock_all_matched_fast(
     db.commit()
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="module")
 def mock_all_envirocar_sensors(
     db: Session,
-    mock_wikipedia_objects: Tuple[List[WikiCarCategory], List[WikiCar]],
+    # mock_wikipedia_objects: Tuple[List[WikiCarCategory], List[WikiCar]], # Can be left commented until matches
+    # are needed for carfueldata
     mock_all_responses: responses.RequestsMock,
 ) -> Generator[Dict, None, None]:
     envirocar_reader: EnvirocarReader = EnvirocarReader(
@@ -559,14 +562,14 @@ def mock_all_envirocar_sensors(
     # Import the data
     for index, db_objects in envirocar_reader.objects_ordered.items():
         BaseImporter(db=db).import_data(db_objects=db_objects)
-    yield envirocar_reader.objects_ordered
+    yield envirocar_reader.objects_ordered[1]
     for index, db_objects in reversed(envirocar_reader.objects_ordered.items()):
         for db_object in db_objects:
             db.delete(db_object)
         db.commit()
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 def mock_envirocar_speed_phenomenon(
     db: Session,
 ) -> Generator[EnvirocarPhenomenon, None, None]:
@@ -575,7 +578,7 @@ def mock_envirocar_speed_phenomenon(
     crud.envirocar_phenomenon.remove(db=db, id=speed_mock.id)
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 def mock_envirocar_co2_phenomenon(
     db: Session,
 ) -> Generator[EnvirocarPhenomenon, None, None]:
@@ -584,7 +587,7 @@ def mock_envirocar_co2_phenomenon(
     crud.envirocar_phenomenon.remove(db=db, id=co2_mock.id)
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 def mock_envirocar_consumption_phenomenon(
     db: Session,
 ) -> Generator[EnvirocarPhenomenon, None, None]:
@@ -593,7 +596,16 @@ def mock_envirocar_consumption_phenomenon(
     crud.envirocar_phenomenon.remove(db=db, id=consumption_mock.id)
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
+def mock_envirocar_engine_load_phenomenon(
+    db: Session,
+) -> Generator[EnvirocarPhenomenon, None, None]:
+    engine_load_mock: EnvirocarPhenomenon = create_mock_phenomenon_engine_load(db=db)
+    yield engine_load_mock
+    crud.envirocar_phenomenon.remove(db=db, id=engine_load_mock.id)
+
+
+@pytest.fixture(scope="module")
 def mock_sensor_statistics_gasoline_co2_1(
     db: Session,
     random_sensor_gasoline_1: EnvirocarSensor,
@@ -608,7 +620,7 @@ def mock_sensor_statistics_gasoline_co2_1(
     )
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 def mock_sensor_statistics_gasoline_co2_2(
     db: Session,
     random_sensor_gasoline_2: EnvirocarSensor,
@@ -623,7 +635,7 @@ def mock_sensor_statistics_gasoline_co2_2(
     )
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 def mock_sensor_statistics_diesel_co2_1(
     db: Session,
     random_sensor_diesel_1: EnvirocarSensor,
@@ -638,7 +650,7 @@ def mock_sensor_statistics_diesel_co2_1(
     )
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 def mock_sensor_statistics_gasoline_speed_1(
     db: Session,
     random_sensor_gasoline_1: EnvirocarSensor,
@@ -655,7 +667,7 @@ def mock_sensor_statistics_gasoline_speed_1(
     )
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 def mock_sensor_statistics_gasoline_speed_2(
     db: Session,
     random_sensor_gasoline_2: EnvirocarSensor,
@@ -672,7 +684,7 @@ def mock_sensor_statistics_gasoline_speed_2(
     )
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 def mock_sensor_statistics_diesel_speed_1(
     db: Session,
     random_sensor_diesel_1: EnvirocarSensor,
@@ -687,7 +699,7 @@ def mock_sensor_statistics_diesel_speed_1(
     )
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 def mock_sensor_statistics_gasoline_consumption_1(
     db: Session,
     random_sensor_gasoline_1: EnvirocarSensor,
@@ -704,7 +716,7 @@ def mock_sensor_statistics_gasoline_consumption_1(
     )
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 def mock_sensor_statistics_gasoline_consumption_2(
     db: Session,
     random_sensor_gasoline_2: EnvirocarSensor,
@@ -721,7 +733,7 @@ def mock_sensor_statistics_gasoline_consumption_2(
     )
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 def mock_sensor_statistics_diesel_consumption_1(
     db: Session,
     random_sensor_diesel_1: EnvirocarSensor,
@@ -738,6 +750,215 @@ def mock_sensor_statistics_diesel_consumption_1(
     )
 
 
+@pytest.fixture(scope="module")
+def mock_envirocar_sensors_with_statistics_only(
+    db: Session,
+    mock_envirocar_speed_phenomenon: EnvirocarPhenomenon,
+    mock_envirocar_co2_phenomenon: EnvirocarPhenomenon,
+    mock_envirocar_consumption_phenomenon: EnvirocarPhenomenon,
+    mock_envirocar_engine_load_phenomenon: EnvirocarPhenomenon,
+) -> Generator[List[EnvirocarSensor], None, None]:
+    sensors: List[EnvirocarSensor] = []
+    statistics: List[EnvirocarSensorStatistic] = []
+
+    sensor1 = create_random_sensor(
+        db=db,
+        unique_id=random.randint(0, 999999),
+        sensor_type="car",
+        sensor_model="Golf V Plus 1.6",
+        manufacturer="VW",
+        fueltype="gasoline",
+        constructionyear=2006,
+        enginedisplacement=1595,
+    )
+
+    sensor2 = create_random_sensor(
+        db=db,
+        unique_id=random.randint(0, 999999),
+        sensor_type="car",
+        sensor_model="Corsa",
+        manufacturer="OPEL",
+        fueltype="diesel",
+        constructionyear=2009,
+        enginedisplacement=1398,
+    )
+    sensor3 = create_random_sensor(
+        db=db,
+        unique_id=random.randint(0, 999999),
+        sensor_type="car",
+        sensor_model="Avensis",
+        manufacturer="Toyota",
+        fueltype="gasoline",
+        constructionyear=2011,
+        enginedisplacement=1800,
+    )
+    sensors.extend([sensor1, sensor2, sensor3])
+
+    sensor1_engine_load = create_random_sensor_statistic(
+        db=db,
+        sensor=sensor1,
+        phenomenon=mock_envirocar_engine_load_phenomenon,
+        max=49.8039222301221116140368394553661346435546875,
+        avg=33.3038501649215987754359957762062549591064453125,
+        min=0,
+        measurements=30181,
+        tracks=184,
+        sensors=1,
+        users=2,
+    )
+    sensor1_speed = create_random_sensor_statistic(
+        db=db,
+        sensor=sensor1,
+        phenomenon=mock_envirocar_speed_phenomenon,
+        max=161,
+        avg=67.639957590996147018813644535839557647705078125,
+        min=0,
+        measurements=30183,
+        tracks=184,
+        sensors=1,
+        users=2,
+    )
+    sensor1_consumption = create_random_sensor_statistic(
+        db=db,
+        sensor=sensor1,
+        phenomenon=mock_envirocar_consumption_phenomenon,
+        max=17.104029273399309118985911482013761997222900390625,
+        avg=4.37194840215625912804853214765898883342742919921875,
+        min=0,
+        measurements=30171,
+        tracks=184,
+        sensors=1,
+        users=2,
+    )
+    sensor1_co2 = create_random_sensor_statistic(
+        db=db,
+        sensor=sensor1,
+        phenomenon=mock_envirocar_co2_phenomenon,
+        max=40.194468792488379449423518963158130645751953125,
+        avg=10.2740787450670865155188948847353458404541015625,
+        min=0,
+        measurements=30171,
+        tracks=184,
+        sensors=1,
+        users=2,
+    )
+    statistics.extend(
+        [sensor1_engine_load, sensor1_speed, sensor1_consumption, sensor1_co2]
+    )
+    sensor2_engine_load = create_random_sensor_statistic(
+        db=db,
+        sensor=sensor2,
+        phenomenon=mock_envirocar_engine_load_phenomenon,
+        max=73.71183985681335570916417054831981658935546875,
+        avg=14.8596056754359597817938265507109463214874267578125,
+        min=0,
+        measurements=556,
+        tracks=3,
+        sensors=1,
+        users=1,
+    )
+    sensor2_speed = create_random_sensor_statistic(
+        db=db,
+        sensor=sensor2,
+        phenomenon=mock_envirocar_speed_phenomenon,
+        max=255.0000075995922088623046875,
+        avg=30.254225126296372394563150010071694850921630859375,
+        min=0,
+        measurements=556,
+        tracks=3,
+        sensors=1,
+        users=1,
+    )
+    sensor2_consumption = create_random_sensor_statistic(
+        db=db,
+        sensor=sensor2,
+        phenomenon=mock_envirocar_consumption_phenomenon,
+        max=18.3919219078163536096326424740254878997802734375,
+        avg=2.11468071096669429920211769058369100093841552734375,
+        min=0,
+        measurements=556,
+        tracks=3,
+        sensors=1,
+        users=1,
+    )
+    sensor2_co2 = create_random_sensor_statistic(
+        db=db,
+        sensor=sensor2,
+        phenomenon=mock_envirocar_co2_phenomenon,
+        max=43.221016483368430272093974053859710693359375,
+        avg=4.96949967077173138108037164784036576747894287109375,
+        min=0,
+        measurements=556,
+        tracks=3,
+        sensors=1,
+        users=1,
+    )
+    statistics.extend(
+        [sensor2_engine_load, sensor2_speed, sensor2_consumption, sensor2_co2]
+    )
+
+    sensor3_engine_load = create_random_sensor_statistic(
+        db=db,
+        sensor=sensor3,
+        phenomenon=mock_envirocar_engine_load_phenomenon,
+        max=100.00000298023223876953125,
+        avg=63.98008355519086620688540278933942317962646484375,
+        min=0,
+        measurements=359162,
+        tracks=1476,
+        sensors=1,
+        users=1,
+    )
+    sensor3_speed = create_random_sensor_statistic(
+        db=db,
+        sensor=sensor3,
+        phenomenon=mock_envirocar_speed_phenomenon,
+        max=172.99999516643583774566650390625,
+        avg=66.621938327232186338733299635350704193115234375,
+        min=0,
+        measurements=359162,
+        tracks=1476,
+        sensors=1,
+        users=1,
+    )
+    sensor3_consumption = create_random_sensor_statistic(
+        db=db,
+        sensor=sensor3,
+        phenomenon=mock_envirocar_consumption_phenomenon,
+        max=25.797251971912313450729925534687936305999755859375,
+        avg=4.58364373856346762892144397483207285404205322265625,
+        min=0.409195294962839961616651862641447223722934722900390625,
+        measurements=359162,
+        tracks=1476,
+        sensors=1,
+        users=1,
+    )
+    sensor3_co2 = create_random_sensor_statistic(
+        db=db,
+        sensor=sensor3,
+        phenomenon=mock_envirocar_co2_phenomenon,
+        max=60.623542133993936431579641066491603851318359375,
+        avg=10.77156278562436142465230659581720829010009765625,
+        min=0.9616089431626739791880709162796847522258758544921875,
+        measurements=359162,
+        tracks=1476,
+        sensors=1,
+        users=1,
+    )
+    statistics.extend(
+        [sensor3_engine_load, sensor3_speed, sensor3_consumption, sensor3_co2]
+    )
+
+    yield [sensor1, sensor2, sensor3]
+
+    for statistics_db_object in statistics:
+        db.delete(statistics_db_object)
+    db.commit()
+    for sensor_db_object in sensors:
+        db.delete(sensor_db_object)
+    db.commit()
+
+
 @pytest.fixture(scope="function")
 def json_download_mock() -> Generator[responses.RequestsMock, None, None]:
     with responses.RequestsMock() as rsps:
@@ -752,3 +973,12 @@ def json_download_mock() -> Generator[responses.RequestsMock, None, None]:
         )
         yield rsps
         rsps.reset()
+
+
+@pytest.fixture(scope="session")
+def openrouteservice_example_response() -> Generator[Dict, None, None]:
+    with open(
+        settings.OPENROUTESERVICE_EXAMPLE_REQUEST_HEIDELBERG, encoding="utf-8"
+    ) as f:
+        geometry = json.load(f)
+    yield geometry

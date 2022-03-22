@@ -5,8 +5,8 @@ from fastapi import HTTPException
 from pydantic import BaseModel, Field, validator
 from shapely.geometry import LineString, shape
 
-from app.db.importer.mappings import FuelMappings
-from app.schemas.schema_base import SchemaBase
+from app.schemas import ORSFeatureCollection
+from app.schemas.schema_base import ReturnSchemaBase
 
 
 class DrivingStyles(str, Enum):
@@ -20,7 +20,7 @@ class DataSource(str, Enum):
 
 
 class FuelCalculationResults(BaseModel):
-    fuel_type: FuelMappings
+    fuel_type: str
     fuel_liter_total: float
     fuel_liter_per_100km: float
     co2_gram_total: float
@@ -38,12 +38,27 @@ class FuelCalculationResults(BaseModel):
             return 0.0
         return round(v, 3)
 
+    def __add__(self, other: Any) -> Any:
+        if self.fuel_type != other.fuel_type:
+            raise ValueError("FuelCalculationResults need the same fuel type.")
+        if not isinstance(other, FuelCalculationResults):
+            raise TypeError(
+                "Addition can only happen between FuelCalculationResults with the same fuel types."
+            )
+        self.fuel_liter_total += other.fuel_liter_total
+        self.fuel_liter_per_100km = (
+            self.fuel_liter_per_100km + other.fuel_liter_per_100km
+        ) / 2
+        self.co2_gram_total += other.co2_gram_total
+        self.co2_gram_per_km = (other.co2_gram_per_km + self.co2_gram_per_km) / 2
+        return self
 
-class FuelRequestCars(BaseModel):
+
+class GeojsonFuelRequestCars(BaseModel):
     car_ids: List[str] = Field(
         None, example=["a1234"], description="Provide with valid car IDs."
     )
-    geojson: Dict = Field(
+    geometry: Dict = Field(
         ...,
         example={
             "coordinates": [
@@ -65,7 +80,7 @@ class FuelRequestCars(BaseModel):
         arbitrary_types_allowed = True
         orm_mode = True
 
-    @validator("geojson", pre=True, always=True, allow_reuse=True)
+    @validator("geometry", pre=True, always=True, allow_reuse=True)
     def geom_parser(cls, v: Any) -> Union[Any, None]:
         try:
             geometry = shape(v)
@@ -80,5 +95,32 @@ class FuelRequestCars(BaseModel):
         return v
 
 
-class FuelResponse(SchemaBase):
-    pass
+class OpenrouteserviceFuelRequest(GeojsonFuelRequestCars):
+    @validator("geometry", pre=True, always=True, allow_reuse=True)
+    def geom_parser(cls, v: Any) -> Union[Any, None]:
+        try:
+            geometry = ORSFeatureCollection.parse_obj(v)
+        except Exception:
+            geometry = None
+        if not geometry:
+            raise HTTPException(
+                status_code=422, detail="Openrouteservice response couldn't be parsed."
+            )
+        elif not isinstance(geometry, ORSFeatureCollection):
+            raise HTTPException(
+                status_code=400,
+                detail="Unknown error while parsing Openrouteservice response.",
+            )
+        return v
+
+
+class FuelResponse(BaseModel):
+    co2_gram_per_km: float
+    co2_gram_total: float
+    fuel_liter_per_100km: float
+    fuel_liter_total: float
+    fuel_type: str
+
+
+class FuelResponseEncapsulated(ReturnSchemaBase):
+    data: FuelCalculationResults

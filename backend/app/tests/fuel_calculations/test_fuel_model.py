@@ -26,7 +26,7 @@ from app.schemas.fuel import FuelCalculationResults
 def test_fuel_model_one_sensor(
     kmh: float,
     km: float,
-    fuel_type: str,
+    fuel_type: FuelMappings,
     fuel_liter_total: float,
     fuel_liter_per_100km: float,
     co2_gram_total: float,
@@ -54,7 +54,7 @@ def test_fuel_model_one_sensor(
     assert test._speed_statistics[0] == mock_sensor_statistics_gasoline_speed_1
 
     result: FuelCalculationResults = test.calculate_fuel(kmh, km)
-    assert result.fuel_type == fuel_type
+    assert result.fuel_type == fuel_type.name  # type: ignore
     assert result.fuel_liter_total == fuel_liter_total
     assert result.fuel_liter_per_100km == fuel_liter_per_100km
     assert result.co2_gram_total == co2_gram_total

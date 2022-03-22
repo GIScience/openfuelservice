@@ -12,11 +12,9 @@ class EnvirocarFuelCalculator(BaseFuelCalculator):
         Keyword Args:
             db: Session,
             envirocar_car_ids: List[str],
-            geometry: Union[LineString,ORSFeatureCollection],
             tank_size: Union[int, None] = None,
             driving_style: DrivingStyles = DrivingStyles.moderate,
             manual_fuel_consumption: Union[float, None] = None,
-            request_id: Union[str, None] = None,
         """
         # Get the cfd car by id. include the car details into the super call.
         super().__init__(**kwargs)

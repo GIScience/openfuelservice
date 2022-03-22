@@ -3,5 +3,5 @@ from typing import List
 from pydantic import BaseModel
 
 
-class SchemaBase(BaseModel):
+class ReturnSchemaBase(BaseModel):
     messages: List = []

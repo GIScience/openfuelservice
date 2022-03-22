@@ -135,44 +135,63 @@ def create_mock_phenomenon_speed(db: Session) -> EnvirocarPhenomenon:
     return speed_item
 
 
+def create_mock_phenomenon_engine_load(db: Session) -> EnvirocarPhenomenon:
+    engine_load_phenomenon: PhenomenonCreate = PhenomenonCreate(
+        name="Engine Load", unit="%"
+    )
+    engine_load_item = crud.envirocar_phenomenon.create(
+        db=db, obj_in=engine_load_phenomenon
+    )
+    return engine_load_item
+
+
 def create_random_sensor_statistic(
-    db: Session, sensor: EnvirocarSensor, phenomenon: EnvirocarPhenomenon
+    db: Session,
+    sensor: EnvirocarSensor,
+    phenomenon: EnvirocarPhenomenon,
+    max: float = None,
+    avg: float = None,
+    min: float = None,
+    measurements: int = None,
+    tracks: int = None,
+    users: int = None,
+    sensors: int = None,
 ) -> EnvirocarSensorStatistic:
     if phenomenon.name == "Speed":
         statistic: EnvirocarSensorStatisticCreate = EnvirocarSensorStatisticCreate(
             id=sensor.id,
             name=phenomenon.name,
-            max=172.99999516643584,
-            avg=66.62193832723219,
-            min=0.0,
-            measurements=1,
-            tracks=1,
-            users=1,
-            sensors=1,
+            max=172.99999516643584 if max is None else max,
+            avg=66.62193832723219 if avg is None else avg,
+            min=0.0 if min is None else min,
+            measurements=1 if measurements is None else measurements,
+            tracks=1 if tracks is None else tracks,
+            users=1 if users is None else users,
+            sensors=1 if sensors is None else sensors,
         )
     elif phenomenon.name == "CO2":
         statistic = EnvirocarSensorStatisticCreate(
             id=sensor.id,
             name=phenomenon.name,
-            max=60.623542133993936,
-            avg=10.771562785624361,
-            min=0.961608943162674,
-            measurements=1,
-            tracks=1,
-            users=1,
-            sensors=1,
+            max=60.623542133993936 if max is None else max,
+            avg=10.771562785624361 if avg is None else avg,
+            min=0.961608943162674 if min is None else min,
+            measurements=1 if measurements is None else measurements,
+            tracks=1 if tracks is None else tracks,
+            users=1 if users is None else users,
+            sensors=1 if sensors is None else sensors,
         )
     else:
         statistic = EnvirocarSensorStatisticCreate(
             id=sensor.id,
             name=phenomenon.name,
-            max=25.797251971912313,
-            avg=4.583643738563468,
-            min=0.40919529496283996,
-            measurements=1,
-            tracks=1,
-            users=1,
-            sensors=1,
+            max=25.797251971912313 if max is None else max,
+            avg=4.583643738563468 if avg is None else avg,
+            min=0.40919529496283996 if min is None else min,
+            measurements=1 if measurements is None else measurements,
+            tracks=1 if tracks is None else tracks,
+            users=1 if users is None else users,
+            sensors=1 if sensors is None else sensors,
         )
     statistic_item = crud.envirocar_sensor_statistic.create(db=db, obj_in=statistic)
     return statistic_item

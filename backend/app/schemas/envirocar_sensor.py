@@ -1,7 +1,9 @@
 from pydantic import BaseModel
 
-
 # Shared properties
+from app.schemas.schema_base import ReturnSchemaBase
+
+
 class SensorBase(BaseModel):
     id: str
     type: str
@@ -10,6 +12,9 @@ class SensorBase(BaseModel):
     fueltype: str
     constructionyear: int
     enginedisplacement: int
+
+    class Config:
+        orm_mode = True
 
 
 # Properties to receive on Sensor creation
@@ -37,8 +42,11 @@ class SensorInDBBase(SensorBase):
 
 
 # Properties to return to client
-class Sensor(SensorInDBBase):
-    pass
+class SensorResponse(ReturnSchemaBase):
+    data: SensorBase
+
+    class Config:
+        orm_mode = True
 
 
 # Properties properties stored in DB

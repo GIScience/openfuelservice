@@ -44,7 +44,7 @@ class ORSSummary(BaseModel):
 class ORSProperty(BaseModel):
     ascent: float
     descent: float
-    segments: List
+    segments: List[ORSSegment]
     extras: Optional[Dict]
     summary: Dict
     way_points: List[int]
@@ -79,3 +79,17 @@ class ORSFeatureCollection(BaseModel):
 
     class Config:
         orm_mode = True
+
+    def get_all_semgents(self) -> List[ORSSegment]:
+        segments: List[ORSSegment] = []
+        for feature in self.features:
+            segments.extend(feature.properties.segments)
+        return segments
+
+    def get_all_steps(self) -> List[ORSStep]:
+        segments: List[ORSSegment] = self.get_all_semgents()
+        steps: List[ORSStep] = []
+        segment: ORSSegment
+        for segment in segments:
+            steps.extend(segment.steps)
+        return steps

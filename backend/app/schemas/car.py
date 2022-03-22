@@ -3,7 +3,7 @@ from typing import Dict, List
 from pydantic import BaseModel
 
 # Properties to return to client
-from app.schemas.schema_base import SchemaBase
+from app.schemas.schema_base import ReturnSchemaBase
 
 
 class Car(BaseModel):
@@ -18,13 +18,13 @@ class Car(BaseModel):
         orm_mode = True
 
 
-class CarResponse(SchemaBase):
+class CarResponse(ReturnSchemaBase):
     data: Car
 
 
-class Cars(SchemaBase):
+class Cars(ReturnSchemaBase):
     data: List[Car]
 
 
-class CarsSorted(SchemaBase):
+class CarsSorted(ReturnSchemaBase):
     data: Dict

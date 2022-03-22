@@ -146,7 +146,7 @@ class FuelModel:
     ) -> FuelCalculationResults:
         if kmh <= 0 or length_in_meter <= 0:
             return FuelCalculationResults(
-                fuel_type=self._fuel_type,
+                fuel_type=self._fuel_type.name,  # type: ignore
                 fuel_liter_total=0,
                 fuel_liter_per_100km=0,
                 co2_gram_total=0,
@@ -170,7 +170,7 @@ class FuelModel:
         result_consumption_liter_total: float = length_in_km * consumption_liter_per_km
         result_co2_gram_total: float = co2_gram_per_km * length_in_km
         return FuelCalculationResults(
-            fuel_type=self._fuel_type,
+            fuel_type=self._fuel_type.name,  # type: ignore
             fuel_liter_total=result_consumption_liter_total,
             fuel_liter_per_100km=consumption_liter_per_km * 100,
             co2_gram_total=result_co2_gram_total,

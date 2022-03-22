@@ -47,6 +47,7 @@ pyproj = "^3.3.0"
 geopy = "^2.2.0"
 pydantic-sqlalchemy = "^0.0.9"
 pydantic = "^1.9.0"
+scipy = "^1.8.0"
 
 [tool.poetry.dev-dependencies]
 mypy = "^0.931"
@@ -68,6 +69,7 @@ httpx = "^0.22.0"
 trio = "^0.19.0"
 docker = "^5.0.3"
 poetryup = "^0.5.4"
+pytest-lazy-fixture = "^0.6.3"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

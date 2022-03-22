@@ -2,15 +2,15 @@ from typing import Dict
 
 import pytest
 from pydantic import ValidationError
+from pytest_lazyfixture import lazy_fixture
 
-from app.core.config import settings
 from app.schemas.geometry_objects import ORSFeatureCollection
 
 
 @pytest.mark.parametrize(
     "geometry,expect_to_fail",
     (
-        (settings.OPENROUTESERVICE_EXAMPLE_REQUEST_HEIDELBERG, False),
+        (lazy_fixture("openrouteservice_example_response"), False),
         ({}, True),
         ("", True),
         (None, True),

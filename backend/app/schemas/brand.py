@@ -1,6 +1,6 @@
-from app.schemas.schema_base import SchemaBase
+from app.schemas.schema_base import ReturnSchemaBase
 
 
 # Properties to return to client
-class Brands(SchemaBase):
+class Brands(ReturnSchemaBase):
     data: list

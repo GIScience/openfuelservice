@@ -212,23 +212,15 @@ class Settings(BaseSettings):
     USER_AGENT_FROM = "julian.psotta@heigit.org"
     GLOBAL_HEADERS = {"User-Agent": USER_AGENT, "From": USER_AGENT_FROM}
 
+    # openrouteservice data
+    OPENROUTESERVICE_EXAMPLE_REQUEST_HEIDELBERG: str = (
+        f"{FILE_FOLDER}/openrouteservice"
+        f"/openrouteservice_example_request_heidelberg.json"
+    )
+
     # Matching Settings
     UNCOMPRESSED_MATCHING_DATA: str = f"{FILE_FOLDER}/matching/models/"
     COMPRESSED_MATCHING_DATA: str = f"{FILE_FOLDER}/matching/models.tar.xz"
-
-    # openrouteservice data
-    OPENROUTESERVICE_EXAMPLE_REQUEST_HEIDELBERG: Dict = {}
-
-    @validator("OPENROUTESERVICE_EXAMPLE_REQUEST_HEIDELBERG", pre=True)
-    def get_openrouteservice_example_request(
-        cls, v: Optional[str], values: Dict[str, Any]
-    ) -> Dict:
-        return json.load(
-            open(
-                f"{values['FILE_FOLDER']}/openrouteservice/openrouteservice_example_request_heidelberg.json",
-                encoding="utf-8",
-            )
-        )
 
     @validator("COMPRESSED_MATCHING_DATA", pre=True)
     def uncompress_matching_data(cls, v: str, values: Dict[str, Any]) -> str:
