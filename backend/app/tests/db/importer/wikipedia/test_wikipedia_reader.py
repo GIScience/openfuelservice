@@ -2,6 +2,7 @@ from typing import Generator, List, Union
 
 import pytest
 import responses
+from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.db.importer.wikipedia.wikipedia_reader import WikipediaReader
@@ -42,8 +43,9 @@ page_ids: List = [
 ]
 
 
-def test_get_category_data(
-    mock_all_responses: Generator[responses.RequestsMock, None, None]
+@pytest.mark.asyncio
+async def test_get_category_data(
+    db: Session, mock_all_responses: Generator[responses.RequestsMock, None, None]
 ) -> None:
     test_car_category = {
         "car_categories": {
@@ -61,7 +63,7 @@ def test_get_category_data(
         }
     }
     wikipedia_reader: WikipediaReader = WikipediaReader(
-        file_or_url=None, threads=None, categories=test_car_category
+        db=db, file_or_url=None, threads=None, categories=test_car_category
     )
     category_objects: List = wikipedia_reader.get_category_data(
         categories=wikipedia_reader._raw_car_categories
@@ -80,8 +82,9 @@ def test_get_category_data(
     assert category_object.category_wiki_names == category_names
 
 
-def test_get_category_car_data(
-    mock_all_responses: Generator[responses.RequestsMock, None, None]
+@pytest.mark.asyncio
+async def test_get_category_car_data(
+    db: Session, mock_all_responses: Generator[responses.RequestsMock, None, None]
 ) -> None:
     test_car_category = {
         "car_categories": {
@@ -99,7 +102,7 @@ def test_get_category_car_data(
         }
     }
     wikipedia_reader: WikipediaReader = WikipediaReader(
-        file_or_url=None, threads=None, categories=test_car_category
+        db=db, file_or_url=None, threads=None, categories=test_car_category
     )
     category_objects: List[WikiCarCategory] = wikipedia_reader.get_category_data(
         categories=wikipedia_reader._raw_car_categories
@@ -135,9 +138,12 @@ def test_get_category_car_data(
         (None, None),
     ),
 )
-def test__process_category_member(test_string: str, expected_result: str) -> None:
+@pytest.mark.asyncio
+async def test__process_category_member(
+    db: Session, test_string: str, expected_result: str
+) -> None:
     wikipedia_reader: WikipediaReader = WikipediaReader(
-        file_or_url=None, threads=None, categories={}
+        db=db, file_or_url=None, threads=None, categories={}
     )
     wiki_car: Union[WikiCar, None] = wikipedia_reader._process_category_member(
         member_name=test_string
@@ -152,9 +158,12 @@ def test__process_category_member(test_string: str, expected_result: str) -> Non
 @pytest.mark.parametrize(
     "test_string", [s for s in settings.CAR_BRANDS["ignore_list"]][::100]
 )
-def test__process_category_member_ignore_list(test_string: str) -> None:
+@pytest.mark.asyncio
+async def test__process_category_member_ignore_list(
+    db: Session, test_string: str
+) -> None:
     wikipedia_reader: WikipediaReader = WikipediaReader(
-        file_or_url=None, threads=None, categories={}
+        db=db, file_or_url=None, threads=None, categories={}
     )
     wiki_car: Union[WikiCar, None] = wikipedia_reader._process_category_member(
         member_name=test_string
@@ -165,9 +174,12 @@ def test__process_category_member_ignore_list(test_string: str) -> None:
 @pytest.mark.parametrize(
     "test_string", [s for s in settings.CAR_BRANDS["brands"]][::100]
 )
-def test__process_category_member_brands_list(test_string: str) -> None:
+@pytest.mark.asyncio
+async def test__process_category_member_brands_list(
+    db: Session, test_string: str
+) -> None:
     wikipedia_reader: WikipediaReader = WikipediaReader(
-        file_or_url=None, threads=None, categories={}
+        db=db, file_or_url=None, threads=None, categories={}
     )
     wiki_car: Union[WikiCar, None] = wikipedia_reader._process_category_member(
         member_name=test_string + " Foobar"
@@ -180,9 +192,12 @@ def test__process_category_member_brands_list(test_string: str) -> None:
 @pytest.mark.parametrize(
     "test_string", [s for s in settings.CAR_BRANDS["vehicles"]][::5]
 )
-def test__process_category_member_vehicles_list(test_string: str) -> None:
+@pytest.mark.asyncio
+async def test__process_category_member_vehicles_list(
+    db: Session, test_string: str
+) -> None:
     wikipedia_reader: WikipediaReader = WikipediaReader(
-        file_or_url=None, threads=None, categories={}
+        db=db, file_or_url=None, threads=None, categories={}
     )
     wiki_car: Union[WikiCar, None] = wikipedia_reader._process_category_member(
         member_name=test_string
@@ -192,8 +207,9 @@ def test__process_category_member_vehicles_list(test_string: str) -> None:
     assert wiki_car.brand_name
 
 
-def test_fetch_and_process_data(
-    mock_all_responses: Generator[responses.RequestsMock, None, None]
+@pytest.mark.asyncio
+async def test_fetch_and_process_data(
+    db: Session, mock_all_responses: Generator[responses.RequestsMock, None, None]
 ) -> None:
     test_car_category = {
         "car_categories": {
@@ -211,19 +227,19 @@ def test_fetch_and_process_data(
         }
     }
     wikipedia_reader: WikipediaReader = WikipediaReader(
-        file_or_url=None, threads=None, categories=test_car_category
+        db=db, file_or_url=None, threads=None, categories=test_car_category
     )
-    wikipedia_reader.fetch_and_process_data()
+    await wikipedia_reader.fetch_process_and_import_data(import_data=False)
     # Check sensors and track_ids response
     assert len(wikipedia_reader.objects_ordered) == 2
     assert (
         sum([len(objects) for objects in wikipedia_reader.objects_ordered.values()])
         == 9
     )
-    assert len(wikipedia_reader.objects_ordered[0]) == 1
-    assert len(wikipedia_reader.objects_ordered[1]) == 8
-    assert isinstance(wikipedia_reader.objects_ordered[0][0], WikiCarCategory)
-    wiki_category: WikiCarCategory = wikipedia_reader.objects_ordered[0][0]
+    assert len(wikipedia_reader.categories) == 1
+    assert len(wikipedia_reader.wiki_cars) == 8
+    assert isinstance(wikipedia_reader.categories[0], WikiCarCategory)
+    wiki_category: WikiCarCategory = wikipedia_reader.categories[0]
     assert wiki_category.category_wiki_names == [
         "Kategorie:Kleinstwagen",
         "Kategorie:Leichtfahrzeug",
@@ -235,7 +251,7 @@ def test_fetch_and_process_data(
     assert wiki_category.id == wiki_category.category_short_eu
 
     wiki_car: WikiCar
-    for wiki_car in wikipedia_reader.objects_ordered[1]:
+    for wiki_car in wikipedia_reader.wiki_cars:
         assert isinstance(wiki_car, WikiCar)
         assert wiki_car.brand_name in brands
         assert wiki_car.car_name in car_names

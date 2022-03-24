@@ -1,17 +1,20 @@
+import asyncio
 import json
 import logging
 import pathlib
 import random
+from asyncio import AbstractEventLoop
 from typing import AsyncGenerator, Dict, Generator, List, Tuple
 
 import pytest
 import pytest_alembic
+import pytest_asyncio
 import responses
 import sqlalchemy
 from fastapi.testclient import TestClient
 from httpx import AsyncClient
 from pytest_alembic.runner import MigrationContext
-from sqlalchemy import exc
+from sqlalchemy import exc, inspect
 from sqlalchemy.engine.base import Engine
 from sqlalchemy.orm import Session
 
@@ -19,9 +22,7 @@ from alembic.config import Config
 from app import crud, schemas
 from app.core.config import settings
 from app.db.base_class import Base
-from app.db.importer.base_importer import BaseImporter
 from app.db.importer.carfueldata.carfueldata_reader import CarFuelDataReader
-from app.db.importer.envirocar.envirocar_reader import EnvirocarReader
 from app.db.importer.wikipedia.wikipedia_reader import WikipediaReader
 from app.db.session import SessionLocal, engine
 from app.main import app
@@ -44,7 +45,6 @@ from app.tests.utils.envirocar import (
     create_random_sensor_statistic,
     create_random_track,
     create_random_track_measurement,
-    create_sensors_by_cfd,
 )
 from app.tests.utils.user import authentication_token_from_email
 from app.tests.utils.utils import (
@@ -127,6 +127,13 @@ def client() -> Generator[TestClient, None, None]:
 async def async_client() -> AsyncGenerator[AsyncClient, None]:
     async with AsyncClient(app=app, base_url="http://testserver") as c:
         yield c
+
+
+@pytest.fixture(scope="session")
+def event_loop() -> AbstractEventLoop:
+    # Fixes a bug in asyncio. For details see:
+    # https://stackoverflow.com/questions/63713575/pytest-issues-with-a-session-scoped-fixture-and-asyncio
+    return asyncio.get_event_loop()
 
 
 @pytest.fixture(scope="session")
@@ -224,12 +231,12 @@ def alembic_runner(
     This fixture allows authoring custom tests which are specific to your particular
     migration history.
     """
-    config = pytest_alembic.config.Config.from_raw_config(alembic_config)
+    config = pytest_alembic.config.Config.from_raw_config(alembic_config)  # type: ignore
     with pytest_alembic.runner(config=config, engine=alembic_engine) as runner:
         yield runner
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="class")
 def random_sensor_gasoline_1(db: Session) -> Generator[EnvirocarSensor, None, None]:
     sensor: EnvirocarSensor = create_random_sensor(
         db=db, unique_id=654321, fueltype="gasoline"
@@ -238,7 +245,7 @@ def random_sensor_gasoline_1(db: Session) -> Generator[EnvirocarSensor, None, No
     crud.envirocar_sensor.remove(db=db, id=sensor.id)
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="class")
 def random_sensor_gasoline_2(db: Session) -> Generator[EnvirocarSensor, None, None]:
     sensor: EnvirocarSensor = create_random_sensor(
         db=db, unique_id=1234567, fueltype="gasoline"
@@ -247,7 +254,7 @@ def random_sensor_gasoline_2(db: Session) -> Generator[EnvirocarSensor, None, No
     crud.envirocar_sensor.remove(db=db, id=sensor.id)
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="class")
 def random_sensor_diesel_1(db: Session) -> Generator[EnvirocarSensor, None, None]:
     sensor: EnvirocarSensor = create_random_sensor(
         db=db, unique_id=6666666, fueltype="diesel"
@@ -256,7 +263,7 @@ def random_sensor_diesel_1(db: Session) -> Generator[EnvirocarSensor, None, None
     crud.envirocar_sensor.remove(db=db, id=sensor.id)
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="class")
 def random_track_1(db: Session) -> Generator[EnvirocarTrack, None, None]:
     sensor: EnvirocarSensor = create_random_sensor(db=db)
     track: EnvirocarTrack = create_random_track(db=db, sensor=sensor)
@@ -265,7 +272,7 @@ def random_track_1(db: Session) -> Generator[EnvirocarTrack, None, None]:
     crud.envirocar_sensor.remove(db=db, id=sensor.id)
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="class")
 def random_track_measurement_1(
     db: Session,
 ) -> Generator[EnvirocarTrackMeasurement, None, None]:
@@ -470,14 +477,12 @@ def mock_all_responses() -> Generator[responses.RequestsMock, None, None]:
         rsps.reset()
 
 
-@pytest.fixture(scope="session")
-def mock_cfd_cars(db: Session) -> Generator[List[CarFuelDataCar], None, None]:
+@pytest_asyncio.fixture(scope="session")
+async def mock_cfd_cars(db: Session) -> AsyncGenerator[List[CarFuelDataCar], None]:
     cfd_reader_test: CarFuelDataReader = CarFuelDataReader(
-        settings.CARFUELDATA_TEST_PATH_OR_URL
+        db=db, file_to_read=settings.CARFUELDATA_TEST_PATH_OR_URL
     )
-    cfd_reader_test.fetch_and_process_data()
-    BaseImporter(db=db).import_data(db_objects=cfd_reader_test.objects_list)
-
+    await cfd_reader_test.fetch_process_and_import_data(import_data=True)
     yield cfd_reader_test.objects_list
 
     for db_object in cfd_reader_test.objects_list:
@@ -487,10 +492,10 @@ def mock_cfd_cars(db: Session) -> Generator[List[CarFuelDataCar], None, None]:
     db.commit()
 
 
-@pytest.fixture(scope="module")
-def mock_wikipedia_objects(
+@pytest_asyncio.fixture(scope="session")
+async def mock_wikipedia_objects(
     db: Session, mock_all_responses: Generator[responses.RequestsMock, None, None]
-) -> Generator[Tuple[List[WikiCarCategory], List[WikiCar]], None, None]:
+) -> AsyncGenerator[Tuple[List[WikiCarCategory], List[WikiCar]], None]:
     test_car_category = {
         "car_categories": {
             "a": {
@@ -507,69 +512,31 @@ def mock_wikipedia_objects(
         }
     }
     wikipedia_reader: WikipediaReader = WikipediaReader(
-        file_or_url=None, threads=None, categories=test_car_category
+        db=db, file_or_url=None, threads=None, categories=test_car_category
     )
-    wikipedia_reader.fetch_and_process_data()
-    for index, db_objects in wikipedia_reader.objects_ordered.items():
-        BaseImporter(db=db).import_data(db_objects=db_objects)
-    yield wikipedia_reader.objects_ordered[0], wikipedia_reader.objects_ordered[1]
+    await wikipedia_reader.fetch_process_and_import_data(import_data=True)
+    yield wikipedia_reader.categories, wikipedia_reader.wiki_cars
 
+    db.commit()
     wikicar: WikiCar
-    for wikicar in wikipedia_reader.objects_ordered[1]:
-        db.delete(wikicar)
+    for wikicar in wikipedia_reader.wiki_cars:
+        insp = inspect(wikicar)
+        if not insp.expired and wikicar.id is not None:
+            db.delete(wikicar)
+        else:
+            pass
     db.commit()
     wikicar_category: WikiCarCategory
-    for wikicar_category in wikipedia_reader.objects_ordered[0]:
-        db.delete(wikicar_category)
+    for wikicar_category in wikipedia_reader.categories:
+        insp = inspect(wikicar_category)
+        if not insp.expired and wikicar_category.id is not None:
+            db.delete(wikicar_category)
+        else:
+            pass
     db.commit()
 
 
-@pytest.fixture(scope="function")
-def mock_all_matched_fast(
-    db: Session, mock_cfd_cars: Generator[List[CarFuelDataCar], None, None]
-) -> Generator[
-    Tuple[List[EnvirocarSensor], Generator[List[CarFuelDataCar], None, None]],
-    None,
-    None,
-]:
-    db.query(EnvirocarSensor).delete()
-    db.commit()
-
-    mock_cfd_car: CarFuelDataCar
-    envirocar_sensors: List[EnvirocarSensor] = create_sensors_by_cfd(db=db, cfd_cars=mock_cfd_cars)  # type: ignore
-    # TODO wikicarenvirocar matches hier erstellen. maybe just take the two mock sensors with driving stats.
-    yield envirocar_sensors, mock_cfd_cars
-
-    for db_object in envirocar_sensors:
-        db.delete(db_object)
-    db.commit()
-
-
-@pytest.fixture(scope="module")
-def mock_all_envirocar_sensors(
-    db: Session,
-    # mock_wikipedia_objects: Tuple[List[WikiCarCategory], List[WikiCar]], # Can be left commented until matches
-    # are needed for carfueldata
-    mock_all_responses: responses.RequestsMock,
-) -> Generator[Dict, None, None]:
-    envirocar_reader: EnvirocarReader = EnvirocarReader(
-        file_or_url=None,
-        envirocar_base_url="https://envirocar.org/api/stable",
-        threads=None,
-        db=db,
-    )
-    envirocar_reader.fetch_and_process_data()
-    # Import the data
-    for index, db_objects in envirocar_reader.objects_ordered.items():
-        BaseImporter(db=db).import_data(db_objects=db_objects)
-    yield envirocar_reader.objects_ordered[1]
-    for index, db_objects in reversed(envirocar_reader.objects_ordered.items()):
-        for db_object in db_objects:
-            db.delete(db_object)
-        db.commit()
-
-
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="class")
 def mock_envirocar_speed_phenomenon(
     db: Session,
 ) -> Generator[EnvirocarPhenomenon, None, None]:
@@ -578,7 +545,7 @@ def mock_envirocar_speed_phenomenon(
     crud.envirocar_phenomenon.remove(db=db, id=speed_mock.id)
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="class")
 def mock_envirocar_co2_phenomenon(
     db: Session,
 ) -> Generator[EnvirocarPhenomenon, None, None]:
@@ -587,7 +554,7 @@ def mock_envirocar_co2_phenomenon(
     crud.envirocar_phenomenon.remove(db=db, id=co2_mock.id)
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="class")
 def mock_envirocar_consumption_phenomenon(
     db: Session,
 ) -> Generator[EnvirocarPhenomenon, None, None]:
@@ -596,7 +563,7 @@ def mock_envirocar_consumption_phenomenon(
     crud.envirocar_phenomenon.remove(db=db, id=consumption_mock.id)
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="class")
 def mock_envirocar_engine_load_phenomenon(
     db: Session,
 ) -> Generator[EnvirocarPhenomenon, None, None]:
@@ -605,7 +572,7 @@ def mock_envirocar_engine_load_phenomenon(
     crud.envirocar_phenomenon.remove(db=db, id=engine_load_mock.id)
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="class")
 def mock_sensor_statistics_gasoline_co2_1(
     db: Session,
     random_sensor_gasoline_1: EnvirocarSensor,
@@ -620,7 +587,7 @@ def mock_sensor_statistics_gasoline_co2_1(
     )
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="class")
 def mock_sensor_statistics_gasoline_co2_2(
     db: Session,
     random_sensor_gasoline_2: EnvirocarSensor,
@@ -635,7 +602,7 @@ def mock_sensor_statistics_gasoline_co2_2(
     )
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="class")
 def mock_sensor_statistics_diesel_co2_1(
     db: Session,
     random_sensor_diesel_1: EnvirocarSensor,
@@ -650,7 +617,7 @@ def mock_sensor_statistics_diesel_co2_1(
     )
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="class")
 def mock_sensor_statistics_gasoline_speed_1(
     db: Session,
     random_sensor_gasoline_1: EnvirocarSensor,
@@ -667,7 +634,7 @@ def mock_sensor_statistics_gasoline_speed_1(
     )
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="class")
 def mock_sensor_statistics_gasoline_speed_2(
     db: Session,
     random_sensor_gasoline_2: EnvirocarSensor,
@@ -684,7 +651,7 @@ def mock_sensor_statistics_gasoline_speed_2(
     )
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="class")
 def mock_sensor_statistics_diesel_speed_1(
     db: Session,
     random_sensor_diesel_1: EnvirocarSensor,
@@ -699,7 +666,7 @@ def mock_sensor_statistics_diesel_speed_1(
     )
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="class")
 def mock_sensor_statistics_gasoline_consumption_1(
     db: Session,
     random_sensor_gasoline_1: EnvirocarSensor,
@@ -716,10 +683,10 @@ def mock_sensor_statistics_gasoline_consumption_1(
     )
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="class")
 def mock_sensor_statistics_gasoline_consumption_2(
     db: Session,
-    random_sensor_gasoline_2: EnvirocarSensor,
+    random_sensor_gasoline_2: EnvirocarSensor,  #
     mock_envirocar_consumption_phenomenon: EnvirocarPhenomenon,
 ) -> Generator[EnvirocarSensorStatistic, None, None]:
     statistic_mock: EnvirocarSensorStatistic = create_random_sensor_statistic(
@@ -733,7 +700,7 @@ def mock_sensor_statistics_gasoline_consumption_2(
     )
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="class")
 def mock_sensor_statistics_diesel_consumption_1(
     db: Session,
     random_sensor_diesel_1: EnvirocarSensor,
@@ -750,7 +717,7 @@ def mock_sensor_statistics_diesel_consumption_1(
     )
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="class")
 def mock_envirocar_sensors_with_statistics_only(
     db: Session,
     mock_envirocar_speed_phenomenon: EnvirocarPhenomenon,

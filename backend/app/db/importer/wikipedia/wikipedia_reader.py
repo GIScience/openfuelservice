@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import Dict, List, Union
 
 import wikipediaapi
+from sqlalchemy.orm import Session
 from tqdm import tqdm
 
 from app.core.config import settings
@@ -23,11 +24,12 @@ logger = logging.getLogger(__name__)
 class WikipediaReader(BaseReader):
     def __init__(
         self,
+        db: Session,
         categories: Dict,
         file_or_url: Union[str, Path, None],
         threads: Union[int, None] = None,
     ):
-        super().__init__(file_or_url)
+        super().__init__(db=db, file_or_url=file_or_url)
         self._headers = settings.GLOBAL_HEADERS
         self._threads = threads
         self._threaded_requests = ThreadedRequests()
@@ -128,13 +130,27 @@ class WikipediaReader(BaseReader):
         logger.debug(f"Missing brand for car: {member_name}")
         return None
 
-    def _process_data(self, data_file: Union[Path, None]) -> None:
-        category_db_objects: List[WikiCarCategory] = self.get_category_data(
-            categories=self._raw_car_categories
-        )
-        self.objects_ordered[0] = category_db_objects
+    @property
+    def categories(self) -> List[WikiCarCategory]:
+        if self.objects_ordered is None or 0 not in self.objects_ordered:
+            return []
+        return self.objects_ordered[0]
 
-        wiki_category_cars: List[WikiCar] = self.get_category_car_data(
-            category_db_objects=category_db_objects
-        )
-        self.objects_ordered[1] = wiki_category_cars
+    @categories.setter
+    def categories(self, categories: List[WikiCarCategory]) -> None:
+        self.objects_ordered[0] = categories
+
+    @property
+    def wiki_cars(self) -> List[WikiCar]:
+        if self.objects_ordered is None or 1 not in self.objects_ordered:
+            return []
+        return self.objects_ordered[1]
+
+    @wiki_cars.setter
+    def wiki_cars(self, wiki_cars: List[WikiCar]) -> None:
+        self.objects_ordered[1] = wiki_cars
+
+    async def _process_data(self, data_file: Union[Path, None]) -> None:
+        self.categories = self.get_category_data(categories=self._raw_car_categories)
+
+        self.wiki_cars = self.get_category_car_data(category_db_objects=self.categories)

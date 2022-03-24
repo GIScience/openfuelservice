@@ -6,7 +6,7 @@ import time
 import urllib.parse
 from decimal import Decimal
 from pathlib import Path
-from typing import Any, Coroutine, Dict, List, Optional, Set, Tuple, Union
+from typing import Any, Dict, List, Optional, Set, Tuple, Union
 from urllib.parse import parse_qs, urlparse
 
 import geojson
@@ -41,7 +41,7 @@ class EnvirocarReader(BaseReader):
         envirocar_base_url: str = "https://envirocar.org/api/stable",
         threads: Union[int, None] = None,
     ):
-        super().__init__(file_or_url)
+        super().__init__(db=db, file_or_url=file_or_url)
         self.phenomenons_url = f"{envirocar_base_url}/phenomenons"
         self.sensors_url = f"{envirocar_base_url}/sensors"
         self.tracks_url = f"{envirocar_base_url}/tracks"
@@ -124,7 +124,7 @@ class EnvirocarReader(BaseReader):
             return self.objects_ordered.get(1)
         return None
 
-    def get_phenomenons(self) -> List:
+    def fetch_phenomenons(self) -> List:
         phenomenons: List = []
         start_time = time.time()
         try:
@@ -179,7 +179,7 @@ class EnvirocarReader(BaseReader):
             )
         return sensors
 
-    def get_track_ids_and_sensors(
+    def fetch_track_ids_and_sensors(
         self,
     ) -> Tuple[List[EnvirocarSensor], List[EnvirocarTrack], List[int]]:
         logger.info("Get track ids and sensors.")
@@ -226,7 +226,7 @@ class EnvirocarReader(BaseReader):
         )
         return sensors_return, tracks_return, list(track_ids)
 
-    def get_sensor_statistics(
+    def fetch_sensor_statistics(
         self, sensor_ids: List[str]
     ) -> List[EnvirocarSensorStatistic]:
         sensors_statistics: List = []
@@ -383,26 +383,100 @@ class EnvirocarReader(BaseReader):
             pbar.update()
         return matches
 
-    def _process_data(self, data_file: Union[Path, None]) -> None:
-        phenomenons: List = self.get_phenomenons()
+    @property
+    def phenomenons(self) -> List[EnvirocarPhenomenon]:
+        if not self.objects_ordered or 0 not in self.objects_ordered:
+            return []
+        return self.objects_ordered[0]
+
+    @phenomenons.setter
+    def phenomenons(self, phenomenons: List[EnvirocarPhenomenon]) -> None:
         self.objects_ordered[0] = phenomenons
-        sensors, tracks, track_ids = self.get_track_ids_and_sensors()
+
+    @property
+    def sensors(self) -> List[EnvirocarSensor]:
+        if not self.objects_ordered or 1 not in self.objects_ordered:
+            return []
+        return self.objects_ordered[1]
+
+    @sensors.setter
+    def sensors(self, sensors: List[EnvirocarSensor]) -> None:
         self.objects_ordered[1] = sensors
+
+    @property
+    def tracks(self) -> List[EnvirocarTrack]:
+        if not self.objects_ordered or 2 not in self.objects_ordered:
+            return []
+        return self.objects_ordered[2]
+
+    @tracks.setter
+    def tracks(self, tracks: List[EnvirocarTrack]) -> None:
         self.objects_ordered[2] = tracks
+
+    @property
+    def track_measurements(self) -> List[EnvirocarTrackMeasurement]:
+        if not self.objects_ordered or 3 not in self.objects_ordered:
+            return []
+        return self.objects_ordered[3]
+
+    @track_measurements.setter
+    def track_measurements(
+        self, track_measurements: List[EnvirocarTrackMeasurement]
+    ) -> None:
+        self.objects_ordered[3] = track_measurements
+
+    @property
+    def track_measurements_phenomenons(
+        self,
+    ) -> List[EnvirocarTrackMeasurementPhenomenon]:
+        if not self.objects_ordered or 4 not in self.objects_ordered:
+            return []
+        return self.objects_ordered[4]
+
+    @track_measurements_phenomenons.setter
+    def track_measurements_phenomenons(
+        self, track_measurements_phenomenons: List[EnvirocarTrackMeasurementPhenomenon]
+    ) -> None:
+        self.objects_ordered[4] = track_measurements_phenomenons
+
+    @property
+    def wikicar_envirocar_matches(self) -> List[WikicarEnvirocar]:
+        if not self.objects_ordered or 5 not in self.objects_ordered:
+            return []
+        return self.objects_ordered[5]
+
+    @wikicar_envirocar_matches.setter
+    def wikicar_envirocar_matches(
+        self, wikicar_envirocar_matches: List[WikicarEnvirocar]
+    ) -> None:
+        self.objects_ordered[5] = wikicar_envirocar_matches
+
+    @property
+    def sensor_statistics(self) -> List[EnvirocarSensorStatistic]:
+        if not self.objects_ordered or 6 not in self.objects_ordered:
+            return []
+        return self.objects_ordered[6]
+
+    @sensor_statistics.setter
+    def sensor_statistics(
+        self, sensor_statistics: List[EnvirocarSensorStatistic]
+    ) -> None:
+        self.objects_ordered[6] = sensor_statistics
+
+    async def _process_data(self, data_file: Union[Path, None]) -> None:
+        self.phenomenons = self.fetch_phenomenons()
+        sensors, tracks, track_ids = self.fetch_track_ids_and_sensors()
+        self.sensors = sensors
+        self.tracks = tracks
         (
             track_measurements,
             track_measurements_phenomenons,
         ) = self.fetch_track_measurements_and_phenomenons(track_ids=track_ids)
-        self.objects_ordered[3] = track_measurements
-        self.objects_ordered[4] = track_measurements_phenomenons
-        loop = asyncio.get_event_loop()
-        coro: Coroutine[
-            Any, Any, List[WikicarEnvirocar]
-        ] = self.match_sensors_to_wikicar(sensors, accuracy=0.2)
-        wikicar_envirocar_matches: List[WikicarEnvirocar] = loop.run_until_complete(
-            coro
+        self.track_measurements = track_measurements
+        self.track_measurements_phenomenons = track_measurements_phenomenons
+        self.wikicar_envirocar_matches = await self.match_sensors_to_wikicar(
+            sensors, accuracy=0.2
         )
-        self.objects_ordered[5] = wikicar_envirocar_matches
-        self.objects_ordered[6] = self.get_sensor_statistics(
+        self.sensor_statistics = self.fetch_sensor_statistics(
             [sensor.id for sensor in sensors]
         )

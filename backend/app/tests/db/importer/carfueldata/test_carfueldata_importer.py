@@ -1,22 +1,22 @@
 from typing import List
 
+import pytest
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
-from app.db.importer.base_importer import BaseImporter
 from app.db.importer.carfueldata.carfueldata_reader import CarFuelDataReader
 from app.models import CarFuelDataCar
 
 
-def test_cfd_importer(db: Session) -> None:
+@pytest.mark.asyncio
+async def test_cfd_importer(db: Session) -> None:
     # Clean the database
     db.query(CarFuelDataCar).delete()
     db.commit()
     cfd_reader_test: CarFuelDataReader = CarFuelDataReader(
-        settings.CARFUELDATA_TEST_PATH_OR_URL
+        db=db, file_to_read=settings.CARFUELDATA_TEST_PATH_OR_URL
     )
-    cfd_reader_test.fetch_and_process_data()
-    BaseImporter(db=db).import_data(db_objects=cfd_reader_test.objects_list)
+    await cfd_reader_test.fetch_process_and_import_data(import_data=True)
     car: CarFuelDataCar
     unique_ids: List = list(
         set([car.id for car in cfd_reader_test.objects_list if car.id is not None])

@@ -27,7 +27,8 @@ track_ids = [
 ]
 
 
-def test_get_track_measurements_and_phenomenons(
+@pytest.mark.asyncio
+async def test_get_track_measurements_and_phenomenons(
     db: Session,
     mock_all_responses: responses.RequestsMock,
 ) -> None:
@@ -81,7 +82,8 @@ def test_get_track_measurements_and_phenomenons(
         )
 
 
-def test_get_track_ids_and_sensors(
+@pytest.mark.asyncio
+async def test_get_track_ids_and_sensors(
     db: Session,
     mock_all_responses: responses.RequestsMock,
 ) -> None:
@@ -94,7 +96,7 @@ def test_get_track_ids_and_sensors(
         tracks_response = json.load(f)
         number_of_tracks: int = len(tracks_response["tracks"])
 
-    sensors, tracks, tracks_ids = envirocar_reader.get_track_ids_and_sensors()
+    sensors, tracks, tracks_ids = envirocar_reader.fetch_track_ids_and_sensors()
     # Check sensors and track_ids response
     assert len(sensors) == 3
     assert isinstance(sensors[0], EnvirocarSensor)
@@ -131,7 +133,8 @@ def test_get_track_ids_and_sensors(
     assert sensor.type == "car"
 
 
-def test_get_phenomenons(
+@pytest.mark.asyncio
+async def test_get_phenomenons(
     db: Session, mock_all_responses: responses.RequestsMock
 ) -> None:
     envirocar_reader: EnvirocarReader = EnvirocarReader(
@@ -140,7 +143,7 @@ def test_get_phenomenons(
         threads=None,
     )
 
-    phenomenons = envirocar_reader.get_phenomenons()
+    phenomenons = envirocar_reader.fetch_phenomenons()
     # Check sensors and track_ids response
     assert len(phenomenons) == 32
     for phenomenon in phenomenons:
@@ -149,7 +152,10 @@ def test_get_phenomenons(
         assert phenomenon.unit
 
 
-def test_get_sensors(db: Session, mock_all_responses: responses.RequestsMock) -> None:
+@pytest.mark.asyncio
+async def test_get_sensors(
+    db: Session, mock_all_responses: responses.RequestsMock
+) -> None:
     envirocar_reader: EnvirocarReader = EnvirocarReader(
         db=db,
         file_or_url=Path(""),
@@ -171,15 +177,16 @@ def test_get_sensors(db: Session, mock_all_responses: responses.RequestsMock) ->
         assert sensor.type
 
 
-def test_get_sensor_statistics(db: Session) -> None:
+@pytest.mark.asyncio
+async def test_get_sensor_statistics(db: Session) -> None:
     envirocar_reader: EnvirocarReader = EnvirocarReader(
         db=db,
         file_or_url=Path(""),
         threads=None,
     )
-    sensors, tracks, track_ids = envirocar_reader.get_track_ids_and_sensors()
+    sensors, tracks, track_ids = envirocar_reader.fetch_track_ids_and_sensors()
     sensor_ids: List = [sensor.id for sensor in sensors]
-    sensors_statistics = envirocar_reader.get_sensor_statistics(sensor_ids)
+    sensors_statistics = envirocar_reader.fetch_sensor_statistics(sensor_ids)
     assert len(sensors_statistics) == 59
     sensor_statistic: EnvirocarSensorStatistic
     for sensor_statistic in sensors_statistics:
@@ -206,7 +213,7 @@ async def test_match_sensors_to_wikicar(
         threads=None,
     )
     # TODO remove all sensors except one a wikicar is available for.#
-    sensors, tracks, track_ids = envirocar_reader.get_track_ids_and_sensors()
+    sensors, tracks, track_ids = envirocar_reader.fetch_track_ids_and_sensors()
     # Check sensors and track_ids response
     assert len(sensors)
     matched_sensors = await envirocar_reader.match_sensors_to_wikicar(
@@ -215,7 +222,8 @@ async def test_match_sensors_to_wikicar(
     assert len(matched_sensors) == 2
 
 
-def test_fetch_and_process_data(
+@pytest.mark.asyncio
+async def test_fetch_and_process_data(
     db: Session,
     mock_wikipedia_objects: Tuple[List[WikiCarCategory], List[WikiCar]],
     mock_all_responses: responses.RequestsMock,
@@ -225,21 +233,35 @@ def test_fetch_and_process_data(
         file_or_url=None,
         threads=None,
     )
-    envirocar_reader.fetch_and_process_data()
+    await envirocar_reader.fetch_process_and_import_data(import_data=False)
     # Check sensors and track_ids response
-    assert len(envirocar_reader.objects_ordered) == 7
+    assert len(envirocar_reader.phenomenons) > 0
+    for phenomenons_object in envirocar_reader.phenomenons:
+        assert type(phenomenons_object) == EnvirocarPhenomenon
+    assert len(envirocar_reader.sensors) > 0
+    for sensors_object in envirocar_reader.sensors:
+        assert type(sensors_object) == EnvirocarSensor
+    assert len(envirocar_reader.sensor_statistics) > 0
+    for sensor_statistics_object in envirocar_reader.sensor_statistics:
+        assert type(sensor_statistics_object) == EnvirocarSensorStatistic
+    assert len(envirocar_reader.tracks) > 0
+    for tracks_object in envirocar_reader.tracks:
+        assert type(tracks_object) == EnvirocarTrack
+    assert len(envirocar_reader.track_measurements) > 0
+    for track_measurements_object in envirocar_reader.track_measurements:
+        assert type(track_measurements_object) == EnvirocarTrackMeasurement
+    assert len(envirocar_reader.track_measurements_phenomenons) > 0
+    for (
+        track_measurements_phenomenons_object
+    ) in envirocar_reader.track_measurements_phenomenons:
+        assert (
+            type(track_measurements_phenomenons_object)
+            == EnvirocarTrackMeasurementPhenomenon
+        )
+    assert len(envirocar_reader.wikicar_envirocar_matches) > 0
+    for wikicar_envirocar_matches_object in envirocar_reader.wikicar_envirocar_matches:
+        assert type(wikicar_envirocar_matches_object) == WikicarEnvirocar
     assert (
         sum([len(objects) for objects in envirocar_reader.objects_ordered.values()])
         == 1312
     )
-    for i in range(0, len(envirocar_reader.objects_ordered)):
-        for envirocar_object in envirocar_reader.objects_ordered[i]:
-            assert type(envirocar_object) in [
-                EnvirocarPhenomenon,
-                EnvirocarTrack,
-                EnvirocarSensor,
-                EnvirocarSensorStatistic,
-                EnvirocarTrackMeasurementPhenomenon,
-                EnvirocarTrackMeasurement,
-                WikicarEnvirocar,
-            ]

@@ -19,10 +19,9 @@ logger = logging.getLogger(__name__)
 
 class EurostatFuelReader(BaseReader):
     def __init__(self, file_to_read: Union[str, Path], db: Session):
-        super().__init__(file_to_read)
+        super().__init__(db=db, file_or_url=file_to_read)
         self._objects_list_ordered: Dict = {}
-        self._db = db
-        self.name = "EurostatFuelReader"
+        self.name: str = "EurostatFuelReader"
 
     @staticmethod
     def _convert_string_prices_to_float(string_value: Any) -> Union[float, None]:
@@ -341,7 +340,7 @@ class EurostatFuelReader(BaseReader):
                     date_value
                 ] = eurostat_price_object
 
-    def _process_data(self, data_file: Union[Path, None]) -> None:
+    async def _process_data(self, data_file: Union[Path, None]) -> None:
         if not data_file:
             return
         files: list = file_management.unzip_download(

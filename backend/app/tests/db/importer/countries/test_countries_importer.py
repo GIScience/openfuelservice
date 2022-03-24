@@ -1,24 +1,23 @@
 from typing import Dict, List
 
+import pytest
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
-from app.db.importer.base_importer import BaseImporter
 from app.db.importer.countries.countries_reader import CountryCodesReader
 from app.models import CountryData
 
 
-def test_countries_importer(db: Session) -> None:
+@pytest.mark.asyncio
+async def test_countries_importer(db: Session) -> None:
     # Clean the database
-    db.query(CountryData).delete()
-    db.commit()
 
     country_codes_reader: CountryCodesReader = CountryCodesReader(
-        settings.COUNTRY_CODES_TEST_PATH
+        db=db,
+        file_to_read=settings.COUNTRY_CODES_TEST_PATH,
+        country_geometry_file=settings.COUNTRY_BOUNDARIES_TEST_PATH,
     )
-    country_codes_reader.fetch_and_process_data()
-    country_codes_reader.enrich_with_geometries(settings.COUNTRY_BOUNDARIES_TEST_PATH)
-    BaseImporter(db=db).import_data(db_objects=country_codes_reader.objects_list)
+    await country_codes_reader.fetch_process_and_import_data(import_data=True)
     country: CountryData
     unique_ids: List = list(
         set([country.country_alpha_2 for country in country_codes_reader.objects_list])
@@ -31,5 +30,6 @@ def test_countries_importer(db: Session) -> None:
     for source_country in unique_ids_db:
         assert source_country[0] in unique_ids
 
-    db.query(CountryData).delete()
+    for db_object in country_codes_reader.objects_list:
+        db.delete(db_object)
     db.commit()

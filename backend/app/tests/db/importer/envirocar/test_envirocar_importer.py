@@ -1,9 +1,9 @@
 from typing import List, Tuple
 
+import pytest
 import responses
 from sqlalchemy.orm import Session
 
-from app.db.importer.base_importer import BaseImporter
 from app.db.importer.envirocar.envirocar_reader import EnvirocarReader
 from app.models import (
     EnvirocarPhenomenon,
@@ -18,104 +18,83 @@ from app.models import (
 )
 
 
-def test_envirocar_importer(
+@pytest.mark.asyncio
+async def test_envirocar_importer(
     db: Session,
     mock_wikipedia_objects: Tuple[List[WikiCarCategory], List[WikiCar]],
     mock_all_responses: responses.RequestsMock,
 ) -> None:
-    # Clean the database
-    db.query(EnvirocarSensor).delete()
-    db.query(EnvirocarPhenomenon).delete()
-    db.commit()
-
-    unique_ids_phenomenons = []
-    unique_ids_sensors = []
-    unique_ids_sensor_statistics = []
-    unique_ids_tracks = []
-    unique_ids_track_measurements = []
-    unique_ids_track_measurements_phenomenons = []
-    unique_ids_wikicar_envirocar = []
-
     envirocar_reader: EnvirocarReader = EnvirocarReader(
         db=db,
         file_or_url=None,
         envirocar_base_url="https://envirocar.org/api/stable",
         threads=None,
     )
-    envirocar_reader.fetch_and_process_data()
-    for index, object_collection in envirocar_reader.objects_ordered.items():
-        BaseImporter(db=db).import_data(db_objects=object_collection)
-        if index == 0:
-            unique_ids_phenomenons = list(
-                set(
-                    [
-                        phenomenon.name
-                        for phenomenon in object_collection
-                        if type(phenomenon) == EnvirocarPhenomenon
-                    ]
-                )
-            )
-        if index == 1:
-            unique_ids_sensors = list(
-                set(
-                    [
-                        sensor.id
-                        for sensor in object_collection
-                        if type(sensor) == EnvirocarSensor
-                    ]
-                )
-            )
-        elif index == 2:
-            unique_ids_tracks = list(
-                set(
-                    [
-                        track.id
-                        for track in object_collection
-                        if type(track) == EnvirocarTrack
-                    ]
-                )
-            )
-        elif index == 3:
-            unique_ids_track_measurements = list(
-                set(
-                    [
-                        track.id
-                        for track in object_collection
-                        if type(track) == EnvirocarTrackMeasurement
-                    ]
-                )
-            )
-        elif index == 4:
-            unique_ids_track_measurements_phenomenons = list(
-                set(
-                    [
-                        tuple([track.id, track.name])
-                        for track in object_collection
-                        if type(track) == EnvirocarTrackMeasurementPhenomenon
-                    ]
-                )
-            )
-        elif index == 5:
-            unique_ids_wikicar_envirocar = list(
-                set(
-                    [
-                        tuple([match.envirocar_sensor_id, match.wikicar_id])
-                        for match in object_collection
-                        if type(match) == WikicarEnvirocar
-                    ]
-                )
-            )
-        elif index == 6:
-            sensor_statistic: EnvirocarSensorStatistic
-            unique_ids_sensor_statistics = list(
-                set(
-                    [
-                        sensor_statistic.id
-                        for sensor_statistic in object_collection
-                        if type(sensor_statistic) == EnvirocarSensorStatistic
-                    ]
-                )
-            )
+    await envirocar_reader.fetch_process_and_import_data(import_data=True)
+    unique_ids_phenomenons = list(
+        set(
+            [
+                phenomenon.name
+                for phenomenon in envirocar_reader.phenomenons
+                if type(phenomenon) == EnvirocarPhenomenon
+            ]
+        )
+    )
+    unique_ids_sensors = list(
+        set(
+            [
+                sensor.id
+                for sensor in envirocar_reader.sensors
+                if type(sensor) == EnvirocarSensor
+            ]
+        )
+    )
+    unique_ids_tracks = list(
+        set(
+            [
+                track.id
+                for track in envirocar_reader.tracks
+                if type(track) == EnvirocarTrack
+            ]
+        )
+    )
+    unique_ids_track_measurements = list(
+        set(
+            [
+                track.id
+                for track in envirocar_reader.track_measurements
+                if type(track) == EnvirocarTrackMeasurement
+            ]
+        )
+    )
+    unique_ids_track_measurements_phenomenons = list(
+        set(
+            [
+                tuple([track.id, track.name])
+                for track in envirocar_reader.track_measurements_phenomenons
+                if type(track) == EnvirocarTrackMeasurementPhenomenon
+            ]
+        )
+    )
+    unique_ids_wikicar_envirocar = list(
+        set(
+            [
+                tuple([match.envirocar_sensor_id, match.wikicar_id])
+                for match in envirocar_reader.wikicar_envirocar_matches
+                if type(match) == WikicarEnvirocar
+            ]
+        )
+    )
+    sensor_statistic: EnvirocarSensorStatistic
+    unique_ids_sensor_statistics = list(
+        set(
+            [
+                sensor_statistic.id
+                for sensor_statistic in envirocar_reader.sensor_statistics
+                if type(sensor_statistic) == EnvirocarSensorStatistic
+            ]
+        )
+    )
     phenomenons_in_db: List = EnvirocarPhenomenon.get_all_by_filter(
         db=db, filter_ids=unique_ids_phenomenons, id_only=True
     )
@@ -153,8 +132,18 @@ def test_envirocar_importer(
     )
     assert len(unique_ids_wikicar_envirocar) == len(wikicar_envirocars_in_db)
     assert len(unique_ids_sensor_statistics) == len(sensor_statistics_in_db)
-    db.query(EnvirocarSensor).delete()
-    db.query(EnvirocarPhenomenon).delete()
+
+    for sensor_object in envirocar_reader.sensors:
+        try:
+            db.delete(sensor_object)
+        except Exception:
+            pass
+    db.commit()
+    for phenomenon_object in envirocar_reader.phenomenons:
+        try:
+            db.delete(phenomenon_object)
+        except Exception:
+            pass
     db.commit()
 
     assert len(db.query(WikicarEnvirocar).all()) <= 0

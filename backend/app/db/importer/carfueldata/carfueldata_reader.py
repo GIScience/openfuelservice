@@ -3,6 +3,8 @@ import logging
 from pathlib import Path
 from typing import Dict, List, Union
 
+from sqlalchemy.orm import Session
+
 from app.db.importer.base_reader import BaseReader
 from app.db.importer.mappings import CarFuelDataHeaderMapping
 from app.misc import file_management
@@ -13,11 +15,11 @@ logger = logging.getLogger(__name__)
 
 
 class CarFuelDataReader(BaseReader):
-    def __init__(self, file_to_read: Union[str, Path]) -> None:
-        super().__init__(file_to_read)
+    def __init__(self, db: Session, file_to_read: Union[str, Path]) -> None:
+        super().__init__(db=db, file_or_url=file_to_read)
         self.name = "CarFuelDataReader"
 
-    def _process_data(self, data_file: Union[Path, None]) -> None:
+    async def _process_data(self, data_file: Union[Path, None]) -> None:
         if not data_file:
             logger.warning(
                 "Carfueldata Reader _process_data called with invalid data_file."

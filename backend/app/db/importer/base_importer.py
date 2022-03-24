@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 class BaseImporter:
     def __init__(self, db: Session):
-        self.db: Session = db
+        self._db: Session = db
         self._int_hashes: Dict = {}
         self._object_collection: List = []
 
@@ -27,6 +27,10 @@ class BaseImporter:
             if issubclass(type(database_object), Base):
                 self._object_collection.append(database_object)
         self._fallback_importer()
+
+    def import_data_ordered(self, db_objects_ordered: Dict[int, List[Base]]) -> None:
+        for index, object_collection in db_objects_ordered.items():
+            self.import_data(db_objects=object_collection)
 
     def _fallback_importer(self, merge_on_duplicate: bool = True) -> None:
         """
@@ -47,26 +51,26 @@ class BaseImporter:
             else:
                 self._object_collection.pop(i)
         try:
-            self.db.add_all(self._object_collection)
-            self.db.commit()
+            self._db.add_all(self._object_collection)
+            self._db.commit()
         except exc.IntegrityError as err:
             logger.warning(f"Integrity error with message: {err}")
-            self.db.rollback()
+            self._db.rollback()
             for i in range(len(self._object_collection) - 1, -1, -1):
                 existing_objects: List = self._object_collection[i].get_all_by_filter(
-                    self.db, [self._object_collection[i].id]
+                    self._db, [self._object_collection[i].id]
                 )
                 if merge_on_duplicate and len(existing_objects):
-                    self.db.merge(self._object_collection.pop(i))
+                    self._db.merge(self._object_collection.pop(i))
                 elif len(existing_objects):
                     self._object_collection.pop(i)
             self._fallback_importer(merge_on_duplicate=merge_on_duplicate)
         except TypeError as err:
             logger.warning(f"Type error with message: {err}")
-            self.db.rollback()
+            self._db.rollback()
         except FlushError as err:
             logger.warning(f"Flush error with message: {err}")
-            self.db.rollback()
+            self._db.rollback()
         except Exception as err:
             logger.warning(f"Unknown error with message: {err}")
-            self.db.rollback()
+            self._db.rollback()

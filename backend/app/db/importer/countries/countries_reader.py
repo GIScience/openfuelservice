@@ -8,6 +8,7 @@ from typing import Dict, List, Union
 
 import shapefile
 from shapely.geometry import MultiPolygon, shape
+from sqlalchemy.orm import Session
 
 from app.db.importer.base_reader import BaseReader
 from app.db.importer.mappings import CountriesMapping
@@ -18,18 +19,26 @@ logger = logging.getLogger(__name__)
 
 
 class CountryCodesReader(BaseReader):
-    def __init__(self, file_to_read: Union[str, Path]):
-        super().__init__(file_to_read)
-        self.name = "CountryCodesReader"
+    def __init__(
+        self,
+        db: Session,
+        file_to_read: Union[str, Path],
+        country_geometry_file: Union[Path, str],
+    ):
+        super().__init__(db=db, file_or_url=file_to_read)
+        self.name: str = "CountryCodesReader"
+        self._country_geometry_file = country_geometry_file
 
-    def enrich_with_geometries(self, country_geometry_file: Union[Path, str]) -> None:
-        geometry_file: Union[Path, None] = self._download_data(country_geometry_file)
+    def _enrich_with_geometries(self) -> None:
+        geometry_file: Union[Path, None] = self._download_data(
+            self._country_geometry_file
+        )
         if not geometry_file:
             logger.warning(
-                f"Enrich geometries called with no valid geometry file Path: {country_geometry_file}"
+                f"Enrich geometries called with no valid geometry file Path: {self._country_geometry_file}"
             )
             raise FileNotFoundError(
-                errno.ENOENT, os.strerror(errno.ENOENT), country_geometry_file
+                errno.ENOENT, os.strerror(errno.ENOENT), self._country_geometry_file
             )
         files: List = file_management.unzip_download(
             zip_file_path=geometry_file, destination_folder=self._tempfolder
@@ -55,7 +64,7 @@ class CountryCodesReader(BaseReader):
         )
         if shape_file.shapeType != 5:
             logger.warning(
-                f"Error. The file {country_geometry_file} doesn't contain Polygons"
+                f"Error. The file {self._country_geometry_file} doesn't contain Polygons"
             )
             return
         columns: Dict = {}
@@ -87,7 +96,7 @@ class CountryCodesReader(BaseReader):
                     else:
                         country.geom = shape(geom)
 
-    def _process_data(self, data_file: Union[Path, None]) -> None:
+    async def _process_data(self, data_file: Union[Path, None]) -> None:
         if not data_file:
             logger.warning(
                 "Countries data _process_data function called with invalid data_file."
@@ -119,3 +128,4 @@ class CountryCodesReader(BaseReader):
                     logger.debug(f"Skipping country with not enough information: {row}")
                 else:
                     self.objects_list.append(country_object)
+        self._enrich_with_geometries()
