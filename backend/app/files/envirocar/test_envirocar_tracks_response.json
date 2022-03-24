@@ -1,0 +1,72 @@
+{
+  "tracks": [
+    {
+      "id": "61d543bef4c3e97fbd560705",
+      "length": 1.6433079402813489,
+      "begin": "2021-12-30T17:18:00Z",
+      "end": "2021-12-30T17:21:01Z",
+      "sensor": {
+        "type": "car",
+        "properties": {
+          "engineDisplacement": 1595,
+          "model": "Golf V Plus 1.6",
+          "id": "5fd9d14e05fa792e88dc8b7b",
+          "fuelType": "gasoline",
+          "constructionYear": 2006,
+          "manufacturer": "VW"
+        }
+      }
+    },
+    {
+      "id": "61d543bef4c3e97fbd56072d",
+      "length": 3.203048184310685,
+      "begin": "2021-12-30T16:39:26Z",
+      "end": "2021-12-30T16:44:42Z",
+      "sensor": {
+        "type": "car",
+        "properties": {
+          "engineDisplacement": 1595,
+          "model": "Golf V Plus 1.6",
+          "id": "5fd9d14e05fa792e88dc8b7b",
+          "fuelType": "gasoline",
+          "constructionYear": 2006,
+          "manufacturer": "VW"
+        }
+      }
+    },
+    {
+      "id": "619b972b7b277d59bd6537fc",
+      "length": 8.224940192430457,
+      "begin": "2021-11-16T19:49:31Z",
+      "end": "2021-11-16T20:04:12Z",
+      "sensor": {
+        "type": "car",
+        "properties": {
+          "engineDisplacement": 1398,
+          "model": "Corsa",
+          "id": "616010fb0bd6756ea3a9aea7",
+          "fuelType": "diesel",
+          "constructionYear": 2009,
+          "manufacturer": "OPEL"
+        }
+      }
+    },
+    {
+      "id": "5839944de4b0a979d46b768a",
+      "length": 29.513948772308883,
+      "begin": "2016-11-24T16:19:11Z",
+      "end": "2016-11-24T16:55:51Z",
+      "sensor": {
+        "type": "car",
+        "properties": {
+          "engineDisplacement": 1800,
+          "model": "Avensis",
+          "id": "574e78cbe4b09078f97bbb4a",
+          "fuelType": "gasoline",
+          "constructionYear": 2011,
+          "manufacturer": "Toyota"
+        }
+      }
+    }
+  ]
+}

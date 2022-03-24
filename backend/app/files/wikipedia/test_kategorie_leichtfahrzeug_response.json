@@ -1,0 +1,37 @@
+{
+  "batchcomplete": "",
+  "query": {
+    "categorymembers": [
+      {
+        "pageid": 287047,
+        "ns": 0,
+        "title": "Leichtfahrzeug"
+      },
+      {
+        "pageid": 4459738,
+        "ns": 0,
+        "title": "Aptera 2 Series"
+      },
+      {
+        "pageid": 7066964,
+        "ns": 0,
+        "title": "Nissan Land Glider"
+      },
+      {
+        "pageid": 7566964,
+        "ns": 0,
+        "title": "Nissan NV400"
+      },
+      {
+        "pageid": 776964,
+        "ns": 0,
+        "title": "Fiat 124 Spider (2016)"
+      },
+      {
+        "pageid": 6964,
+        "ns": 0,
+        "title": "Opel Corsa B"
+      }
+    ]
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "batchcomplete": "",
+  "warnings": {
+    "main": {
+      "*": "Subscribe to the mediawiki-api-announce mailing list at <https://lists.wikimedia.org/postorius/lists/mediawiki-api-announce.lists.wikimedia.org/> for notice of API deprecations and breaking changes. Use [[Special:ApiFeatureUsage]] to see usage of deprecated features by your application."
+    },
+    "info": {
+      "*": "The value \"readable\" to parameter \"inprop\" has been deprecated."
+    }
+  },
+  "query": {
+    "pages": {
+      "7953579": {
+        "pageid": 7953579,
+        "ns": 14,
+        "title": "Kategorie:Leichtfahrzeug",
+        "contentmodel": "wikitext",
+        "pagelanguage": "de",
+        "pagelanguagehtmlcode": "de",
+        "pagelanguagedir": "ltr",
+        "touched": "2022-01-17T16:47:52Z",
+        "lastrevid": 218936094,
+        "length": 403,
+        "protection": [],
+        "restrictiontypes": [
+          "edit",
+          "move"
+        ],
+        "notificationtimestamp": "",
+        "fullurl": "https://de.wikipedia.org/wiki/Kategorie:Leichtfahrzeug",
+        "editurl": "https://de.wikipedia.org/w/index.php?title=Kategorie:Leichtfahrzeug&action=edit",
+        "canonicalurl": "https://de.wikipedia.org/wiki/Kategorie:Leichtfahrzeug",
+        "readable": "",
+        "preload": "",
+        "displaytitle": "Kategorie:Leichtfahrzeug"
+      }
+    }
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "batchcomplete": "",
+  "query": {
+    "categorymembers": [
+      {
+        "pageid": 807405,
+        "ns": 0,
+        "title": "Kleinstwagen"
+      },
+      {
+        "pageid": 1077264,
+        "ns": 0,
+        "title": "Kei-Car"
+      },
+      {
+        "pageid": 9459628,
+        "ns": 0,
+        "title": "Abarth 595 Competizione"
+      },
+      {
+        "pageid": 4153628,
+        "ns": 0,
+        "title": "VW Golf Plus"
+      },
+      {
+        "pageid": 9628,
+        "ns": 0,
+        "title": "Citro\u00ebn Berlingo"
+      }
+    ]
+  }
+}

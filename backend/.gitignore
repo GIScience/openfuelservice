@@ -1,0 +1,16 @@
+.vscode
+.mypy_cache
+docker-stack.yml
+.idea/
+.tox
+.venv*
+.env*
+env*
+venv*
+.coverage
+.pytest_cache
+/coverage.xml
+__pycache__
+/files/models/
+/files/backups/
+/app/files/matching/models/

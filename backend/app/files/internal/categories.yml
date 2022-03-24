@@ -1,0 +1,73 @@
+car_categories:
+  a:
+    category_names: ["Kategorie:Kleinstwagen", "Kategorie:Leichtfahrzeug", "Category:Microcars"]
+    de: "Kleinstwagen"
+    en: "mini cars"
+    single_cars: []
+    tank_capacity: 15
+  b:
+    category_names: ["Kategorie:Kleinwagen", "Category:Subcompact_cars"]
+    de: "Kleinwagen"
+    en: "small cars"
+    single_cars: [Daihatsu Sirion]
+    tank_capacity: 45
+  c:
+    category_names: ["Kategorie:Fahrzeug_der_Kompaktklasse", "Category:Compact_cars", "Kategorie:Fahrzeug_der_unteren_Mittelklasse", "Category:Hot_Hatch", "Category:Hatchbacks", "Category:Sport compact cars"]
+    de: "Mittelklasse"
+    en: "medium cars"
+    single_cars: []
+    tank_capacity: 55
+  d:
+    category_names: ["Kategorie:Fahrzeug_der_Mittelklasse", "Category:Mid-size_cars"]
+    de: "Obere Mittelklasse"
+    en: "large cars"
+    single_cars: []
+    tank_capacity: 55
+  e:
+    category_names: ["Kategorie:Fahrzeug_der_oberen_Mittelklasse", "Category:Executive_cars"]
+    de: "Oberklasse"
+    en: "executive cars"
+    single_cars: []
+    tank_capacity: 55
+  f:
+    category_names: ["Kategorie:Fahrzeug_der_Oberklasse", "Category:Luxury_vehicles", "Category:Full-size_vehicles"]
+    de: "Luxusklasse"
+    en: "luxury cars"
+    single_cars: []
+    tank_capacity: 55
+  s:
+    category_names: ["Kategorie:Sportwagen", "Kategorie:Roadster", "Category:Sports_cars", "Category:Abarth_vehicles", "Category:Roadsters"]
+    de: "Sportwagen"
+    en: "sport coupés"
+    single_cars: []
+    tank_capacity: 40
+  m:
+    category_names: ["Kategorie:Van", "Kategorie:Hochdachkombi", "Kategorie:Minivan", "Kategorie:Kastenwagen", "Kategorie:Kleinbus", "Category:Vans", "Category:Minivans", "Category:Compact_MPVs", "Category:Mini_MPVs"]
+    de: "Van"
+    en: "MiniVaN - multi purpose cars"
+    single_cars: ["Mercedes-Benz Vito"]
+    tank_capacity: 80
+  j:
+    category_names: ["Kategorie:Sport_Utility_Vehicle", "Kategorie:Geländewagen", "Category:Off-road_vehicles", "Category:Sport_utility_vehicles"]
+    de: "SUV"
+    en: "SUV"
+    single_cars: []
+    tank_capacity: 100
+  pu:
+    category_names: ["Kategorie:Pick-up", "Category:Pickup_trucks"]
+    de: "Pick-up"
+    en: "Pick-up"
+    single_cars: []
+    tank_capacity: 100
+  lcv:
+    category_names: ["Kategorie:Utilities", "Kategorie:Kleintransporter", "Kategorie:Pritschenwagen", "Category:Trucks"]
+    de: "Nutzfahrzeuge"
+    en: "Utilities"
+    single_cars: []
+    tank_capacity: 80
+  individual:
+    category_names: []
+    de: "Individuell"
+    en: "Individual"
+    single_cars: []
+    tank_capacity: 40

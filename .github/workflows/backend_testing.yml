@@ -1,0 +1,183 @@
+name: Continous Integration
+
+on:
+  pull_request:
+    branches: '**'
+
+jobs:
+  lint:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+      - name: Set up testing Python ${{ matrix.config.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.10'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip tox
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: 1.1.11
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+          installer-parallel: true
+      - name: Run tox lint
+        run: |
+          cd "$PWD/backend/"
+          poetry run tox -e lint
+  docker-testing:
+    needs:
+      - lint
+    runs-on: ubuntu-20.04
+    environment: docker-testing
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2.2.0
+        with:
+          fetch-depth: 0
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+        id: buildx
+        with:
+          install: true
+      - name: Clean the docker-compose environment
+        run: |
+          docker-compose down --volumes --rmi=all --remove-orphans
+      - name: Export .env
+        run: |
+          # Strip empty lines and comments starting with #
+          cat "${GITHUB_WORKSPACE}/backend/debug.env" | sed '/^#/d;/^$/d' >> $GITHUB_ENV
+      - name: Prepare
+        id: prepare
+        run: |
+          DOCKER_BACKEND_IMAGE="$DOCKER_IMAGE_BACKEND"
+          DOCKER_CELERY_IMAGE="$DOCKER_IMAGE_CELERYWORKER"
+          DOCKER_PLATFORMS=linux/amd64
+
+          TAGS_BACKEND_TESTING="--tag ${DOCKER_BACKEND_IMAGE}:latest"
+          TAGS_CELERY_TESTING="--tag ${DOCKER_CELERY_IMAGE}:latest"
+
+          # Build normal backend
+          echo ::set-output name=buildx_args_backend_testing::--platform ${DOCKER_PLATFORMS} \
+                      --build-arg BACKEND_APP_MODULE="$BACKEND_APP_MODULE" \
+                      --build-arg BACKEND_PRE_START_PATH="$BACKEND_PRE_START_PATH" \
+                      --build-arg BACKEND_PROCESS_MANAGER="$BACKEND_PROCESS_MANAGER" \
+                      --build-arg BACKEND_WITH_RELOAD="$BACKEND_WITH_RELOAD" \
+                      --build-arg INSTALL_DEV="$INSTALL_DEV" \
+                      --build-arg INSTALL_JUPYTER="$INSTALL_JUPYTER" \
+                      ${TAGS_BACKEND_TESTING} .
+
+          # Build celery backend
+          echo ::set-output name=buildx_args_celery_testing::--platform ${DOCKER_PLATFORMS} \
+                      --build-arg INSTALL_DEV=$INSTALL_DEV \
+                      --build-arg INSTALL_JUPYTER=$INSTALL_JUPYTER \
+                      ${TAGS_CELERY_TESTING} .
+      - name: Build testing images
+        run: |
+          cd ${GITHUB_WORKSPACE}/backend/
+          docker buildx build --output "type=docker,push=false" ${{ steps.prepare.outputs.buildx_args_backend_testing }}
+          docker buildx build --output "type=docker,push=false" ${{ steps.prepare.outputs.buildx_args_celery_testing }}
+      - name: Build the docker-compose stack
+        env:
+          DOMAIN: localhost
+          INSTALL_DEV: true
+        run: |
+          docker-compose up -d
+      - name: Sleep
+        uses: jakejarvis/wait-action@master
+        with:
+          time: '10s'
+      - name: Check running containers
+        run: docker ps
+      - name: Run test suite natively in the docker container
+        run: |
+          docker ps -a
+          docker exec openfuelservice_backend_1  bash -c "python /app/app/backend_pre_start.py; alembic upgrade head; python /app/app/initial_data.py; pytest"
+
+  backend-testing:
+    needs:
+      - lint
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          - python-version: '3.8'
+            tox: py38
+          - python-version: '3.9'
+            tox: py39
+          - python-version: '3.10'
+            tox: py310
+        poetry-version: [ 1.1.11 ]
+        os: [ ubuntu-20.04 ]
+    runs-on: ${{ matrix.os }}
+    services:
+      queue:
+        image: rabbitmq:3
+        ports:
+          - 5672:5672
+      postgres:
+        image: postgis/postgis:12-3.1-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: dontchangethis
+          POSTGRES_DB: test_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    environment: backend-testing
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+      - name: Set up testing Python ${{ matrix.config.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.config.python-version }}
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip tox
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: ${{ matrix.poetry-version }}
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+          installer-parallel: true
+      - name: Set DEBUGGING_CONFIG
+        run: echo "DEBUGGING_CONFIG=${GITHUB_WORKSPACE}/backend/debug.env" >> $GITHUB_ENV
+      - name: Run tox
+        env:
+          GITHUB_CELERY_BROKER_URL: "amqp://guest@localhost:5672//"
+          GITHUB_POSTGRES_SERVER: localhost
+          GITHUB_POSTGRES_USER: postgres
+          GITHUB_POSTGRES_PASSWORD: dontchangethis
+          GITHUB_POSTGRES_DB: test_db
+          GITHUB_POSTGRES_PORT: 5432
+        run: |
+          cd "$PWD/backend/"
+          cat "${GITHUB_WORKSPACE}/backend/debug.env" | sed '/^#/d;/^$/d' >> $GITHUB_ENV
+          export CELERY_BROKER_URL="$GITHUB_CELERY_BROKER_URL"
+          export POSTGRES_SERVER="$GITHUB_POSTGRES_SERVER"
+          export POSTGRES_USER="$GITHUB_POSTGRES_USER"
+          export POSTGRES_PASSWORD="$GITHUB_POSTGRES_PASSWORD"
+          export POSTGRES_DB="$GITHUB_POSTGRES_DB"
+          export POSTGRES_PORT="$GITHUB_POSTGRES_PORT"
+          export TOX_TESTENV_PASSENV=*
+          poetry run tox -e pytest-github-${{ matrix.config.tox }}
+#      - name: Upload coverage to Codecov
+#        uses: codecov/codecov-action@v1
+#        with:
+#          token: ${{ secrets.CODECOV_TOKEN }}
+#          flags: unittests
+#          env_vars: OS,PYTHON
+#          name: codecov-umbrella
+#          fail_ci_if_error: true
+#          verbose: true
