@@ -24,7 +24,7 @@ lxml==4.2.1
 MarkupSafe==1.0
 mistune==0.8.3
 NicePrinter==1.0.3
-numpy==1.14.5
+numpy==1.22.0
 parsel==1.4.0
 psycopg2==2.7.3.2
 pyasn1==0.4.3
