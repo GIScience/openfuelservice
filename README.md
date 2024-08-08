@@ -1,6 +1,6 @@
 # This repository is now archived.
 
-openfuelservice was a first prototype regarding fuel saving topics and we gained valuable knowledge through it. 
+openfuelservice was a first prototype regarding fuel saving topics, and we gained valuable knowledge through it.
 Due to being heavily out-dated and a missing vision for this project, we have to let it go, for now.
 
 If you want to get in touch with us regarding this or other related topics, feel free to contact us under **support[at]smartmobility.heigit.org** or visit us at [heigit.org](https://heigit.org).
